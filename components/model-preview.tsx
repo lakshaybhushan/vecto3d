@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useMemo } from "react";
-import { Canvas, extend } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import {
   EffectComposer,
@@ -8,7 +8,7 @@ import {
   SMAA,
   ToneMapping,
 } from "@react-three/postprocessing";
-import { BlendFunction, SMAAPreset } from "postprocessing";
+import { BlendFunction } from "postprocessing";
 import * as THREE from "three";
 import { SVGModel } from "./svg-model";
 import { ModelPreviewProps } from "@/lib/types";

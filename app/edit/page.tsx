@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SVGModel } from "@/components/svg-model";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Maximize2, Minimize2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as THREE from "three";
 import { useRouter } from "next/navigation";
@@ -401,10 +401,13 @@ export default function EditPage() {
 
   const modelRef = useRef<THREE.Group | null>(null);
   const modelGroupRef = useRef<THREE.Group | null>(null);
-  const hdriFileInputRef = useRef<HTMLInputElement>(null);
+  // const hdriFileInputRef = useRef<HTMLInputElement>(null);
 
   const [customHdriUrl, setCustomHdriUrl] = useState<string | null>(null);
-  const [customImageError, setCustomImageError] = useState<string | null>(null);
+  // const [customImageError, setCustomImageError] = useState<string | null>(null);
+
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
 
   const [useBloom, setUseBloom] = useState<boolean>(false);
   const [bloomIntensity, setBloomIntensity] = useState<number>(1.0);
@@ -558,6 +561,28 @@ export default function EditPage() {
     }
   }, [environmentPreset, customHdriUrl, useBloom]);
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement !== null);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "mozfullscreenchange",
+        handleFullscreenChange
+      );
+    };
+  }, []);
+
   const renderModelPreview = () => {
     if (!svgData) {
       return <ModelLoadingState message="Waiting for SVG data..." />;
@@ -679,19 +704,52 @@ export default function EditPage() {
                 variants={modelContainerAnimation}
                 className="h-[400px] sm:h-[500px] lg:h-[600px] order-first lg:order-last relative overflow-hidden">
                 <Card className="w-full h-full flex flex-col overflow-hidden border-[1px] shadow-sm">
-                  <CardHeader className="p-4 pb-4 border-b bg-background/80 backdrop-blur-sm z-10">
-                    <CardTitle className="text-lg">Preview</CardTitle>
-                    <CardDescription className="text-xs">
-                      {!svgData
-                        ? "Loading SVG data..."
-                        : isModelLoading
-                        ? "Processing SVG..."
-                        : "Interact with your 3D model"}
-                    </CardDescription>
+                  <CardHeader className="p-4 pb-4 border-b bg-background/80 backdrop-blur-sm z-10 flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg">Preview</CardTitle>
+                      <CardDescription className="text-xs">
+                        {!svgData
+                          ? "Loading SVG data..."
+                          : isModelLoading
+                          ? "Processing SVG..."
+                          : "Interact with your 3D model"}
+                      </CardDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        if (isFullscreen) {
+                          document.exitFullscreen();
+                        } else if (previewContainerRef.current) {
+                          previewContainerRef.current.requestFullscreen();
+                        }
+                      }}
+                      aria-label={
+                        isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
+                      }>
+                      {isFullscreen ? (
+                        <Minimize2 className="h-4 w-4" />
+                      ) : (
+                        <Maximize2 className="h-4 w-4" />
+                      )}
+                    </Button>
                   </CardHeader>
 
-                  <div className="flex-grow relative">
+                  <div className="flex-grow relative" ref={previewContainerRef}>
                     {renderModelPreview()}
+                    {isFullscreen && (
+                      <div className="absolute inset-0 pointer-events-none">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => document.exitFullscreen()}
+                          aria-label="Exit fullscreen"
+                          className="absolute top-6 right-6 z-[99999] pointer-events-auto shadow-xl bg-background/90 hover:bg-background">
+                          <Minimize2 />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </Card>
               </motion.div>
