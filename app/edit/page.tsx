@@ -173,8 +173,8 @@ const ModelPreview = React.memo<ModelPreviewProps>(
         50,
         window.innerWidth / window.innerHeight,
         1,
-        1000
-      )
+        1000,
+      ),
     );
 
     useEffect(() => {
@@ -310,7 +310,7 @@ const ModelPreview = React.memo<ModelPreviewProps>(
         />
       </Canvas>
     );
-  }
+  },
 );
 
 ModelPreview.displayName = "ModelPreview";
@@ -355,7 +355,7 @@ export default function EditPage() {
   const [depth, setDepth] = useState<number>(1);
   const [isModelLoading, setIsModelLoading] = useState<boolean>(true);
   const [svgProcessingError, setSvgProcessingError] = useState<string | null>(
-    null
+    null,
   );
 
   // Bevel options
@@ -376,10 +376,10 @@ export default function EditPage() {
   const [metalness, setMetalness] = useState<number>(initialPreset.metalness);
   const [clearcoat, setClearcoat] = useState<number>(initialPreset.clearcoat);
   const [envMapIntensity, setEnvMapIntensity] = useState<number>(
-    initialPreset.envMapIntensity
+    initialPreset.envMapIntensity,
   );
   const [transmission, setTransmission] = useState<number>(
-    initialPreset.transmission
+    initialPreset.transmission,
   );
 
   const [isHollowSvg, setIsHollowSvg] = useState<boolean>(false);
@@ -556,7 +556,7 @@ export default function EditPage() {
         "Vibe Mode has been disabled because you selected a custom image",
         {
           duration: 3000,
-        }
+        },
       );
     }
   }, [environmentPreset, customHdriUrl, useBloom]);
@@ -574,11 +574,11 @@ export default function EditPage() {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
       document.removeEventListener(
         "webkitfullscreenchange",
-        handleFullscreenChange
+        handleFullscreenChange,
       );
       document.removeEventListener(
         "mozfullscreenchange",
-        handleFullscreenChange
+        handleFullscreenChange,
       );
     };
   }, []);
@@ -711,8 +711,8 @@ export default function EditPage() {
                         {!svgData
                           ? "Loading SVG data..."
                           : isModelLoading
-                          ? "Processing SVG..."
-                          : "Interact with your 3D model"}
+                            ? "Processing SVG..."
+                            : "Interact with your 3D model"}
                       </CardDescription>
                     </div>
                     <Button
@@ -741,19 +741,19 @@ export default function EditPage() {
                     {isFullscreen && (
                       <div className="absolute inset-0 pointer-events-none">
                         <Button
-                          variant="ghost"
                           size="icon"
+                          variant={"ghost"}
                           onClick={() => document.exitFullscreen()}
                           aria-label="Exit fullscreen"
-                          className="absolute top-6 right-6 z-[99999] pointer-events-auto shadow-xl bg-background/90 hover:bg-background">
-                          <Minimize2 />
+                          className="absolute top-6 right-6 z-[99999] pointer-events-auto bg-transparent
+                          hover:bg-background/80 backdrop-blur-sm">
+                          <Minimize2 className="h-4 w-4 text-primary/80" />
                         </Button>
                       </div>
                     )}
                   </div>
                 </Card>
               </motion.div>
-
               <motion.div
                 className="space-y-6 order-last lg:order-first"
                 variants={cardAnimation}>

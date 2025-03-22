@@ -22,7 +22,6 @@ export function GeometryControls({
   autoRotateSpeed,
   setAutoRotateSpeed,
 }: GeometryControlsProps) {
-  
   const displayToActualRotation = (displayValue: number) => {
     return displayValue + 1.5; // Convert 1-5 display scale to 2.5-7.5 actual scale
   };
@@ -78,24 +77,28 @@ export function GeometryControls({
                         borderRadius: "4px",
                       }
                     : preset.name === "custom"
-                      ? {
-                          background:
-                            "linear-gradient(135deg, hsl(var(--primary)/0.8), hsl(var(--primary)/0.6))",
-                          border: "1px solid hsl(var(--primary)/0.3)",
-                          boxShadow: "inset 0 0 8px rgba(255,255,255,0.3)",
-                          borderRadius: "10%",
-                        }
-                      : {
-                          position: "relative",
-                          background:
-                            "linear-gradient(135deg, hsl(var(--primary)/0.5), hsl(var(--primary)/0.3))",
-                          border: "1px solid hsl(var(--primary)/0.3)",
-                          borderRadius: `${preset.size * 15}%`,
-                          boxShadow: `
-                            inset 0 0 0 ${preset.thickness}px rgba(255,255,255,0.2),
-                            0 ${preset.thickness * 2}px ${preset.thickness * 3}px rgba(0,0,0,0.15)
+                    ? {
+                        background:
+                          "linear-gradient(135deg, hsl(var(--primary)/0.8), hsl(var(--primary)/0.6))",
+                        border: "1px solid hsl(var(--primary)/0.3)",
+                        boxShadow: "inset 0 0 8px rgba(255,255,255,0.3)",
+                        borderRadius: "10%",
+                      }
+                    : {
+                        position: "relative",
+                        background:
+                          "linear-gradient(135deg, hsl(var(--primary)/0.5), hsl(var(--primary)/0.3))",
+                        border: "1px solid hsl(var(--primary)/0.3)",
+                        borderRadius: `${preset.size * 15}%`,
+                        boxShadow: `
+                            inset 0 0 0 ${
+                              preset.thickness
+                            }px rgba(255,255,255,0.2),
+                            0 ${preset.thickness * 2}px ${
+                          preset.thickness * 3
+                        }px rgba(0,0,0,0.15)
                           `,
-                        }
+                      }
                 }>
                 {preset.name === "none" && (
                   <div className="w-6 h-6 rounded-sm bg-muted-foreground/20"></div>
@@ -210,7 +213,7 @@ export function GeometryControls({
             <Slider
               id="autoRotateSpeed"
               min={1}
-              max={5}
+              max={10}
               step={0.5}
               value={[actualToDisplayRotation(autoRotateSpeed)]}
               onValueChange={(value) =>

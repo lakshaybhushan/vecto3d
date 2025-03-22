@@ -1,56 +1,23 @@
 import * as THREE from "three";
 import { STLExporter } from "three/examples/jsm/exporters/STLExporter.js";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
+import { toast } from "sonner";
 
-// Helper function to trigger download
-function downloadBlob(blob: Blob, filename: string) {
-  try {
-    console.log(`Triggering download for ${filename}`, blob);
-
-    const link = document.createElement("a");
-    link.style.display = "none";
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-
-    // Log after click to verify it happened
-    console.log("Download link clicked");
-
-    // Cleanup after a delay to ensure the download starts
-    setTimeout(() => {
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
-      console.log("Cleanup completed");
-    }, 200);
-  } catch (error) {
-    console.error("Download error:", error);
-  }
-}
-
-// Helper function to prepare model meshes for export
 export function prepareModelForExport(model: THREE.Object3D): THREE.Object3D {
-  // Clone the model to avoid modifying the original
   const clonedModel = model.clone();
-
-  // Reset transformation to prevent any unexpected rotation/position
   clonedModel.position.set(0, 0, 0);
   clonedModel.rotation.set(0, 0, 0);
   clonedModel.scale.set(1, 1, 1);
   clonedModel.updateMatrixWorld(true);
 
-  // Create clean materials for export to prevent visual artifacts
   const cleanMaterials = new Map<string, THREE.Material>();
 
-  // Process all meshes to ensure proper export
   clonedModel.traverse((object) => {
     if (object instanceof THREE.Mesh) {
       const mesh = object as THREE.Mesh;
 
-      // Type assertion for material
       const material = mesh.material as THREE.Material;
 
-      // Check if this mesh is a hole based on properties
       const isHole = Boolean(
         material.userData?.isHole ||
           mesh.userData?.isHole ||
@@ -58,7 +25,6 @@ export function prepareModelForExport(model: THREE.Object3D): THREE.Object3D {
           (material as THREE.MeshPhysicalMaterial)?.polygonOffsetFactor < 0,
       );
 
-      // Create a simplified clean material or reuse one we've already created
       const materialKey = isHole ? "hole" : material.uuid;
 
       if (!cleanMaterials.has(materialKey)) {
@@ -69,7 +35,7 @@ export function prepareModelForExport(model: THREE.Object3D): THREE.Object3D {
           roughness: (material as THREE.MeshPhysicalMaterial).roughness || 0.3,
           metalness: (material as THREE.MeshPhysicalMaterial).metalness || 0.5,
           side: THREE.FrontSide,
-          // Apply different settings to hole materials
+
           transparent: isHole,
           opacity: isHole ? 0.5 : 1,
           depthWrite: !isHole,
@@ -82,24 +48,16 @@ export function prepareModelForExport(model: THREE.Object3D): THREE.Object3D {
         cleanMaterials.set(materialKey, cleanMaterial);
       }
 
-      // Apply the clean material
       mesh.material = cleanMaterials.get(materialKey)!;
 
-      // Store the hole status in the mesh's userData for later reference
       mesh.userData.isHole = isHole;
 
-      // For better hole handling in exports, position hole meshes slightly
-      // deeper than the main meshes to prevent z-fighting
       if (isHole) {
-        // Apply a small z offset to hole meshes to ensure they properly
-        // cut through the main shape without z-fighting
         const zOffset = 0.05;
 
-        // Scale the hole slightly to ensure it fully penetrates the main shape
         const scaleUp = 1.01;
         mesh.scale.set(scaleUp, scaleUp, scaleUp + zOffset);
 
-        // Update the matrix to apply these changes
         mesh.updateMatrix();
       }
     }
@@ -108,12 +66,9 @@ export function prepareModelForExport(model: THREE.Object3D): THREE.Object3D {
   return clonedModel;
 }
 
-// Cleanup resources after export
 export function cleanupExportedModel(model: THREE.Object3D): void {
-  // Optional cleanup steps after export
   model.traverse((object) => {
     if (object instanceof THREE.Mesh) {
-      // Dispose of geometries and materials to prevent memory leaks
       if (object.geometry) {
         object.geometry.dispose();
       }
@@ -129,25 +84,20 @@ export function cleanupExportedModel(model: THREE.Object3D): void {
   });
 }
 
-// Export to STL format
 export async function exportToSTL(
   model: THREE.Object3D,
   fileName: string,
 ): Promise<boolean> {
   try {
-    // Prepare the model for export
     const exportModel = prepareModelForExport(model);
 
-    // Export with unified settings
     const exporter = new STLExporter();
     const result = exporter.parse(exportModel, {
       binary: true,
     });
 
-    // Cleanup the model after export
     cleanupExportedModel(exportModel);
 
-    // Create and trigger download
     const blob = new Blob([result], { type: "application/octet-stream" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -161,17 +111,14 @@ export async function exportToSTL(
   }
 }
 
-// Export to GLTF/GLB format
 export async function exportToGLTF(
   model: THREE.Object3D,
   fileName: string,
   format: "gltf" | "glb" = "glb",
 ): Promise<boolean> {
   try {
-    // Prepare the model for export
     const exportModel = prepareModelForExport(model);
 
-    // Create exporter with correct options
     const exporter = new GLTFExporter();
     const options = {
       binary: format === "glb",
@@ -179,7 +126,6 @@ export async function exportToGLTF(
       onlyVisible: true,
     };
 
-    // Export the model
     const gltfData = await new Promise<ArrayBuffer | object>((resolve) => {
       exporter.parse(
         exportModel,
@@ -192,10 +138,8 @@ export async function exportToGLTF(
       );
     });
 
-    // Cleanup the model after export
     cleanupExportedModel(exportModel);
 
-    // Create and trigger download
     let blob: Blob;
     if (format === "glb") {
       blob = new Blob([gltfData as ArrayBuffer], {
@@ -215,5 +159,111 @@ export async function exportToGLTF(
   } catch (error) {
     console.error(`Error exporting to ${format.toUpperCase()}:`, error);
     return false;
+  }
+}
+
+export async function exportToPNG(
+  modelGroupRef: React.RefObject<THREE.Group | null>,
+  fileName: string,
+  resolution: number = 1,
+): Promise<boolean> {
+  const canvas = document.querySelector("canvas");
+  if (!canvas) {
+    toast.error("Could not find the 3D renderer");
+    return false;
+  }
+
+  try {
+    const exportCanvas = document.createElement("canvas");
+    const ctx = exportCanvas.getContext("2d");
+
+    if (!ctx) {
+      throw new Error("Could not get 2D context for export canvas");
+    }
+
+    exportCanvas.width = canvas.width * resolution;
+    exportCanvas.height = canvas.height * resolution;
+
+    const renderer = (document.querySelector("canvas") as any)?.__r3f?.fiber
+      ?.renderer;
+
+    if (renderer) {
+      const currentPixelRatio = renderer.getPixelRatio();
+      renderer.setPixelRatio(currentPixelRatio * resolution);
+      renderer.render(renderer.scene, renderer.camera);
+      ctx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
+      renderer.setPixelRatio(currentPixelRatio);
+      renderer.render(renderer.scene, renderer.camera);
+      renderer.renderLists.dispose();
+    } else {
+      ctx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
+    }
+
+    const dataURL = exportCanvas.toDataURL("image/png", 0.95);
+    const link = document.createElement("a");
+    link.download = `${fileName}.png`;
+    link.href = dataURL;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    exportCanvas.remove();
+    URL.revokeObjectURL(dataURL);
+    return true;
+  } catch (error) {
+    console.error("Error exporting PNG:", error);
+    toast.error("Failed to generate image");
+    return false;
+  }
+}
+
+export async function handleExport(
+  format: "stl" | "gltf" | "glb" | "png",
+  modelGroupRef: React.RefObject<THREE.Group | null>,
+  fileName: string,
+  resolution?: number,
+): Promise<void> {
+  const baseName = fileName.replace(".svg", "");
+
+  if (!modelGroupRef.current || !fileName) {
+    console.error("Export failed: Model group or filename missing");
+    toast.error("Error: Cannot export - model not loaded");
+    return;
+  }
+
+  try {
+    let success = false;
+
+    if (format === "png") {
+      success = await exportToPNG(modelGroupRef, baseName, resolution);
+    } else {
+      const modelGroupClone = modelGroupRef.current.clone();
+      modelGroupClone.rotation.y = 0;
+      modelGroupClone.updateMatrixWorld(true);
+
+      if (format === "stl") {
+        success = await exportToSTL(modelGroupClone, `${baseName}.stl`);
+      } else if (format === "glb" || format === "gltf") {
+        success = await exportToGLTF(
+          modelGroupClone,
+          `${baseName}.${format}`,
+          format,
+        );
+      }
+
+      cleanupExportedModel(modelGroupClone);
+    }
+
+    if (success) {
+      toast.success(`${baseName}.${format} has been downloaded successfully`, {
+        duration: 3000,
+      });
+    } else {
+      toast.error(`Failed to export ${format.toUpperCase()}`);
+    }
+  } catch (error) {
+    console.error("Export error:", error);
+    toast.error(
+      `Export failed: ${(error as Error).message || "Unknown error"}`,
+    );
   }
 }

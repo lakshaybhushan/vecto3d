@@ -57,7 +57,7 @@ const getPathBoundingArea = (path: THREE.ShapePath) => {
 const applySpread = (
   shape: THREE.Shape,
   isHole: boolean,
-  amount: number
+  amount: number,
 ): THREE.Shape => {
   if (amount === 0) return shape;
 
@@ -105,7 +105,7 @@ const applySpread = (
 
 const isPathInsideAnother = (
   innerPath: THREE.ShapePath,
-  outerPath: THREE.ShapePath
+  outerPath: THREE.ShapePath,
 ) => {
   const innerPoints = innerPath.subPaths.flatMap((sp) => sp.getPoints());
   if (innerPoints.length === 0) return false;
@@ -126,7 +126,7 @@ const isPathInsideAnother = (
 
   return innerPoints.every(
     (p) =>
-      p.x > outerMinX && p.x < outerMaxX && p.y > outerMinY && p.y < outerMaxY
+      p.x > outerMinX && p.x < outerMaxX && p.y > outerMinY && p.y < outerMaxY,
   );
 };
 
@@ -164,7 +164,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       onLoadComplete,
       onError,
     },
-    ref
+    ref,
   ) => {
     const [paths, setPaths] = useState<THREE.ShapePath[]>([]);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -199,13 +199,13 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       try {
         // Remove special characters and symbols
         let processedSvgData = svgData
-          .replace(/[™®©]/g, '') // Remove trademark, registered, and copyright symbols
-          .replace(/&trade;|&reg;|&copy;/g, ''); // Remove HTML entities
+          .replace(/[™®©]/g, "") // Remove trademark, registered, and copyright symbols
+          .replace(/&trade;|&reg;|&copy;/g, ""); // Remove HTML entities
 
         const parser = new DOMParser();
         const svgDoc = parser.parseFromString(
           processedSvgData,
-          "image/svg+xml"
+          "image/svg+xml",
         );
 
         const parserError = svgDoc.querySelector("parsererror");
@@ -223,7 +223,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         const textElements = svgDoc.querySelectorAll("text");
         if (textElements.length > 0) {
           textElements.forEach((textEl) => {
-            const text = textEl.textContent || '';
+            const text = textEl.textContent || "";
             if (/[™®©]|&trade;|&reg;|&copy;/.test(text)) {
               textEl.parentNode?.removeChild(textEl);
             }
@@ -234,10 +234,10 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
 
         const viewBox = svgElement.getAttribute("viewBox");
         let width = Number.parseFloat(
-          svgElement.getAttribute("width") || "100"
+          svgElement.getAttribute("width") || "100",
         );
         let height = Number.parseFloat(
-          svgElement.getAttribute("height") || "100"
+          svgElement.getAttribute("height") || "100",
         );
 
         if (viewBox) {
@@ -261,7 +261,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       } catch (error) {
         console.error("Error parsing SVG:", error);
         onError?.(
-          error instanceof Error ? error : new Error("Failed to parse SVG")
+          error instanceof Error ? error : new Error("Failed to parse SVG"),
         );
       }
 
@@ -284,7 +284,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
             }
 
             const processedShapes = shapes.map((shape) =>
-              applySpread(shape, false, spread)
+              applySpread(shape, false, spread),
             );
 
             return {
@@ -435,7 +435,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         </group>
       </Center>
     );
-  }
+  },
 );
 
 SVGModel.displayName = "SVGModel";

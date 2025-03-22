@@ -50,8 +50,8 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
         50,
         window.innerWidth / window.innerHeight,
         1,
-        1000
-      )
+        1000,
+      ),
     );
 
     useEffect(() => {
@@ -186,7 +186,7 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
         />
       </Canvas>
     );
-  }
+  },
 );
 
 ModelPreviews.displayName = "ModelPreviews";
