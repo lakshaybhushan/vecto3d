@@ -77,28 +77,28 @@ export function GeometryControls({
                         borderRadius: "4px",
                       }
                     : preset.name === "custom"
-                    ? {
-                        background:
-                          "linear-gradient(135deg, hsl(var(--primary)/0.8), hsl(var(--primary)/0.6))",
-                        border: "1px solid hsl(var(--primary)/0.3)",
-                        boxShadow: "inset 0 0 8px rgba(255,255,255,0.3)",
-                        borderRadius: "10%",
-                      }
-                    : {
-                        position: "relative",
-                        background:
-                          "linear-gradient(135deg, hsl(var(--primary)/0.5), hsl(var(--primary)/0.3))",
-                        border: "1px solid hsl(var(--primary)/0.3)",
-                        borderRadius: `${preset.size * 15}%`,
-                        boxShadow: `
+                      ? {
+                          background:
+                            "linear-gradient(135deg, hsl(var(--primary)/0.8), hsl(var(--primary)/0.6))",
+                          border: "1px solid hsl(var(--primary)/0.3)",
+                          boxShadow: "inset 0 0 8px rgba(255,255,255,0.3)",
+                          borderRadius: "10%",
+                        }
+                      : {
+                          position: "relative",
+                          background:
+                            "linear-gradient(135deg, hsl(var(--primary)/0.5), hsl(var(--primary)/0.3))",
+                          border: "1px solid hsl(var(--primary)/0.3)",
+                          borderRadius: `${preset.size * 15}%`,
+                          boxShadow: `
                             inset 0 0 0 ${
                               preset.thickness
                             }px rgba(255,255,255,0.2),
                             0 ${preset.thickness * 2}px ${
-                          preset.thickness * 3
-                        }px rgba(0,0,0,0.15)
+                              preset.thickness * 3
+                            }px rgba(0,0,0,0.15)
                           `,
-                      }
+                        }
                 }>
                 {preset.name === "none" && (
                   <div className="w-6 h-6 rounded-sm bg-muted-foreground/20"></div>

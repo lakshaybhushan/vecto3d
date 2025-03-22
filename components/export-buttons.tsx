@@ -39,7 +39,7 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
                   "png",
                   modelGroupRef,
                   fileName,
-                  resolution.multiplier
+                  resolution.multiplier,
                 )
               }>
               <Image className="h-4 w-4 ml-1" />

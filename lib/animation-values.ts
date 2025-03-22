@@ -1,7 +1,7 @@
 // Animation variants for staggered children
 export const staggerContainer = (
   staggerChildren?: number,
-  delayChildren?: number
+  delayChildren?: number,
 ) => ({
   hidden: {},
   show: {
