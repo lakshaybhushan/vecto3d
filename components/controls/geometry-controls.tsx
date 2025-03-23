@@ -47,9 +47,9 @@ export function GeometryControls({
         <Label htmlFor="depth">Thickness: {depth}</Label>
         <Slider
           id="depth"
-          min={0.5}
-          max={100}
-          step={0.5}
+          min={0.1}
+          max={50}
+          step={0.1}
           value={[depth]}
           onValueChange={(value) => setDepth(value[0])}
         />

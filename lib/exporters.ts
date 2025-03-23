@@ -86,7 +86,7 @@ export function cleanupExportedModel(model: THREE.Object3D): void {
 
 export async function exportToSTL(
   model: THREE.Object3D,
-  fileName: string,
+  fileName: string
 ): Promise<boolean> {
   try {
     const exportModel = prepareModelForExport(model);
@@ -114,7 +114,7 @@ export async function exportToSTL(
 export async function exportToGLTF(
   model: THREE.Object3D,
   fileName: string,
-  format: "gltf" | "glb" = "glb",
+  format: "gltf" | "glb" = "glb"
 ): Promise<boolean> {
   try {
     const exportModel = prepareModelForExport(model);
@@ -134,7 +134,7 @@ export async function exportToGLTF(
           console.error("GLTFExporter error:", error);
           throw error;
         },
-        options,
+        options
       );
     });
 
@@ -199,7 +199,7 @@ export async function exportToPNG(
       ctx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
     }
 
-    const dataURL = exportCanvas.toDataURL("image/png", 0.95);
+    const dataURL = exportCanvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.download = `${fileName}.png`;
     link.href = dataURL;
@@ -220,7 +220,7 @@ export async function handleExport(
   format: "stl" | "gltf" | "glb" | "png",
   modelGroupRef: React.RefObject<THREE.Group | null>,
   fileName: string,
-  resolution?: number,
+  resolution: number = 1
 ): Promise<void> {
   const baseName = fileName.replace(".svg", "");
 
@@ -246,7 +246,7 @@ export async function handleExport(
         success = await exportToGLTF(
           modelGroupClone,
           `${baseName}.${format}`,
-          format,
+          format
         );
       }
 
@@ -263,7 +263,7 @@ export async function handleExport(
   } catch (error) {
     console.error("Export error:", error);
     toast.error(
-      `Export failed: ${(error as Error).message || "Unknown error"}`,
+      `Export failed: ${(error as Error).message || "Unknown error"}`
     );
   }
 }

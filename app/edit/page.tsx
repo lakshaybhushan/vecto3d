@@ -395,16 +395,14 @@ export default function EditPage() {
   const [backgroundColor, setBackgroundColor] =
     useState<string>(LIGHT_MODE_COLOR);
   const [solidColorPreset, setSolidColorPreset] = useState<string>("light");
-
+  
   const [autoRotate, setAutoRotate] = useState<boolean>(false);
   const [autoRotateSpeed, setAutoRotateSpeed] = useState<number>(3);
 
   const modelRef = useRef<THREE.Group | null>(null);
   const modelGroupRef = useRef<THREE.Group | null>(null);
-  // const hdriFileInputRef = useRef<HTMLInputElement>(null);
 
   const [customHdriUrl, setCustomHdriUrl] = useState<string | null>(null);
-  // const [customImageError, setCustomImageError] = useState<string | null>(null);
 
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const previewContainerRef = useRef<HTMLDivElement>(null);
