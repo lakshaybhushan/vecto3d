@@ -29,6 +29,12 @@ import React from "react";
 import { ModeToggle } from "@/components/ui/theme-toggle";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   staggerContainer,
   cardAnimation,
   fadeUp,
@@ -395,7 +401,7 @@ export default function EditPage() {
   const [backgroundColor, setBackgroundColor] =
     useState<string>(LIGHT_MODE_COLOR);
   const [solidColorPreset, setSolidColorPreset] = useState<string>("light");
-  
+
   const [autoRotate, setAutoRotate] = useState<boolean>(false);
   const [autoRotateSpeed, setAutoRotateSpeed] = useState<number>(3);
 
@@ -713,40 +719,99 @@ export default function EditPage() {
                             : "Interact with your 3D model"}
                       </CardDescription>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        if (isFullscreen) {
-                          document.exitFullscreen();
-                        } else if (previewContainerRef.current) {
-                          previewContainerRef.current.requestFullscreen();
-                        }
-                      }}
-                      aria-label={
-                        isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
-                      }>
-                      {isFullscreen ? (
-                        <Minimize2 className="h-4 w-4" />
-                      ) : (
-                        <Maximize2 className="h-4 w-4" />
-                      )}
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              if (isFullscreen) {
+                                document.exitFullscreen();
+                              } else if (previewContainerRef.current) {
+                                previewContainerRef.current.requestFullscreen();
+                              }
+                            }}
+                            aria-label={
+                              isFullscreen
+                                ? "Exit fullscreen"
+                                : "Enter fullscreen"
+                            }>
+                            {isFullscreen ? (
+                              <Minimize2
+                                className={`h-4 w-4 ${
+                                  backgroundColor === "#FFFFFF" &&
+                                  resolvedTheme === "dark"
+                                    ? "text-black"
+                                    : ""
+                                }`}
+                              />
+                            ) : (
+                              <Maximize2
+                                className={`h-4 w-4 ${
+                                  backgroundColor === "#FFFFFF" &&
+                                  resolvedTheme === "dark"
+                                    ? "text-black"
+                                    : ""
+                                }`}
+                              />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="left"
+                          align="center"
+                          sideOffset={10}
+                          className="text-xs py-1.5 px-3 z-[99999] shadow-md">
+                          Performance may be affected
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </CardHeader>
 
                   <div className="flex-grow relative" ref={previewContainerRef}>
                     {renderModelPreview()}
                     {isFullscreen && (
                       <div className="absolute inset-0 pointer-events-none">
-                        <Button
-                          size="icon"
-                          variant={"ghost"}
-                          onClick={() => document.exitFullscreen()}
-                          aria-label="Exit fullscreen"
-                          className="absolute top-6 right-6 z-[99999] pointer-events-auto bg-transparent
-                          hover:bg-background/80 backdrop-blur-sm">
-                          <Minimize2 className="h-4 w-4 text-primary/80" />
-                        </Button>
+                        <TooltipProvider>
+                          <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant={"ghost"}
+                                onClick={() => document.exitFullscreen()}
+                                aria-label="Exit fullscreen"
+                                className={`absolute top-6 right-6 z-[99999] pointer-events-auto bg-transparent
+                                  ${
+                                    backgroundColor === "#000000" || useBloom
+                                      ? "hover:bg-white/10"
+                                      : backgroundColor === "#FFFFFF" &&
+                                          resolvedTheme === "dark"
+                                        ? "hover:bg-black/10"
+                                        : "hover:bg-background/80"
+                                  } backdrop-blur-sm`}>
+                                <Minimize2
+                                  className={`h-4 w-4 ${
+                                    backgroundColor === "#000000" || useBloom
+                                      ? "text-white"
+                                      : backgroundColor === "#FFFFFF" &&
+                                          resolvedTheme === "dark"
+                                        ? "text-black"
+                                        : "text-primary/80"
+                                  }`}
+                                />
+                                <span className="sr-only">Exit fullscreen</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="left"
+                              align="center"
+                              sideOffset={10}
+                              className="text-xs py-1.5 px-3 z-[99999] shadow-md">
+                              Exit fullscreen
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     )}
                   </div>

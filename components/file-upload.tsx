@@ -206,7 +206,7 @@ export function FileUpload({
                     transition={{ type: "spring", damping: 20 }}>
                     <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl transform scale-75" />
                     <div
-                      className="relative z-10 w-22 h-22 p-1 rounded-xl bg-background/80 backdrop-blur-sm border-2 border-primary/30 shadow-xl shadow-primary/20 flex items-center justify-center overflow-hidden"
+                      className="relative z-10 w-22 h-22 p-6 rounded-xl bg-background/80 backdrop-blur-sm border-2 border-primary/30 shadow-xl shadow-primary/20 flex items-center justify-center overflow-hidden"
                       dangerouslySetInnerHTML={{
                         __html: svgContent
                           .replace(/width="[^"]*"/, 'width="100%"')
