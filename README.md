@@ -31,28 +31,23 @@ So, one day I was bored and decided to open Blender. I loaded up a logo that I d
 - Can Export images in PNG in HD, 2K and 4K quality.
 - Can change the background color of the preview panel to see the 3D model in different colors.
 
-
 ## Vibe Mode
 
 Since vibe coding is in trend right now, I thought why not add a vibe mode to this app. So I added a button to toggle the vibe mode. This mode allows you to add a dreamy effect with bloom and soft shadows to your preview panel.
-
 
 ## Acknowledgements
 
 I've used multiple tools to make this app, specially [V0.dev](https://v0.dev) for quick prototyping, [shadcn/ui](https://ui.shadcn.com) and [Magic UI](https://magicui.design/) for the amazing UI components.
 
-
 ## License & Contributing
 
-Use it as you want, but please give me credits by tagging me on [X (Twitter)](https://x.com/blakssh) or [LinkedIn](https://www.linkedin.com/in/lakshaybhushan/). This project is proudly open source and you can contribute to it by forking the repository and making a pull request. 
-
+Use it as you want, but please give me credits by tagging me on [X (Twitter)](https://x.com/blakssh) or [LinkedIn](https://www.linkedin.com/in/lakshaybhushan/). This project is proudly open source and you can contribute to it by forking the repository and making a pull request.
 
 ## Support
 
 If you like the app, please star the repository and share it with your friends and people you know. You can also support me by [buying me a coffee](https://www.buymeacoffee.com/lakshaybhushan).
 
 <a href="https://www.buymeacoffee.com/lakshaybhushan" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50" width="200"></a>
-
 
 ## Contact
 

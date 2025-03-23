@@ -22,7 +22,6 @@ export function GeometryControls({
   autoRotateSpeed,
   setAutoRotateSpeed,
 }: GeometryControlsProps) {
-  
   const displayToActualRotation = (displayValue: number) => {
     return displayValue + 1.5; // Convert 1-5 display scale to 2.5-7.5 actual scale
   };
@@ -48,9 +47,9 @@ export function GeometryControls({
         <Label htmlFor="depth">Thickness: {depth}</Label>
         <Slider
           id="depth"
-          min={0.5}
-          max={100}
-          step={0.5}
+          min={0.1}
+          max={50}
+          step={0.1}
           value={[depth]}
           onValueChange={(value) => setDepth(value[0])}
         />
@@ -69,67 +68,114 @@ export function GeometryControls({
               }`}
               onClick={() => applyBevelPreset(preset.name)}>
               <div
-                className="w-14 h-14 rounded-md mb-1 flex items-center justify-center overflow-hidden"
-                style={
-                  preset.name === "none"
-                    ? {
-                        background: "transparent",
-                        border: "1px solid var(--border)",
-                        borderRadius: "4px",
-                      }
-                    : preset.name === "custom"
-                      ? {
-                          background:
-                            "linear-gradient(135deg, hsl(var(--primary)/0.8), hsl(var(--primary)/0.6))",
-                          border: "1px solid hsl(var(--primary)/0.3)",
-                          boxShadow: "inset 0 0 8px rgba(255,255,255,0.3)",
-                          borderRadius: "10%",
-                        }
-                      : {
-                          position: "relative",
-                          background:
-                            "linear-gradient(135deg, hsl(var(--primary)/0.5), hsl(var(--primary)/0.3))",
-                          border: "1px solid hsl(var(--primary)/0.3)",
-                          borderRadius: `${preset.size * 15}%`,
-                          boxShadow: `
-                            inset 0 0 0 ${preset.thickness}px rgba(255,255,255,0.2),
-                            0 ${preset.thickness * 2}px ${preset.thickness * 3}px rgba(0,0,0,0.15)
-                          `,
-                        }
-                }>
+                className="w-14 h-14 mb-1 overflow-hidden relative"
+                style={{
+                  backgroundColor:
+                    preset.name === "none"
+                      ? "var(--background)"
+                      : "var(--background)",
+                  border: "1px solid hsl(var(--primary)/0.4)",
+                  borderRadius: "6px",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                }}>
                 {preset.name === "none" && (
-                  <div className="w-6 h-6 rounded-sm bg-muted-foreground/20"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                      className="w-10 h-10 bg-primary/10"
+                      style={{
+                        position: "absolute",
+                        bottom: "-2px",
+                        left: "-2px",
+                        background:
+                          "linear-gradient(135deg, hsl(var(--primary)/0.4), hsl(var(--primary)/0.2))",
+                        boxShadow: "inset 2px -2px 4px rgba(255,255,255,0.4)",
+                      }}
+                    />
+                  </div>
                 )}
+
                 {preset.name === "light" && (
-                  <div className="w-6 h-6 rounded-[2px] bg-primary/40"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                      className="w-10 h-10 bg-primary/10"
+                      style={{
+                        position: "absolute",
+                        bottom: "-2px",
+                        left: "-2px",
+                        borderTopRightRadius: "6px",
+                        background:
+                          "linear-gradient(135deg, hsl(var(--primary)/0.4), hsl(var(--primary)/0.2))",
+                        boxShadow: "inset 2px -2px 4px rgba(255,255,255,0.4)",
+                      }}
+                    />
+                  </div>
                 )}
+
                 {preset.name === "medium" && (
-                  <div className="w-6 h-6 rounded-[4px] bg-primary/40"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                      className="w-10 h-10 bg-primary/20"
+                      style={{
+                        position: "absolute",
+                        bottom: "-2px",
+                        left: "-2px",
+                        borderTopRightRadius: "12px",
+                        background:
+                          "linear-gradient(135deg, hsl(var(--primary)/0.5), hsl(var(--primary)/0.2))",
+                        boxShadow: "inset 3px -3px 6px rgba(255,255,255,0.4)",
+                      }}
+                    />
+                  </div>
                 )}
+
                 {preset.name === "heavy" && (
-                  <div className="w-6 h-6 rounded-[8px] bg-primary/40"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                      className="w-10 h-10 bg-primary/30"
+                      style={{
+                        position: "absolute",
+                        bottom: "-2px",
+                        left: "-2px",
+                        borderTopRightRadius: "20px",
+                        background:
+                          "linear-gradient(135deg, hsl(var(--primary)/0.6), hsl(var(--primary)/0.3))",
+                        boxShadow: "inset 4px -4px 8px rgba(255,255,255,0.4)",
+                      }}
+                    />
+                  </div>
                 )}
+
                 {preset.name === "custom" && (
-                  <div className="text-primary-foreground text-xs font-semibold relative z-10">
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M3 17C3 17.5523 3.44772 18 4 18H10C10.5523 18 11 17.5523 11 17V13H3V17Z"
-                        fill="currentColor"
-                      />
-                      <path
-                        d="M11 13V9C11 8.44772 10.5523 8 10 8H4C3.44772 8 3 8.44772 3 9V13H11Z"
-                        fill="currentColor"
-                      />
-                      <path
-                        d="M12 9C12 8.44772 12.4477 8 13 8H19C19.5523 8 20 8.44772 20 9V17C20 17.5523 19.5523 18 19 18H13C12.4477 18 12 17.5523 12 17V9Z"
-                        fill="currentColor"
-                      />
-                    </svg>
+                  <div className="absolute inset-0 flex items-end justify-center">
+                    <div
+                      className="w-10 h-10 bg-primary/40 relative"
+                      style={{
+                        position: "absolute",
+                        bottom: "-2px",
+                        left: "-2px",
+                        borderTopRightRadius: "12px",
+                        background:
+                          "linear-gradient(135deg, hsl(var(--primary)/0.6), hsl(var(--primary)/0.3))",
+                        boxShadow: "inset 4px -4px 8px rgba(255,255,255,0.4)",
+                      }}></div>
+
+                    <div
+                      className="absolute w-3 h-3"
+                      style={{
+                        right: "8px",
+                        top: "8px",
+                      }}>
+                      <div
+                        className="w-full h-full rounded-full"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, hsl(var(--primary)/0.95), hsl(var(--primary)/0.7))",
+                          boxShadow:
+                            "inset 1px 1px 3px rgba(255,255,255,0.6), 0 1px 3px rgba(0,0,0,0.1)",
+                        }}>
+                        <div className="absolute top-1 left-1 w-1.5 h-1.5 bg-white/40 rounded-full blur-[3px]"></div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -210,7 +256,7 @@ export function GeometryControls({
             <Slider
               id="autoRotateSpeed"
               min={1}
-              max={5}
+              max={10}
               step={0.5}
               value={[actualToDisplayRotation(autoRotateSpeed)]}
               onValueChange={(value) =>

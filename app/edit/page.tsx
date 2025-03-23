@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SVGModel } from "@/components/svg-model";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Maximize2, Minimize2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as THREE from "three";
 import { useRouter } from "next/navigation";
@@ -28,6 +28,12 @@ import { BlendFunction } from "postprocessing";
 import React from "react";
 import { ModeToggle } from "@/components/ui/theme-toggle";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   staggerContainer,
   cardAnimation,
@@ -173,8 +179,8 @@ const ModelPreview = React.memo<ModelPreviewProps>(
         50,
         window.innerWidth / window.innerHeight,
         1,
-        1000
-      )
+        1000,
+      ),
     );
 
     useEffect(() => {
@@ -310,7 +316,7 @@ const ModelPreview = React.memo<ModelPreviewProps>(
         />
       </Canvas>
     );
-  }
+  },
 );
 
 ModelPreview.displayName = "ModelPreview";
@@ -355,7 +361,7 @@ export default function EditPage() {
   const [depth, setDepth] = useState<number>(1);
   const [isModelLoading, setIsModelLoading] = useState<boolean>(true);
   const [svgProcessingError, setSvgProcessingError] = useState<string | null>(
-    null
+    null,
   );
 
   // Bevel options
@@ -376,10 +382,10 @@ export default function EditPage() {
   const [metalness, setMetalness] = useState<number>(initialPreset.metalness);
   const [clearcoat, setClearcoat] = useState<number>(initialPreset.clearcoat);
   const [envMapIntensity, setEnvMapIntensity] = useState<number>(
-    initialPreset.envMapIntensity
+    initialPreset.envMapIntensity,
   );
   const [transmission, setTransmission] = useState<number>(
-    initialPreset.transmission
+    initialPreset.transmission,
   );
 
   const [isHollowSvg, setIsHollowSvg] = useState<boolean>(false);
@@ -401,10 +407,11 @@ export default function EditPage() {
 
   const modelRef = useRef<THREE.Group | null>(null);
   const modelGroupRef = useRef<THREE.Group | null>(null);
-  const hdriFileInputRef = useRef<HTMLInputElement>(null);
 
   const [customHdriUrl, setCustomHdriUrl] = useState<string | null>(null);
-  const [customImageError, setCustomImageError] = useState<string | null>(null);
+
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
 
   const [useBloom, setUseBloom] = useState<boolean>(false);
   const [bloomIntensity, setBloomIntensity] = useState<number>(1.0);
@@ -553,10 +560,32 @@ export default function EditPage() {
         "Vibe Mode has been disabled because you selected a custom image",
         {
           duration: 3000,
-        }
+        },
       );
     }
   }, [environmentPreset, customHdriUrl, useBloom]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement !== null);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange,
+      );
+      document.removeEventListener(
+        "mozfullscreenchange",
+        handleFullscreenChange,
+      );
+    };
+  }, []);
 
   const renderModelPreview = () => {
     if (!svgData) {
@@ -679,23 +708,115 @@ export default function EditPage() {
                 variants={modelContainerAnimation}
                 className="h-[400px] sm:h-[500px] lg:h-[600px] order-first lg:order-last relative overflow-hidden">
                 <Card className="w-full h-full flex flex-col overflow-hidden border-[1px] shadow-sm">
-                  <CardHeader className="p-4 pb-4 border-b bg-background/80 backdrop-blur-sm z-10">
-                    <CardTitle className="text-lg">Preview</CardTitle>
-                    <CardDescription className="text-xs">
-                      {!svgData
-                        ? "Loading SVG data..."
-                        : isModelLoading
-                        ? "Processing SVG..."
-                        : "Interact with your 3D model"}
-                    </CardDescription>
+                  <CardHeader className="p-4 pb-4 border-b bg-background/80 backdrop-blur-sm z-10 flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg">Preview</CardTitle>
+                      <CardDescription className="text-xs">
+                        {!svgData
+                          ? "Loading SVG data..."
+                          : isModelLoading
+                            ? "Processing SVG..."
+                            : "Interact with your 3D model"}
+                      </CardDescription>
+                    </div>
+                    <TooltipProvider>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              if (isFullscreen) {
+                                document.exitFullscreen();
+                              } else if (previewContainerRef.current) {
+                                previewContainerRef.current.requestFullscreen();
+                              }
+                            }}
+                            aria-label={
+                              isFullscreen
+                                ? "Exit fullscreen"
+                                : "Enter fullscreen"
+                            }>
+                            {isFullscreen ? (
+                              <Minimize2
+                                className={`h-4 w-4 ${
+                                  backgroundColor === "#FFFFFF" &&
+                                  resolvedTheme === "dark"
+                                    ? "text-black"
+                                    : ""
+                                }`}
+                              />
+                            ) : (
+                              <Maximize2
+                                className={`h-4 w-4 ${
+                                  backgroundColor === "#FFFFFF" &&
+                                  resolvedTheme === "dark"
+                                    ? "text-black"
+                                    : ""
+                                }`}
+                              />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="left"
+                          align="center"
+                          sideOffset={10}
+                          className="text-xs py-1.5 px-3 z-[99999] shadow-md">
+                          Performance may be affected
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </CardHeader>
 
-                  <div className="flex-grow relative">
+                  <div className="flex-grow relative" ref={previewContainerRef}>
                     {renderModelPreview()}
+                    {isFullscreen && (
+                      <div className="absolute inset-0 pointer-events-none">
+                        <TooltipProvider>
+                          <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant={"ghost"}
+                                onClick={() => document.exitFullscreen()}
+                                aria-label="Exit fullscreen"
+                                className={`absolute top-6 right-6 z-[99999] pointer-events-auto bg-transparent
+                                  ${
+                                    backgroundColor === "#000000" || useBloom
+                                      ? "hover:bg-white/10"
+                                      : backgroundColor === "#FFFFFF" &&
+                                          resolvedTheme === "dark"
+                                        ? "hover:bg-black/10"
+                                        : "hover:bg-background/80"
+                                  } backdrop-blur-sm`}>
+                                <Minimize2
+                                  className={`h-4 w-4 ${
+                                    backgroundColor === "#000000" || useBloom
+                                      ? "text-white"
+                                      : backgroundColor === "#FFFFFF" &&
+                                          resolvedTheme === "dark"
+                                        ? "text-black"
+                                        : "text-primary/80"
+                                  }`}
+                                />
+                                <span className="sr-only">Exit fullscreen</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="left"
+                              align="center"
+                              sideOffset={10}
+                              className="text-xs py-1.5 px-3 z-[99999] shadow-md">
+                              Exit fullscreen
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    )}
                   </div>
                 </Card>
               </motion.div>
-
               <motion.div
                 className="space-y-6 order-last lg:order-first"
                 variants={cardAnimation}>

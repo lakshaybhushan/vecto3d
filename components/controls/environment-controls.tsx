@@ -239,7 +239,7 @@ export function EnvironmentControls({
               </Button>
             ) : (
               <RainbowButton
-                className={`w-full py-4 text-base font-semibold transition-all ${
+                className={`w-full py-5 text-base font-semibold transition-all ${
                   useBloom ? "animate-rainbow" : "opacity-90 hover:opacity-100"
                 }`}
                 onClick={() => {
@@ -247,7 +247,7 @@ export function EnvironmentControls({
                   toggleVibeMode(newValue);
                 }}>
                 {useBloom ? "Disable Vibe Mode" : "Enable Vibe Mode"}
-                <BsStars className="w-4 h-4 ml-2"/>
+                <BsStars className="w-4 h-4 ml-2" />
               </RainbowButton>
             )}
           </div>
