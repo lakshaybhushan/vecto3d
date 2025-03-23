@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "bunx prettier --write . && next build",
+    "build": "if [ \"$NODE_ENV\" != \"production\" ]; then bunx prettier --write .; fi && next build",
     "start": "next start"
   },
   "dependencies": {
