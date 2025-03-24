@@ -396,11 +396,11 @@ export async function handlePrint(
 
 
     if (success) {
-      toast.success(`${baseName}.${format} has been downloaded successfully`, {
+      toast.success(`${baseName}.${format} has been sent to print successfully`, {
         duration: 3000,
       });
     } else {
-      toast.error(`Failed to export ${format.toUpperCase()}`);
+      toast.error(`Failed to send model to print`);
     }
   } catch (error) {
     console.error("Export error:", error);
