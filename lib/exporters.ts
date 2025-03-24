@@ -20,9 +20,9 @@ export function prepareModelForExport(model: THREE.Object3D): THREE.Object3D {
 
       const isHole = Boolean(
         material.userData?.isHole ||
-          mesh.userData?.isHole ||
-          mesh.renderOrder > 0 ||
-          (material as THREE.MeshPhysicalMaterial)?.polygonOffsetFactor < 0,
+        mesh.userData?.isHole ||
+        mesh.renderOrder > 0 ||
+        (material as THREE.MeshPhysicalMaterial)?.polygonOffsetFactor < 0,
       );
 
       const materialKey = isHole ? "hole" : material.uuid;
@@ -108,6 +108,29 @@ export async function exportToSTL(
   } catch (error) {
     console.error("Error exporting to STL:", error);
     return false;
+  }
+}
+
+export async function prepareSTL(
+  model: THREE.Object3D,
+): Promise<Blob | null> {
+  try {
+    const exportModel = prepareModelForExport(model);
+
+    const exporter = new STLExporter();
+    const result = exporter.parse(exportModel, {
+      binary: true,
+    });
+
+    cleanupExportedModel(exportModel);
+
+    const blob = new Blob([result], { type: "application/octet-stream" });
+    return blob;
+
+    
+  } catch (error) {
+    console.error("Error exporting to STL:", error);
+    return null;
   }
 }
 
@@ -259,6 +282,125 @@ export async function handleExport(
       });
     } else {
       toast.error(`Failed to export ${format.toUpperCase()}`);
+    }
+  } catch (error) {
+    console.error("Export error:", error);
+    toast.error(
+      `Export failed: ${(error as Error).message || "Unknown error"}`,
+    );
+  }
+}
+
+export async function handlePrint(
+  format: "stl",
+  modelGroupRef: React.RefObject<THREE.Group | null>,
+  fileName: string,
+  resolution: number = 1,
+  printService: "m3d" | "bambu",
+): Promise<void> {
+  const baseName = fileName.replace(".svg", "");
+
+  if (!modelGroupRef.current || !fileName) {
+    console.error("Export failed: Model group or filename missing");
+    toast.error("Error: Cannot export - model not loaded");
+    return;
+  }
+
+  try {
+    let success = false;
+
+
+    const modelGroupClone = modelGroupRef.current.clone();
+    modelGroupClone.rotation.y = 0;
+    modelGroupClone.updateMatrixWorld(true);
+
+    if (format === "stl") {
+      const blob = await prepareSTL(modelGroupClone);
+      if (blob) {
+        success = true;
+        
+        if (printService === "m3d") {
+          try {
+            const form = new FormData();
+            
+            // Convert blob to array buffer
+            const fileBuffer = await blob.arrayBuffer();
+            
+            // Append the file with the correct field name that the server expects
+            form.append('file', new Blob([fileBuffer]), `${baseName}.stl`);
+            
+            form.append('external_source', 'vecto3d');
+            
+            const API_URL = "https://backend.mandarin3d.com/api/submit-remote"; 
+            const response = await fetch(API_URL, {
+              method: 'POST',
+              body: form,
+            });
+
+            const data = await response.json();
+            console.log(data);
+            
+            if (response.ok) {
+              success = true;
+              window.open(data.url, '_blank');
+            } else {
+              throw new Error(`Server responded with ${response.status}`);
+            }
+          } catch (error) {
+            console.error("Error sending to M3D:", error);
+            toast.error("Failed to send model to M3D");
+            success = false;
+          }
+        } else if (printService === "bambu") {
+          try {
+            // Upload to vaultl.ink to get a public URL
+            const response = await fetch('https://vaultl.ink/api/headless-upload', {
+              method: 'POST',
+              body: blob,
+              headers: {
+                'Content-Type': 'application/octet-stream',
+                'X-File-Name': `${baseName}.stl`
+              }
+            });
+
+            const data = await response.json();
+
+            console.log(data);
+            
+            if (data.url) {
+              // Open in Bambu Studio using the public URL
+              const bambuUrl = `bambustudioopen://open?file=${encodeURIComponent(data.url)}`;
+              console.log(bambuUrl);
+              window.location.href = bambuUrl; // -> this opens the file in bambu studio
+
+              
+            
+              
+            } else {
+              throw new Error('Failed to get public URL');
+            }
+          } catch (error) {
+            console.error("Failed to process file for Bambu Studio:", error);
+            // // Direct download as fallback
+            // const link = document.createElement("a");
+            // link.href = URL.createObjectURL(blob);
+            // link.download = `${baseName}.stl`;
+            // link.click();
+            // URL.revokeObjectURL(link.href);
+          }
+        }
+      }
+    } 
+
+    cleanupExportedModel(modelGroupClone);
+
+
+    if (success) {
+      toast.success(`${baseName}.${format} has been sent to print successfully`, {
+        duration: 3000,
+      });
+    } else {
+      toast.error(`Failed to send model to print`);
     }
   } catch (error) {
     console.error("Export error:", error);
