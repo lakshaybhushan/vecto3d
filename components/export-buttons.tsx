@@ -111,7 +111,7 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
           <Printer className="h-4 w-4 mr-0.5" />
         )}
         <span className="hidden sm:inline">
-          {isPrinting ? 'Processing...' : '3D Print It'}
+          {isPrinting ? "Processing..." : "3D Print"}
         </span>
       </Button>
     </div>
