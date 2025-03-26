@@ -24,9 +24,14 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
 
   useEffect(() => {
     const checkLocation = async () => {
-      const isUSLocation = await checkIsUSLocation();
-      console.log("isUSLocation", isUSLocation);
-      setIsUS(isUSLocation);
+      try {
+        const isUSLocation = await checkIsUSLocation();
+        console.log("Location check result:", isUSLocation);
+        setIsUS(isUSLocation);
+      } catch (error) {
+        console.error("Error in location check:", error);
+        setIsUS(false);
+      }
     };
     checkLocation();
   }, []);
@@ -46,7 +51,7 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
         <DropdownMenuTrigger asChild>
           <Button
             size="sm"
-            variant="outline"
+            variant="default"
             className="flex items-center gap-1">
             <Camera className="h-4 w-4 mr-0.5" />
             <span className="hidden sm:inline">Export Image</span>
@@ -74,13 +79,16 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="sm" className="flex items-center gap-1">
+          <Button
+            size="sm"
+            variant="default"
+            className="flex items-center gap-1">
             <Box className="h-4 w-4" />
             <span className="hidden sm:inline">Export 3D</span>
             <ChevronDown className="h-4 w-4 ml-1" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-44">
+        <DropdownMenuContent align="end" className="w-44" side="bottom">
           <DropdownMenuItem
             onSelect={() => handleExport("stl", modelGroupRef, fileName)}>
             <File className="h-4 w-4 mr-0.5" />
@@ -98,22 +106,24 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <Button 
-        size="sm" 
-        variant="outline"
-        className={`flex items-center gap-1 transition-opacity duration-200 ${isUS === null ? 'opacity-0' : isUS ? 'opacity-100' : 'hidden'}`}
-        onClick={handlePrintClick}
-        disabled={isPrinting}
-      >
-        {isPrinting ? (
-          <Loader2 className="h-4 w-4 mr-0.5 animate-spin" />
-        ) : (
-          <Printer className="h-4 w-4 mr-0.5" />
-        )}
-        <span className="hidden sm:inline">
-          {isPrinting ? "Processing..." : "3D Print"}
-        </span>
-      </Button>
+
+      {isUS === true && (
+        <Button
+          size="sm"
+          variant="outline"
+          className="flex items-center gap-1"
+          onClick={handlePrintClick}
+          disabled={isPrinting}>
+          {isPrinting ? (
+            <Loader2 className="h-4 w-4 mr-0.5 animate-spin" />
+          ) : (
+            <Printer className="h-4 w-4 mr-0.5" />
+          )}
+          <span className="hidden sm:inline">
+            {isPrinting ? "Processing..." : "3D Print"}
+          </span>
+        </Button>
+      )}
     </div>
   );
 }
