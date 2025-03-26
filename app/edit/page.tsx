@@ -58,6 +58,7 @@ import {
 
 import { useDebounce } from "@/hooks/use-debounce";
 import { useMobileDetection } from "@/hooks/use-mobile-detection";
+import { NotAScam } from "@/components/not-a-scam";
 
 function useThemeBackgroundColor() {
   const { theme, resolvedTheme } = useTheme();
@@ -670,8 +671,8 @@ export default function EditPage() {
               <span className="hidden sm:inline">Back</span>
             </Button>
           </div>
-
           <div className="flex items-center gap-2">
+            <NotAScam />
             <ModeToggle />
             {svgData && (
               <ExportButtons
@@ -762,7 +763,7 @@ export default function EditPage() {
                           side="left"
                           align="center"
                           sideOffset={10}
-                          className="text-xs py-1.5 px-3 z-[99999] shadow-md">
+                          className="text-xs py-2 px-4 z-[99999] shadow-md">
                           Performance may be affected
                         </TooltipContent>
                       </Tooltip>
@@ -807,7 +808,7 @@ export default function EditPage() {
                               side="left"
                               align="center"
                               sideOffset={10}
-                              className="text-xs py-1.5 px-3 z-[99999] shadow-md">
+                              className="text-xs py-2 px-4 z-[99999] shadow-md">
                               Exit fullscreen
                             </TooltipContent>
                           </Tooltip>

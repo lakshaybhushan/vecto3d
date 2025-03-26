@@ -41,7 +41,7 @@ I've used multiple tools to make this app, specially [V0.dev](https://v0.dev) fo
 
 ## License & Contributing
 
-Use it as you want, but please give me credits by tagging me on [X (Twitter)](https://x.com/blakssh) or [LinkedIn](https://www.linkedin.com/in/lakshaybhushan/). This project is proudly open source and you can contribute to it by forking the repository and making a pull request.
+This project uses the MIT license. See the [LICENSE](LICENSE) file for details. For contributing, please read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
 ## Support
 

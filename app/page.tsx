@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { AnimatedNumber } from "@/components/ui/animated-numbers";
 import { V0Icon } from "@/components/ui/example-icons";
+import { NotAScam } from "@/components/not-a-scam";
 
 export default function Home() {
   const [svgData, setSvgData] = useState<string | null>(null);
@@ -159,12 +160,12 @@ export default function Home() {
           <Logo className="h-8 w-8 text-primary" />
           <span className="text-xl font-semibold">Vecto3d</span>
         </motion.div>
-
         <motion.div
           className="flex items-center space-x-3"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}>
+          <NotAScam />
           <ModeToggle />
           <Link
             href="https://github.com/lakshaybhushan/vecto3d"
