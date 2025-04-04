@@ -3,11 +3,26 @@ import { STLExporter } from "three/examples/jsm/exporters/STLExporter.js";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import { toast } from "sonner";
 
-export function prepareModelForExport(model: THREE.Object3D): THREE.Object3D {
+export function prepareModelForExport(
+  model: THREE.Object3D,
+  format?: "stl" | "gltf" | "glb"
+): THREE.Object3D {
   const clonedModel = model.clone();
-  clonedModel.position.set(0, 0, 0);
-  clonedModel.rotation.set(0, 0, 0);
-  clonedModel.scale.set(1, 1, 1);
+
+  clonedModel.matrixWorld.copy(model.matrixWorld);
+  clonedModel.matrix.copy(model.matrix);
+
+  if (format === "stl") {
+    clonedModel.position.set(0, 0, 0);
+    clonedModel.rotation.set(0, 0, 0);
+    clonedModel.scale.set(1, 1, 1);
+
+    clonedModel.rotation.x = THREE.MathUtils.degToRad(90);
+    clonedModel.rotation.y = THREE.MathUtils.degToRad(0);
+    clonedModel.rotation.z = THREE.MathUtils.degToRad(0);
+  }
+
+  clonedModel.updateMatrix();
   clonedModel.updateMatrixWorld(true);
 
   const cleanMaterials = new Map<string, THREE.Material>();
@@ -15,49 +30,115 @@ export function prepareModelForExport(model: THREE.Object3D): THREE.Object3D {
   clonedModel.traverse((object) => {
     if (object instanceof THREE.Mesh) {
       const mesh = object as THREE.Mesh;
-
-      const material = mesh.material as THREE.Material;
+      const originalMaterial = mesh.material as THREE.MeshPhysicalMaterial;
 
       const isHole = Boolean(
-        material.userData?.isHole ||
+        originalMaterial.userData?.isHole ||
           mesh.userData?.isHole ||
           mesh.renderOrder > 0 ||
-          (material as THREE.MeshPhysicalMaterial)?.polygonOffsetFactor < 0,
+          originalMaterial?.polygonOffsetFactor < 0
       );
 
-      const materialKey = isHole ? "hole" : material.uuid;
+      const materialKey = isHole
+        ? "hole"
+        : format === "gltf" || format === "glb"
+        ? `${originalMaterial.uuid}_${originalMaterial.color.getHexString()}_${
+            originalMaterial.roughness
+          }_${originalMaterial.metalness}`
+        : originalMaterial.uuid;
 
       if (!cleanMaterials.has(materialKey)) {
-        const cleanMaterial = new THREE.MeshStandardMaterial({
-          color: isHole
-            ? 0x000000
-            : (material as THREE.MeshPhysicalMaterial).color,
-          roughness: (material as THREE.MeshPhysicalMaterial).roughness || 0.3,
-          metalness: (material as THREE.MeshPhysicalMaterial).metalness || 0.5,
-          side: THREE.FrontSide,
-
-          transparent: isHole,
-          opacity: isHole ? 0.5 : 1,
+        const cleanMaterial = new THREE.MeshPhysicalMaterial({
+          color: originalMaterial.color,
+          roughness: originalMaterial.roughness,
+          metalness: originalMaterial.metalness,
+          clearcoat: originalMaterial.clearcoat,
+          clearcoatRoughness: originalMaterial.clearcoatRoughness,
+          transmission: originalMaterial.transmission,
+          transparent: isHole || originalMaterial.transparent,
+          opacity: isHole ? 0.5 : originalMaterial.opacity,
+          side: originalMaterial.side,
+          envMapIntensity: originalMaterial.envMapIntensity,
           depthWrite: !isHole,
           polygonOffset: true,
           polygonOffsetFactor: isHole ? -2 : 1,
           polygonOffsetUnits: 1,
         });
 
-        cleanMaterial.userData.isHole = isHole;
+        if (format === "gltf" || format === "glb") {
+          if (originalMaterial.map)
+            cleanMaterial.map = originalMaterial.map.clone();
+          if (originalMaterial.normalMap)
+            cleanMaterial.normalMap = originalMaterial.normalMap.clone();
+          if (originalMaterial.roughnessMap)
+            cleanMaterial.roughnessMap = originalMaterial.roughnessMap.clone();
+          if (originalMaterial.metalnessMap)
+            cleanMaterial.metalnessMap = originalMaterial.metalnessMap.clone();
+          if (originalMaterial.aoMap)
+            cleanMaterial.aoMap = originalMaterial.aoMap.clone();
+          if (originalMaterial.emissiveMap)
+            cleanMaterial.emissiveMap = originalMaterial.emissiveMap.clone();
+          if (originalMaterial.bumpMap)
+            cleanMaterial.bumpMap = originalMaterial.bumpMap.clone();
+          if (originalMaterial.displacementMap)
+            cleanMaterial.displacementMap =
+              originalMaterial.displacementMap.clone();
+          if (originalMaterial.alphaMap)
+            cleanMaterial.alphaMap = originalMaterial.alphaMap.clone();
+          if (originalMaterial.lightMap)
+            cleanMaterial.lightMap = originalMaterial.lightMap.clone();
+          if (originalMaterial.envMap)
+            cleanMaterial.envMap = originalMaterial.envMap.clone();
+
+          cleanMaterial.color.copy(originalMaterial.color);
+          if (originalMaterial.emissive)
+            cleanMaterial.emissive.copy(originalMaterial.emissive);
+
+          cleanMaterial.ior = originalMaterial.ior;
+          cleanMaterial.sheen = originalMaterial.sheen;
+          cleanMaterial.sheenRoughness = originalMaterial.sheenRoughness;
+          if (originalMaterial.sheenColor)
+            cleanMaterial.sheenColor = originalMaterial.sheenColor;
+          cleanMaterial.clearcoatNormalScale =
+            originalMaterial.clearcoatNormalScale;
+
+          cleanMaterial.attenuationDistance =
+            originalMaterial.attenuationDistance;
+          if (originalMaterial.attenuationColor)
+            cleanMaterial.attenuationColor = originalMaterial.attenuationColor;
+
+          cleanMaterial.needsUpdate = true;
+        }
+
+        cleanMaterial.userData = {
+          ...originalMaterial.userData,
+          originalProperties:
+            format === "gltf" || format === "glb"
+              ? {
+                  color: originalMaterial.color.getHex(),
+                  roughness: originalMaterial.roughness,
+                  metalness: originalMaterial.metalness,
+                  clearcoat: originalMaterial.clearcoat,
+                  clearcoatRoughness: originalMaterial.clearcoatRoughness,
+                  transmission: originalMaterial.transmission,
+                  opacity: originalMaterial.opacity,
+                  ior: originalMaterial.ior,
+                  sheen: originalMaterial.sheen,
+                  sheenRoughness: originalMaterial.sheenRoughness,
+                }
+              : undefined,
+        };
+
         cleanMaterials.set(materialKey, cleanMaterial);
       }
 
       mesh.material = cleanMaterials.get(materialKey)!;
-
-      mesh.userData.isHole = isHole;
+      mesh.userData = { ...mesh.userData, ...originalMaterial.userData };
 
       if (isHole) {
         const zOffset = 0.05;
-
         const scaleUp = 1.01;
         mesh.scale.set(scaleUp, scaleUp, scaleUp + zOffset);
-
         mesh.updateMatrix();
       }
     }
@@ -86,10 +167,10 @@ export function cleanupExportedModel(model: THREE.Object3D): void {
 
 export async function exportToSTL(
   model: THREE.Object3D,
-  fileName: string,
+  fileName: string
 ): Promise<boolean> {
   try {
-    const exportModel = prepareModelForExport(model);
+    const exportModel = prepareModelForExport(model, "stl");
 
     const exporter = new STLExporter();
     const result = exporter.parse(exportModel, {
@@ -113,7 +194,7 @@ export async function exportToSTL(
 
 export async function prepareSTL(model: THREE.Object3D): Promise<Blob | null> {
   try {
-    const exportModel = prepareModelForExport(model);
+    const exportModel = prepareModelForExport(model, "stl");
 
     const exporter = new STLExporter();
     const result = exporter.parse(exportModel, {
@@ -133,16 +214,62 @@ export async function prepareSTL(model: THREE.Object3D): Promise<Blob | null> {
 export async function exportToGLTF(
   model: THREE.Object3D,
   fileName: string,
-  format: "gltf" | "glb" = "glb",
+  format: "gltf" | "glb" = "glb"
 ): Promise<boolean> {
   try {
-    const exportModel = prepareModelForExport(model);
+    const exportModel = prepareModelForExport(model, format);
+
+    exportModel.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        const mesh = object as THREE.Mesh;
+        if (mesh.material) {
+          const materials = Array.isArray(mesh.material)
+            ? mesh.material
+            : [mesh.material];
+
+          materials.forEach((material) => {
+            if (material.userData?.originalProperties) {
+              const props = material.userData.originalProperties;
+              const physMaterial = material as THREE.MeshPhysicalMaterial;
+
+              if (props.color !== undefined)
+                physMaterial.color.setHex(props.color);
+              if (props.roughness !== undefined)
+                physMaterial.roughness = props.roughness;
+              if (props.metalness !== undefined)
+                physMaterial.metalness = props.metalness;
+              if (props.clearcoat !== undefined)
+                physMaterial.clearcoat = props.clearcoat;
+              if (props.clearcoatRoughness !== undefined)
+                physMaterial.clearcoatRoughness = props.clearcoatRoughness;
+              if (props.transmission !== undefined)
+                physMaterial.transmission = props.transmission;
+              if (props.opacity !== undefined)
+                physMaterial.opacity = props.opacity;
+              if (props.ior !== undefined) physMaterial.ior = props.ior;
+              if (props.sheen !== undefined) physMaterial.sheen = props.sheen;
+              if (props.sheenRoughness !== undefined)
+                physMaterial.sheenRoughness = props.sheenRoughness;
+
+              physMaterial.needsUpdate = true;
+            }
+          });
+        }
+      }
+    });
 
     const exporter = new GLTFExporter();
     const options = {
       binary: format === "glb",
       trs: true,
       onlyVisible: true,
+
+      embedImages: true,
+      includeCustomExtensions: true,
+      animations: [],
+      processPendingMaterials: (materials: Map<any, any>, gltfObj: any) => {
+        return materials;
+      },
     };
 
     const gltfData = await new Promise<ArrayBuffer | object>((resolve) => {
@@ -153,7 +280,7 @@ export async function exportToGLTF(
           console.error("GLTFExporter error:", error);
           throw error;
         },
-        options,
+        options
       );
     });
 
@@ -184,7 +311,7 @@ export async function exportToGLTF(
 export async function exportToPNG(
   modelGroupRef: React.RefObject<THREE.Group | null>,
   fileName: string,
-  resolution: number = 1,
+  resolution: number = 1
 ): Promise<boolean> {
   const canvas = document.querySelector("canvas");
   if (!canvas) {
@@ -239,7 +366,7 @@ export async function handleExport(
   format: "stl" | "gltf" | "glb" | "png",
   modelGroupRef: React.RefObject<THREE.Group | null>,
   fileName: string,
-  resolution: number = 1,
+  resolution: number = 1
 ): Promise<void> {
   const baseName = fileName.replace(".svg", "");
 
@@ -255,8 +382,8 @@ export async function handleExport(
     if (format === "png") {
       success = await exportToPNG(modelGroupRef, baseName, resolution);
     } else {
+      // Clone the model while preserving its current state
       const modelGroupClone = modelGroupRef.current.clone();
-      modelGroupClone.rotation.y = 0;
       modelGroupClone.updateMatrixWorld(true);
 
       if (format === "stl") {
@@ -265,7 +392,7 @@ export async function handleExport(
         success = await exportToGLTF(
           modelGroupClone,
           `${baseName}.${format}`,
-          format,
+          format
         );
       }
 
@@ -282,7 +409,7 @@ export async function handleExport(
   } catch (error) {
     console.error("Export error:", error);
     toast.error(
-      `Export failed: ${(error as Error).message || "Unknown error"}`,
+      `Export failed: ${(error as Error).message || "Unknown error"}`
     );
   }
 }
@@ -292,7 +419,7 @@ export async function handlePrint(
   modelGroupRef: React.RefObject<THREE.Group | null>,
   fileName: string,
   resolution: number = 1,
-  printService: "m3d" | "bambu",
+  printService: "m3d" | "bambu"
 ): Promise<void> {
   const baseName = fileName.replace(".svg", "");
 
@@ -305,8 +432,13 @@ export async function handlePrint(
   try {
     let success = false;
 
+    // Clone the model while preserving its current state
     const modelGroupClone = modelGroupRef.current.clone();
-    modelGroupClone.rotation.y = 0;
+
+    // Preserve the complete world transform
+    modelGroupClone.matrixWorld.copy(modelGroupRef.current.matrixWorld);
+    modelGroupClone.matrix.copy(modelGroupRef.current.matrix);
+    modelGroupClone.updateMatrix();
     modelGroupClone.updateMatrixWorld(true);
 
     if (format === "stl") {
@@ -358,7 +490,7 @@ export async function handlePrint(
                   "Content-Type": "application/octet-stream",
                   "X-File-Name": `${baseName}.stl`,
                 },
-              },
+              }
             );
 
             const data = await response.json();
@@ -368,7 +500,7 @@ export async function handlePrint(
             if (data.url) {
               // Open in Bambu Studio using the public URL
               const bambuUrl = `bambustudioopen://open?file=${encodeURIComponent(
-                data.url,
+                data.url
               )}`;
               console.log(bambuUrl);
               window.location.href = bambuUrl; // -> this opens the file in bambu studio
@@ -377,12 +509,6 @@ export async function handlePrint(
             }
           } catch (error) {
             console.error("Failed to process file for Bambu Studio:", error);
-            // // Direct download as fallback
-            // const link = document.createElement("a");
-            // link.href = URL.createObjectURL(blob);
-            // link.download = `${baseName}.stl`;
-            // link.click();
-            // URL.revokeObjectURL(link.href);
           }
         }
       }
@@ -395,7 +521,7 @@ export async function handlePrint(
         `${baseName}.${format} has been sent to print successfully`,
         {
           duration: 3000,
-        },
+        }
       );
     } else {
       toast.error(`Failed to send model to print`);
@@ -403,7 +529,7 @@ export async function handlePrint(
   } catch (error) {
     console.error("Export error:", error);
     toast.error(
-      `Export failed: ${(error as Error).message || "Unknown error"}`,
+      `Export failed: ${(error as Error).message || "Unknown error"}`
     );
   }
 }
