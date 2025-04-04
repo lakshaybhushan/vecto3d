@@ -25,6 +25,141 @@ export function prepareModelForExport(
   clonedModel.updateMatrix();
   clonedModel.updateMatrixWorld(true);
 
+  if (format === "gltf" || format === "glb") {
+    const meshes: THREE.Mesh[] = [];
+    clonedModel.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        meshes.push(object as THREE.Mesh);
+      }
+    });
+
+    meshes.forEach((mesh) => {
+      if (Array.isArray(mesh.material)) {
+        mesh.material = mesh.material.map((mat) => {
+          const physMat = mat as THREE.MeshPhysicalMaterial;
+
+          const isHole = Boolean(
+            physMat.userData?.isHole ||
+              mesh.userData?.isHole ||
+              mesh.renderOrder > 0 ||
+              physMat.polygonOffsetFactor < 0
+          );
+
+          const newMat = physMat.clone();
+
+          newMat.color = physMat.color.clone();
+          newMat.roughness = physMat.roughness;
+          newMat.metalness = physMat.metalness;
+          newMat.clearcoat = physMat.clearcoat;
+          newMat.clearcoatRoughness = physMat.clearcoatRoughness;
+          newMat.transmission = physMat.transmission;
+          newMat.ior = physMat.ior;
+          newMat.sheen = physMat.sheen;
+          newMat.sheenRoughness = physMat.sheenRoughness;
+
+          if (physMat.sheenColor)
+            newMat.sheenColor = physMat.sheenColor.clone();
+          if (physMat.emissive) newMat.emissive = physMat.emissive.clone();
+          if (physMat.attenuationColor)
+            newMat.attenuationColor = physMat.attenuationColor.clone();
+
+          newMat.userData = {
+            ...physMat.userData,
+            originalProperties: {
+              color: physMat.color.getHex(),
+              roughness: physMat.roughness,
+              metalness: physMat.metalness,
+              clearcoat: physMat.clearcoat,
+              clearcoatRoughness: physMat.clearcoatRoughness,
+              transmission: physMat.transmission,
+              ior: physMat.ior,
+              opacity: physMat.opacity,
+              sheen: physMat.sheen,
+              sheenRoughness: physMat.sheenRoughness,
+            },
+            isHole: isHole,
+          };
+
+          if (isHole) {
+            newMat.transparent = true;
+            newMat.opacity = 0.5;
+            newMat.depthWrite = false;
+            newMat.polygonOffset = true;
+            newMat.polygonOffsetFactor = -2;
+            newMat.polygonOffsetUnits = 1;
+          }
+
+          newMat.needsUpdate = true;
+          return newMat;
+        });
+      } else if (mesh.material) {
+        const physMat = mesh.material as THREE.MeshPhysicalMaterial;
+
+        const isHole = Boolean(
+          physMat.userData?.isHole ||
+            mesh.userData?.isHole ||
+            mesh.renderOrder > 0 ||
+            physMat.polygonOffsetFactor < 0
+        );
+
+        const newMat = physMat.clone();
+
+        newMat.color = physMat.color.clone();
+        newMat.roughness = physMat.roughness;
+        newMat.metalness = physMat.metalness;
+        newMat.clearcoat = physMat.clearcoat;
+        newMat.clearcoatRoughness = physMat.clearcoatRoughness;
+        newMat.transmission = physMat.transmission;
+        newMat.ior = physMat.ior;
+        newMat.sheen = physMat.sheen;
+        newMat.sheenRoughness = physMat.sheenRoughness;
+
+        if (physMat.sheenColor) newMat.sheenColor = physMat.sheenColor.clone();
+        if (physMat.emissive) newMat.emissive = physMat.emissive.clone();
+        if (physMat.attenuationColor)
+          newMat.attenuationColor = physMat.attenuationColor.clone();
+
+        newMat.userData = {
+          ...physMat.userData,
+          originalProperties: {
+            color: physMat.color.getHex(),
+            roughness: physMat.roughness,
+            metalness: physMat.metalness,
+            clearcoat: physMat.clearcoat,
+            clearcoatRoughness: physMat.clearcoatRoughness,
+            transmission: physMat.transmission,
+            ior: physMat.ior,
+            opacity: physMat.opacity,
+            sheen: physMat.sheen,
+            sheenRoughness: physMat.sheenRoughness,
+          },
+          isHole: isHole,
+        };
+
+        if (isHole) {
+          newMat.transparent = true;
+          newMat.opacity = 0.5;
+          newMat.depthWrite = false;
+          newMat.polygonOffset = true;
+          newMat.polygonOffsetFactor = -2;
+          newMat.polygonOffsetUnits = 1;
+        }
+
+        newMat.needsUpdate = true;
+        mesh.material = newMat;
+
+        if (isHole) {
+          const zOffset = 0.05;
+          const scaleUp = 1.01;
+          mesh.scale.set(scaleUp, scaleUp, scaleUp + zOffset);
+          mesh.updateMatrix();
+        }
+      }
+    });
+
+    return clonedModel;
+  }
+
   const cleanMaterials = new Map<string, THREE.Material>();
 
   clonedModel.traverse((object) => {
@@ -39,13 +174,7 @@ export function prepareModelForExport(
           originalMaterial?.polygonOffsetFactor < 0
       );
 
-      const materialKey = isHole
-        ? "hole"
-        : format === "gltf" || format === "glb"
-        ? `${originalMaterial.uuid}_${originalMaterial.color.getHexString()}_${
-            originalMaterial.roughness
-          }_${originalMaterial.metalness}`
-        : originalMaterial.uuid;
+      const materialKey = isHole ? "hole" : originalMaterial.uuid;
 
       if (!cleanMaterials.has(materialKey)) {
         const cleanMaterial = new THREE.MeshPhysicalMaterial({
@@ -65,68 +194,8 @@ export function prepareModelForExport(
           polygonOffsetUnits: 1,
         });
 
-        if (format === "gltf" || format === "glb") {
-          if (originalMaterial.map)
-            cleanMaterial.map = originalMaterial.map.clone();
-          if (originalMaterial.normalMap)
-            cleanMaterial.normalMap = originalMaterial.normalMap.clone();
-          if (originalMaterial.roughnessMap)
-            cleanMaterial.roughnessMap = originalMaterial.roughnessMap.clone();
-          if (originalMaterial.metalnessMap)
-            cleanMaterial.metalnessMap = originalMaterial.metalnessMap.clone();
-          if (originalMaterial.aoMap)
-            cleanMaterial.aoMap = originalMaterial.aoMap.clone();
-          if (originalMaterial.emissiveMap)
-            cleanMaterial.emissiveMap = originalMaterial.emissiveMap.clone();
-          if (originalMaterial.bumpMap)
-            cleanMaterial.bumpMap = originalMaterial.bumpMap.clone();
-          if (originalMaterial.displacementMap)
-            cleanMaterial.displacementMap =
-              originalMaterial.displacementMap.clone();
-          if (originalMaterial.alphaMap)
-            cleanMaterial.alphaMap = originalMaterial.alphaMap.clone();
-          if (originalMaterial.lightMap)
-            cleanMaterial.lightMap = originalMaterial.lightMap.clone();
-          if (originalMaterial.envMap)
-            cleanMaterial.envMap = originalMaterial.envMap.clone();
-
-          cleanMaterial.color.copy(originalMaterial.color);
-          if (originalMaterial.emissive)
-            cleanMaterial.emissive.copy(originalMaterial.emissive);
-
-          cleanMaterial.ior = originalMaterial.ior;
-          cleanMaterial.sheen = originalMaterial.sheen;
-          cleanMaterial.sheenRoughness = originalMaterial.sheenRoughness;
-          if (originalMaterial.sheenColor)
-            cleanMaterial.sheenColor = originalMaterial.sheenColor;
-          cleanMaterial.clearcoatNormalScale =
-            originalMaterial.clearcoatNormalScale;
-
-          cleanMaterial.attenuationDistance =
-            originalMaterial.attenuationDistance;
-          if (originalMaterial.attenuationColor)
-            cleanMaterial.attenuationColor = originalMaterial.attenuationColor;
-
-          cleanMaterial.needsUpdate = true;
-        }
-
         cleanMaterial.userData = {
           ...originalMaterial.userData,
-          originalProperties:
-            format === "gltf" || format === "glb"
-              ? {
-                  color: originalMaterial.color.getHex(),
-                  roughness: originalMaterial.roughness,
-                  metalness: originalMaterial.metalness,
-                  clearcoat: originalMaterial.clearcoat,
-                  clearcoatRoughness: originalMaterial.clearcoatRoughness,
-                  transmission: originalMaterial.transmission,
-                  opacity: originalMaterial.opacity,
-                  ior: originalMaterial.ior,
-                  sheen: originalMaterial.sheen,
-                  sheenRoughness: originalMaterial.sheenRoughness,
-                }
-              : undefined,
         };
 
         cleanMaterials.set(materialKey, cleanMaterial);
@@ -219,19 +288,20 @@ export async function exportToGLTF(
   try {
     const exportModel = prepareModelForExport(model, format);
 
+    // Before exporting, ensure all materials have correct properties from userData
     exportModel.traverse((object) => {
       if (object instanceof THREE.Mesh) {
         const mesh = object as THREE.Mesh;
-        if (mesh.material) {
-          const materials = Array.isArray(mesh.material)
-            ? mesh.material
-            : [mesh.material];
 
-          materials.forEach((material) => {
+        // Handle array materials
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach((material) => {
+            // If we stored original properties in userData, apply them now
             if (material.userData?.originalProperties) {
-              const props = material.userData.originalProperties;
               const physMaterial = material as THREE.MeshPhysicalMaterial;
+              const props = material.userData.originalProperties;
 
+              // Apply all stored properties
               if (props.color !== undefined)
                 physMaterial.color.setHex(props.color);
               if (props.roughness !== undefined)
@@ -244,9 +314,9 @@ export async function exportToGLTF(
                 physMaterial.clearcoatRoughness = props.clearcoatRoughness;
               if (props.transmission !== undefined)
                 physMaterial.transmission = props.transmission;
+              if (props.ior !== undefined) physMaterial.ior = props.ior;
               if (props.opacity !== undefined)
                 physMaterial.opacity = props.opacity;
-              if (props.ior !== undefined) physMaterial.ior = props.ior;
               if (props.sheen !== undefined) physMaterial.sheen = props.sheen;
               if (props.sheenRoughness !== undefined)
                 physMaterial.sheenRoughness = props.sheenRoughness;
@@ -254,6 +324,31 @@ export async function exportToGLTF(
               physMaterial.needsUpdate = true;
             }
           });
+        }
+        // Handle single material
+        else if (mesh.material && mesh.material.userData?.originalProperties) {
+          const physMaterial = mesh.material as THREE.MeshPhysicalMaterial;
+          const props = mesh.material.userData.originalProperties;
+
+          // Apply all stored properties
+          if (props.color !== undefined) physMaterial.color.setHex(props.color);
+          if (props.roughness !== undefined)
+            physMaterial.roughness = props.roughness;
+          if (props.metalness !== undefined)
+            physMaterial.metalness = props.metalness;
+          if (props.clearcoat !== undefined)
+            physMaterial.clearcoat = props.clearcoat;
+          if (props.clearcoatRoughness !== undefined)
+            physMaterial.clearcoatRoughness = props.clearcoatRoughness;
+          if (props.transmission !== undefined)
+            physMaterial.transmission = props.transmission;
+          if (props.ior !== undefined) physMaterial.ior = props.ior;
+          if (props.opacity !== undefined) physMaterial.opacity = props.opacity;
+          if (props.sheen !== undefined) physMaterial.sheen = props.sheen;
+          if (props.sheenRoughness !== undefined)
+            physMaterial.sheenRoughness = props.sheenRoughness;
+
+          physMaterial.needsUpdate = true;
         }
       }
     });
@@ -263,10 +358,11 @@ export async function exportToGLTF(
       binary: format === "glb",
       trs: true,
       onlyVisible: true,
-
       embedImages: true,
       includeCustomExtensions: true,
       animations: [],
+      //Ensuring multiple materials are processed as individual materials to preserve colors
+      forceIndices: true,
       processPendingMaterials: (materials: Map<any, any>, gltfObj: any) => {
         return materials;
       },
