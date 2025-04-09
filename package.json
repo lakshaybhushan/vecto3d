@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "if [ \"$NODE_ENV\" != \"production\" ]; then bunx prettier --write .; fi && next build",
-    "start": "next start"
+    "start": "next start",
+    "pages:build": "pnpm dlx @cloudflare/next-on-pages",
+    "preview": "pnpm run pages:build && pnpm dlx wrangler pages dev",
+    "deploy": "pnpm run pages:build && pnpm dlx wrangler pages deploy"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.6",
@@ -42,6 +45,7 @@
     "three": "^0.174.0"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.12",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
