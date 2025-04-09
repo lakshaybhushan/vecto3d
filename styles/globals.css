@@ -101,3 +101,9 @@
     background-attachment: fixed;
   }
 }
+
+
+::selection{
+  background-color: #0400ff;
+  color: #ededff;
+}
