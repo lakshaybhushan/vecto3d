@@ -11,7 +11,7 @@ import { RainbowButton } from "@/components/ui/rainbow-button";
 import { ModeToggle } from "@/components/ui/theme-toggle";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaGithub } from "react-icons/fa";
-import { IoLogoVercel } from "react-icons/io5";
+import { FaCloudflare } from "react-icons/fa6";
 import { ArrowRight, Loader2, Star } from "lucide-react";
 import {
   staggerContainer,
@@ -375,12 +375,12 @@ export default function Home() {
           <motion.div className="flex items-center gap-1" variants={fadeUp}>
             Hosted on{" "}
             <Link
-              href="https://vercel.com"
-              className="font-medium text-primary hover:underline flex items-center gap-0.5 transition-colors duration-200"
+              href="https://cloudflare.com"
+              className="font-medium text-primary hover:underline flex items-center gap-1 transition-colors duration-200"
               target="_blank"
               rel="noopener noreferrer">
-              <IoLogoVercel size={14} />
-              <span className="hidden sm:inline">Vercel</span>
+              <FaCloudflare size={18} />
+              <span className="hidden sm:inline">Cloudflare</span>
             </Link>
           </motion.div>
           <motion.div
