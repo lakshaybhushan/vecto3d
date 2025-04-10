@@ -86,11 +86,24 @@
   }
 }
 
+
+
+
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+    background-image: url("../public/noise.png");
+    background-repeat: repeat;
+    background-position: 0 0;
+    background-attachment: fixed;
   }
+}
+
+
+::selection{
+  background-color: #0400ff;
+  color: #ededff;
 }
