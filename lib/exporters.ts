@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 export function prepareModelForExport(
   model: THREE.Object3D,
-  format?: "stl" | "gltf" | "glb"
+  format?: "stl" | "gltf" | "glb",
 ): THREE.Object3D {
   const clonedModel = model.clone();
 
@@ -42,7 +42,7 @@ export function prepareModelForExport(
             physMat.userData?.isHole ||
               mesh.userData?.isHole ||
               mesh.renderOrder > 0 ||
-              physMat.polygonOffsetFactor < 0
+              physMat.polygonOffsetFactor < 0,
           );
 
           const newMat = physMat.clone();
@@ -99,7 +99,7 @@ export function prepareModelForExport(
           physMat.userData?.isHole ||
             mesh.userData?.isHole ||
             mesh.renderOrder > 0 ||
-            physMat.polygonOffsetFactor < 0
+            physMat.polygonOffsetFactor < 0,
         );
 
         const newMat = physMat.clone();
@@ -171,7 +171,7 @@ export function prepareModelForExport(
         originalMaterial.userData?.isHole ||
           mesh.userData?.isHole ||
           mesh.renderOrder > 0 ||
-          originalMaterial?.polygonOffsetFactor < 0
+          originalMaterial?.polygonOffsetFactor < 0,
       );
 
       const materialKey = isHole ? "hole" : originalMaterial.uuid;
@@ -236,7 +236,7 @@ export function cleanupExportedModel(model: THREE.Object3D): void {
 
 export async function exportToSTL(
   model: THREE.Object3D,
-  fileName: string
+  fileName: string,
 ): Promise<boolean> {
   try {
     const exportModel = prepareModelForExport(model, "stl");
@@ -283,7 +283,7 @@ export async function prepareSTL(model: THREE.Object3D): Promise<Blob | null> {
 export async function exportToGLTF(
   model: THREE.Object3D,
   fileName: string,
-  format: "gltf" | "glb" = "glb"
+  format: "gltf" | "glb" = "glb",
 ): Promise<boolean> {
   try {
     const exportModel = prepareModelForExport(model, format);
@@ -376,7 +376,7 @@ export async function exportToGLTF(
           console.error("GLTFExporter error:", error);
           throw error;
         },
-        options
+        options,
       );
     });
 
@@ -407,7 +407,7 @@ export async function exportToGLTF(
 export async function exportToPNG(
   modelGroupRef: React.RefObject<THREE.Group | null>,
   fileName: string,
-  resolution: number = 1
+  resolution: number = 1,
 ): Promise<boolean> {
   const canvas = document.querySelector("canvas");
   if (!canvas) {
@@ -462,7 +462,7 @@ export async function handleExport(
   format: "stl" | "gltf" | "glb" | "png",
   modelGroupRef: React.RefObject<THREE.Group | null>,
   fileName: string,
-  resolution: number = 1
+  resolution: number = 1,
 ): Promise<void> {
   const baseName = fileName.replace(".svg", "");
 
@@ -488,7 +488,7 @@ export async function handleExport(
         success = await exportToGLTF(
           modelGroupClone,
           `${baseName}.${format}`,
-          format
+          format,
         );
       }
 
@@ -505,7 +505,7 @@ export async function handleExport(
   } catch (error) {
     console.error("Export error:", error);
     toast.error(
-      `Export failed: ${(error as Error).message || "Unknown error"}`
+      `Export failed: ${(error as Error).message || "Unknown error"}`,
     );
   }
 }
@@ -515,7 +515,7 @@ export async function handlePrint(
   modelGroupRef: React.RefObject<THREE.Group | null>,
   fileName: string,
   resolution: number = 1,
-  printService: "m3d" | "bambu"
+  printService: "m3d" | "bambu",
 ): Promise<void> {
   const baseName = fileName.replace(".svg", "");
 
@@ -586,7 +586,7 @@ export async function handlePrint(
                   "Content-Type": "application/octet-stream",
                   "X-File-Name": `${baseName}.stl`,
                 },
-              }
+              },
             );
 
             const data = await response.json();
@@ -596,7 +596,7 @@ export async function handlePrint(
             if (data.url) {
               // Open in Bambu Studio using the public URL
               const bambuUrl = `bambustudioopen://open?file=${encodeURIComponent(
-                data.url
+                data.url,
               )}`;
               console.log(bambuUrl);
               window.location.href = bambuUrl; // -> this opens the file in bambu studio
@@ -617,7 +617,7 @@ export async function handlePrint(
         `${baseName}.${format} has been sent to print successfully`,
         {
           duration: 3000,
-        }
+        },
       );
     } else {
       toast.error(`Failed to send model to print`);
@@ -625,7 +625,7 @@ export async function handlePrint(
   } catch (error) {
     console.error("Export error:", error);
     toast.error(
-      `Export failed: ${(error as Error).message || "Unknown error"}`
+      `Export failed: ${(error as Error).message || "Unknown error"}`,
     );
   }
 }

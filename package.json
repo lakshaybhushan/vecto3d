@@ -1,14 +1,11 @@
 {
   "name": "vecto3d",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "if [ \"$NODE_ENV\" != \"production\" ]; then bunx prettier --write .; fi && next build",
-    "start": "next start",
-    "pages:build": "pnpm dlx @cloudflare/next-on-pages",
-    "preview": "pnpm run pages:build && pnpm dlx wrangler pages dev",
-    "deploy": "pnpm run pages:build && pnpm dlx wrangler pages deploy"
+    "build": "if [ \"$NODE_ENV\" != \"production\" ]; then bunx prettier --write .; fi && next build --turbopack",
+    "start": "next start"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.6",
@@ -32,21 +29,19 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.5.0",
     "lucide-react": "^0.454.0",
-    "next": "^15.2.3",
+    "next": "^15.3.0",
     "next-intl": "^4.0.2",
     "next-themes": "^0.4.4",
     "postprocessing": "^6.37.1",
-    "react": "^19",
-    "react-dom": "^19",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "react-icons": "^5.5.0",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-    "three": "^0.174.0",
-    "wrangler": "^4.9.1"
+    "three": "^0.174.0"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.12",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",

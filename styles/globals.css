@@ -86,9 +86,6 @@
   }
 }
 
-
-
-
 @layer base {
   * {
     @apply border-border;
@@ -102,8 +99,7 @@
   }
 }
 
-
-::selection{
+::selection {
   background-color: #0400ff;
   color: #ededff;
 }

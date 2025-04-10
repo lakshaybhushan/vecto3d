@@ -7,7 +7,7 @@
 <img src ="https://img.shields.io/badge/v0-000000.svg?style=for-the-badge&logo=v0&logoColor=white">
 <img src ="https://img.shields.io/badge/shadcn/ui-000000.svg?style=for-the-badge&logo=shadcn/ui&logoColor=white">
 <img src ="https://img.shields.io/badge/TailwindCSS-000000.svg?style=for-the-badge&logo=TailwindCSS&logoColor=white">
-<img src ="https://img.shields.io/badge/Cloudflare-000000.svg?style=for-the-badge&logo=Cloudflare&logoColor=white">
+<img src ="https://img.shields.io/badge/Vercel-000000.svg?style=for-the-badge&logo=Vercel&logoColor=white">
 
 </p>
 
