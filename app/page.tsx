@@ -379,7 +379,7 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer">
               <VercelIcon size={14} />
-              <span className="hidden sm:inline">Cloudflare</span>
+              <span className="hidden sm:inline">Vercel</span>
             </Link>
           </motion.div>
           <motion.div
