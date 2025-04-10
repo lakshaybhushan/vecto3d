@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { FaGithub } from "react-icons/fa";
 import { Logo } from "@/components/ui/logo";
 import { FileUpload } from "@/components/file-upload";
 import { MobileWarning } from "@/components/mobile-warning";
@@ -10,8 +11,6 @@ import { useMobileDetection } from "@/hooks/use-mobile-detection";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { ModeToggle } from "@/components/ui/theme-toggle";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaGithub } from "react-icons/fa";
-import { FaCloudflare } from "react-icons/fa6";
 import { ArrowRight, Loader2, Star } from "lucide-react";
 import {
   staggerContainer,
@@ -20,7 +19,7 @@ import {
 } from "@/lib/animation-values";
 import { Button } from "@/components/ui/button";
 import { AnimatedNumber } from "@/components/ui/animated-numbers";
-import { V0Icon } from "@/components/ui/example-icons";
+import { V0Icon, VercelIcon } from "@/components/ui/example-icons";
 import { NotAScam } from "@/components/not-a-scam";
 
 export default function Home() {
@@ -375,11 +374,11 @@ export default function Home() {
           <motion.div className="flex items-center gap-1" variants={fadeUp}>
             Hosted on{" "}
             <Link
-              href="https://cloudflare.com"
-              className="font-medium text-primary hover:underline flex items-center gap-1 transition-colors duration-200"
+              href="https://vercel.com"
+              className="font-medium text-primary hover:underline flex items-center gap-0.5 transition-colors duration-200"
               target="_blank"
               rel="noopener noreferrer">
-              <FaCloudflare size={18} />
+              <VercelIcon size={14} />
               <span className="hidden sm:inline">Cloudflare</span>
             </Link>
           </motion.div>
