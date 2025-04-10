@@ -375,10 +375,10 @@ export default function Home() {
             Hosted on{" "}
             <Link
               href="https://vercel.com"
-              className="font-medium text-primary hover:underline flex items-center gap-1 transition-colors duration-200"
+              className="font-medium text-primary hover:underline flex items-center gap-0.5 transition-colors duration-200"
               target="_blank"
               rel="noopener noreferrer">
-              <VercelIcon size={18} />
+              <VercelIcon size={14} />
               <span className="hidden sm:inline">Vercel</span>
             </Link>
           </motion.div>
