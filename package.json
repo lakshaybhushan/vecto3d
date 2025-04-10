@@ -42,7 +42,8 @@
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-    "three": "^0.174.0"
+    "three": "^0.174.0",
+    "wrangler": "^4.9.1"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.12",
