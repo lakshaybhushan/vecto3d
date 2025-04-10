@@ -91,7 +91,7 @@ export default function Home() {
       .then((data) => {
         const starCount = data.stargazers_count;
         setStars(
-          starCount > 999 ? `${(starCount / 1000).toFixed(1)}k` : starCount,
+          starCount > 999 ? `${(starCount / 1000).toFixed(1)}k` : starCount
         );
       })
       .catch(() => setStars(0));
