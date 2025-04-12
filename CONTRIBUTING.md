@@ -10,24 +10,24 @@ If you want to contribute to the project, please open a pull request.
 
 ## Development
 
-This project uses `Bun` as the package manager.
+This project uses `pnpm` as the package manager.
 
 Install dependencies:
 
 ```bash
-bun install
+pnpm install
 ```
 
 Run the development server:
 
 ```bash
-bun dev
+pnpm dev
 ```
 
 Build the project:
 
 ```bash
-bun run build
+pnpm run build
 ```
 
 Thank you for checking out the vecto3d!

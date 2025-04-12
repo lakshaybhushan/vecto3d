@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { STLExporter } from "three/examples/jsm/exporters/STLExporter.js";
-import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
+import React from "react";
 import { toast } from "sonner";
+import { loadThreeModules } from "./three-imports";
 
 export function prepareModelForExport(
   model: THREE.Object3D,
@@ -240,8 +240,9 @@ export async function exportToSTL(
 ): Promise<boolean> {
   try {
     const exportModel = prepareModelForExport(model, "stl");
+    const modules = await loadThreeModules();
 
-    const exporter = new STLExporter();
+    const exporter = new modules.STLExporter();
     const result = exporter.parse(exportModel, {
       binary: true,
     });
@@ -264,8 +265,9 @@ export async function exportToSTL(
 export async function prepareSTL(model: THREE.Object3D): Promise<Blob | null> {
   try {
     const exportModel = prepareModelForExport(model, "stl");
+    const modules = await loadThreeModules();
 
-    const exporter = new STLExporter();
+    const exporter = new modules.STLExporter();
     const result = exporter.parse(exportModel, {
       binary: true,
     });
@@ -287,8 +289,8 @@ export async function exportToGLTF(
 ): Promise<boolean> {
   try {
     const exportModel = prepareModelForExport(model, format);
+    const modules = await loadThreeModules();
 
-    // Before exporting, ensure all materials have correct properties from userData
     exportModel.traverse((object) => {
       if (object instanceof THREE.Mesh) {
         const mesh = object as THREE.Mesh;
@@ -353,7 +355,7 @@ export async function exportToGLTF(
       }
     });
 
-    const exporter = new GLTFExporter();
+    const exporter = new modules.GLTFExporter();
     const options = {
       binary: format === "glb",
       trs: true,
@@ -371,8 +373,8 @@ export async function exportToGLTF(
     const gltfData = await new Promise<ArrayBuffer | object>((resolve) => {
       exporter.parse(
         exportModel,
-        (result) => resolve(result),
-        (error) => {
+        (result: ArrayBuffer | object) => resolve(result),
+        (error: Error) => {
           console.error("GLTFExporter error:", error);
           throw error;
         },
@@ -478,7 +480,6 @@ export async function handleExport(
     if (format === "png") {
       success = await exportToPNG(modelGroupRef, baseName, resolution);
     } else {
-      // Clone the model while preserving its current state
       const modelGroupClone = modelGroupRef.current.clone();
       modelGroupClone.updateMatrixWorld(true);
 
@@ -528,10 +529,8 @@ export async function handlePrint(
   try {
     let success = false;
 
-    // Clone the model while preserving its current state
     const modelGroupClone = modelGroupRef.current.clone();
 
-    // Preserve the complete world transform
     modelGroupClone.matrixWorld.copy(modelGroupRef.current.matrixWorld);
     modelGroupClone.matrix.copy(modelGroupRef.current.matrix);
     modelGroupClone.updateMatrix();
@@ -594,12 +593,11 @@ export async function handlePrint(
             console.log(data);
 
             if (data.url) {
-              // Open in Bambu Studio using the public URL
               const bambuUrl = `bambustudioopen://open?file=${encodeURIComponent(
                 data.url
               )}`;
               console.log(bambuUrl);
-              window.location.href = bambuUrl; // -> this opens the file in bambu studio
+              window.location.href = bambuUrl;
             } else {
               throw new Error("Failed to get public URL");
             }
