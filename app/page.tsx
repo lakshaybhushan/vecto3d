@@ -27,7 +27,7 @@ export default function Home() {
   const [fileName, setFileName] = useState<string>("");
   const [selectedIcon, setSelectedIcon] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [stars, setStars] = useState(101);
+  const [stars, setStars] = useState(1000);
   const router = useRouter();
   const { isMobile, continueOnMobile, handleContinueOnMobile } =
     useMobileDetection();
@@ -89,9 +89,7 @@ export default function Home() {
       .then((response) => response.json())
       .then((data) => {
         const starCount = data.stargazers_count;
-        setStars(
-          starCount > 999 ? `${(starCount / 1000).toFixed(1)}k` : starCount
-        );
+        setStars(starCount);
       })
       .catch(() => setStars(0));
   }, []);
@@ -173,13 +171,13 @@ export default function Home() {
             <Button className="flex items-center gap-1 w-fit">
               <Star size={16} />
               <AnimatedNumber
-                className="inline-flex"
+                className="inline-flex min-w-[1.5rem] justify-end"
                 springOptions={{
                   bounce: 0,
-                  duration: 1800,
+                  duration: 1200,
                 }}
                 value={stars}
-              />
+              />    
               <span className="hidden sm:inline">Stars on GitHub</span>
               <FaGithub size={16} className="ml-0.5" />
             </Button>
