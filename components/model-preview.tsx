@@ -1,19 +1,108 @@
-import React, { useRef, useEffect, useMemo } from "react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import {
-  EffectComposer,
-  Bloom,
-  BrightnessContrast,
-  SMAA,
-  ToneMapping,
-} from "@react-three/postprocessing";
-import { BlendFunction } from "postprocessing";
+import React, { useRef, useEffect, useMemo, useState, Suspense } from "react";
 import * as THREE from "three";
-import { SVGModel } from "./svg-model";
+import { Canvas } from "@react-three/fiber";
 import { ModelPreviewProps } from "@/lib/types";
-import { SimpleEnvironment } from "./environment-presets";
+import { loadThreeModules } from "@/lib/three-imports";
 
+const LazyEnvironment = React.lazy(() =>
+  import("./environment-presets").then((module) => ({
+    default: module.SimpleEnvironment,
+  }))
+);
+const LazySVGModel = React.lazy(() =>
+  import("./svg-model").then((module) => ({ default: module.SVGModel }))
+);
+
+interface PostProcessingModules {
+  EffectComposer: React.ComponentType<any>;
+  Bloom: React.ComponentType<any>;
+  BrightnessContrast: React.ComponentType<any>;
+  SMAA: React.ComponentType<any>;
+  ToneMapping: React.ComponentType<any>;
+  BlendFunction: any;
+}
+
+interface PostProcessingEffectsProps {
+  useBloom: boolean;
+  bloomIntensity: number;
+  bloomMipmapBlur: boolean;
+  isMobile: boolean;
+}
+
+const PostProcessingEffects: React.FC<PostProcessingEffectsProps> = React.memo(
+  ({ useBloom, bloomIntensity, bloomMipmapBlur, isMobile }) => {
+    const [modules, setModules] = useState<PostProcessingModules | null>(null);
+
+    useEffect(() => {
+      let mounted = true;
+      loadThreeModules().then((loadedModules) => {
+        if (mounted) {
+          setModules(loadedModules as unknown as PostProcessingModules);
+        }
+      });
+      return () => {
+        mounted = false;
+      };
+    }, []);
+
+    if (!modules) return null;
+
+    const {
+      EffectComposer,
+      Bloom,
+      BrightnessContrast,
+      SMAA,
+      ToneMapping,
+      BlendFunction,
+    } = modules;
+
+    if (useBloom) {
+      return (
+        <EffectComposer multisampling={isMobile ? 0 : 8}>
+          <SMAA />
+          <Bloom
+            intensity={bloomIntensity * 0.7}
+            luminanceThreshold={0.4}
+            luminanceSmoothing={0.95}
+            mipmapBlur={bloomMipmapBlur}
+            radius={0.9}
+          />
+          <BrightnessContrast
+            brightness={0.07}
+            contrast={0.05}
+            blendFunction={BlendFunction.NORMAL}
+          />
+          <ToneMapping
+            adaptive
+            resolution={256}
+            middleGrey={0.6}
+            maxLuminance={16.0}
+            averageLuminance={1.0}
+            adaptationRate={1.0}
+          />
+        </EffectComposer>
+      );
+    }
+
+    return (
+      <EffectComposer multisampling={isMobile ? 2 : 8}>
+        <SMAA preset={isMobile ? 1 : 3} />
+        <ToneMapping
+          adaptive
+          resolution={256}
+          middleGrey={0.6}
+          maxLuminance={16.0}
+          averageLuminance={1.0}
+          adaptationRate={1.0}
+        />
+      </EffectComposer>
+    );
+  }
+);
+
+PostProcessingEffects.displayName = "PostProcessingEffects";
+
+// Main ModelPreviews component
 const ModelPreviews = React.memo<ModelPreviewProps>(
   ({
     svgData,
@@ -50,8 +139,8 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
         50,
         window.innerWidth / window.innerHeight,
         1,
-        1000,
-      ),
+        1000
+      )
     );
 
     useEffect(() => {
@@ -68,68 +157,45 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
       };
     }, []);
 
-    const effects = useMemo(() => {
-      if (useBloom) {
-        return (
-          <EffectComposer multisampling={isMobile ? 0 : 8}>
-            <SMAA />
-            <Bloom
-              intensity={bloomIntensity * 0.7}
-              luminanceThreshold={0.4}
-              luminanceSmoothing={0.95}
-              mipmapBlur={bloomMipmapBlur}
-              radius={0.9}
-            />
-            <BrightnessContrast
-              brightness={0.07}
-              contrast={0.05}
-              blendFunction={BlendFunction.NORMAL}
-            />
-            <ToneMapping
-              adaptive
-              resolution={256}
-              middleGrey={0.6}
-              maxLuminance={16.0}
-              averageLuminance={1.0}
-              adaptationRate={1.0}
-            />
-          </EffectComposer>
-        );
-      } else {
-        return (
-          <EffectComposer multisampling={isMobile ? 2 : 8}>
-            <SMAA preset={isMobile ? 1 : 3} />
-            <ToneMapping
-              adaptive
-              resolution={256}
-              middleGrey={0.6}
-              maxLuminance={16.0}
-              averageLuminance={1.0}
-              adaptationRate={1.0}
-            />
-          </EffectComposer>
-        );
-      }
-    }, [useBloom, bloomIntensity, bloomMipmapBlur, isMobile]);
+    const [orbitControlsModule, setOrbitControlsModule] =
+      useState<React.ComponentType<any> | null>(null);
+
+    useEffect(() => {
+      let mounted = true;
+      loadThreeModules().then((modules) => {
+        if (mounted && modules.OrbitControls) {
+          setOrbitControlsModule(
+            modules.OrbitControls as React.ComponentType<any>
+          );
+        }
+      });
+      return () => {
+        mounted = false;
+      };
+    }, []);
 
     const environment = useMemo(() => {
       if (!useEnvironment) return null;
 
       return (
-        <SimpleEnvironment
-          environmentPreset={environmentPreset}
-          customHdriUrl={customHdriUrl}
-        />
+        <Suspense fallback={null}>
+          <LazyEnvironment
+            environmentPreset={environmentPreset}
+            customHdriUrl={customHdriUrl}
+          />
+        </Suspense>
       );
     }, [useEnvironment, environmentPreset, customHdriUrl]);
 
     if (!svgData) return null;
 
+    const OrbitControls = orbitControlsModule;
+
     return (
       <Canvas
         shadows
         camera={{ position: [0, 0, 150], fov: 50 }}
-        dpr={[1, 2]}
+        dpr={[1, isMobile ? 1.5 : 2]} // Optimize DPR for mobile
         frameloop="demand"
         performance={{ min: 0.5 }}
         gl={{
@@ -153,40 +219,51 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
         />
         {environment}
         <group ref={modelGroupRef} rotation={[0, modelRotationY, 0]}>
-          <SVGModel
-            svgData={svgData}
-            depth={depth * 5}
-            bevelEnabled={bevelEnabled}
-            bevelThickness={bevelThickness}
-            bevelSize={bevelSize}
-            bevelSegments={isMobile ? 3 : bevelSegments}
-            customColor={useCustomColor ? customColor : undefined}
-            roughness={roughness}
-            metalness={metalness}
-            clearcoat={clearcoat}
-            transmission={transmission}
-            envMapIntensity={useEnvironment ? envMapIntensity : 0.2}
-            receiveShadow={false}
-            castShadow={false}
-            isHollowSvg={isHollowSvg}
-            spread={spread}
-            ref={modelRef}
-          />
+          <Suspense fallback={null}>
+            <LazySVGModel
+              svgData={svgData}
+              depth={depth * 5}
+              bevelEnabled={bevelEnabled}
+              bevelThickness={bevelThickness}
+              bevelSize={bevelSize}
+              bevelSegments={isMobile ? 3 : bevelSegments}
+              customColor={useCustomColor ? customColor : undefined}
+              roughness={roughness}
+              metalness={metalness}
+              clearcoat={clearcoat}
+              transmission={transmission}
+              envMapIntensity={useEnvironment ? envMapIntensity : 0.2}
+              receiveShadow={false}
+              castShadow={false}
+              isHollowSvg={isHollowSvg}
+              spread={spread}
+              ref={modelRef}
+            />
+          </Suspense>
         </group>
-        {effects}
-        <OrbitControls
-          autoRotate={autoRotate}
-          autoRotateSpeed={autoRotateSpeed}
-          minDistance={50}
-          maxDistance={400}
-          enablePan={true}
-          enableZoom={true}
-          enableRotate={true}
-          target={[0, 0, 0]}
-        />
+        <Suspense fallback={null}>
+          <PostProcessingEffects
+            useBloom={useBloom}
+            bloomIntensity={bloomIntensity}
+            bloomMipmapBlur={bloomMipmapBlur}
+            isMobile={isMobile}
+          />
+        </Suspense>
+        {OrbitControls && (
+          <OrbitControls
+            autoRotate={autoRotate}
+            autoRotateSpeed={autoRotateSpeed}
+            minDistance={50}
+            maxDistance={400}
+            enablePan={true}
+            enableZoom={true}
+            enableRotate={true}
+            target={[0, 0, 0]}
+          />
+        )}
       </Canvas>
     );
-  },
+  }
 );
 
 ModelPreviews.displayName = "ModelPreviews";
