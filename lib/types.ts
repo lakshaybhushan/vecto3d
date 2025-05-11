@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { ReactNode } from "react";
 
 // Material presets interface
 export interface MaterialPreset {

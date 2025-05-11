@@ -8,27 +8,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MaterialControlsProps } from "@/lib/types";
 import { MATERIAL_PRESETS } from "@/lib/constants";
+import { useEditorStore } from "@/lib/store";
 
-export function MaterialControls({
-  materialPreset,
-  setMaterialPreset,
-  roughness,
-  setRoughness,
-  metalness,
-  setMetalness,
-  clearcoat,
-  setClearcoat,
-  transmission,
-  setTransmission,
-  envMapIntensity,
-  setEnvMapIntensity,
-  useCustomColor,
-  setUseCustomColor,
-  customColor,
-  setCustomColor,
-}: MaterialControlsProps) {
+export function MaterialControls() {
+  const {
+    materialPreset,
+    setMaterialPreset,
+    roughness,
+    setRoughness,
+    metalness,
+    setMetalness,
+    clearcoat,
+    setClearcoat,
+    transmission,
+    setTransmission,
+    // envMapIntensity,
+    setEnvMapIntensity,
+    useCustomColor,
+    setUseCustomColor,
+    customColor,
+    setCustomColor,
+  } = useEditorStore();
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -177,7 +179,7 @@ export function MaterialControls({
             />
           </div>
 
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="envMapIntensity">
               Environment Reflection: {envMapIntensity.toFixed(1)}
             </Label>
@@ -189,7 +191,7 @@ export function MaterialControls({
               value={[envMapIntensity]}
               onValueChange={(value) => setEnvMapIntensity(value[0])}
             />
-          </div>
+          </div> */}
         </>
       )}
     </div>

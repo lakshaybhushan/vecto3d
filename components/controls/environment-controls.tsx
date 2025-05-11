@@ -12,30 +12,32 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
-import { EnvironmentControlsProps } from "@/lib/types";
 import { ENVIRONMENT_PRESETS } from "@/lib/constants";
 import { toast } from "sonner";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { motion } from "framer-motion";
 import { BsStars } from "react-icons/bs";
+import { useEditorStore } from "@/lib/store";
 
-export function EnvironmentControls({
-  useEnvironment,
-  setUseEnvironment,
-  environmentPreset,
-  setEnvironmentPreset,
-  customHdriUrl,
-  setCustomHdriUrl,
-  useBloom,
-  setUseBloom,
-  bloomIntensity,
-  setBloomIntensity,
-  bloomMipmapBlur,
-  setBloomMipmapBlur,
-  modelRotationY,
-  setModelRotationY,
-  toggleVibeMode,
-}: EnvironmentControlsProps) {
+export function EnvironmentControls() {
+  const {
+    useEnvironment,
+    setUseEnvironment,
+    environmentPreset,
+    setEnvironmentPreset,
+    customHdriUrl,
+    setCustomHdriUrl,
+    useBloom,
+    // setUseBloom,
+    bloomIntensity,
+    setBloomIntensity,
+    bloomMipmapBlur,
+    setBloomMipmapBlur,
+    modelRotationY,
+    setModelRotationY,
+    toggleVibeMode,
+  } = useEditorStore();
+
   const hdriFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -252,15 +254,6 @@ export function EnvironmentControls({
             )}
           </div>
 
-          {environmentPreset === "custom" && customHdriUrl && (
-            <Alert variant="destructive" className="mt-2 py-2">
-              <AlertDescription className="text-xs flex items-center">
-                <InfoIcon className="h-3 w-3 mr-1" />
-                Vibe Mode is not available with custom images
-              </AlertDescription>
-            </Alert>
-          )}
-
           {useBloom && (
             <motion.div
               className="space-y-4 mt-2 p-4 bg-muted/20 rounded-md border border-primary/20"
@@ -272,7 +265,7 @@ export function EnvironmentControls({
                 <Label
                   htmlFor="bloomIntensity"
                   className="flex justify-between">
-                  <span>Glow Intensity</span>
+                  <span>Bloom Intensity</span>
                   <span className="text-primary font-mono">
                     {bloomIntensity.toFixed(1)}
                   </span>
@@ -280,29 +273,25 @@ export function EnvironmentControls({
                 <Slider
                   id="bloomIntensity"
                   min={0.1}
-                  max={4.0}
+                  max={2.0}
                   step={0.1}
                   value={[bloomIntensity]}
                   onValueChange={(value) => setBloomIntensity(value[0])}
-                  className="py-1"
                 />
               </div>
 
-              <div className="flex items-center space-x-3 py-1">
+              <div className="flex items-center space-x-2">
                 <Checkbox
                   id="bloomMipmapBlur"
                   checked={bloomMipmapBlur}
-                  onCheckedChange={(checked) => {
-                    if (typeof checked === "boolean") {
-                      setBloomMipmapBlur(checked);
-                    }
-                  }}
+                  onCheckedChange={(checked) =>
+                    setBloomMipmapBlur(checked as boolean)
+                  }
                 />
-                <Label htmlFor="bloomMipmapBlur" className="font-medium">
-                  Soft Glow
+                <Label htmlFor="bloomMipmapBlur">
+                  Smooth Bloom (Better Quality)
                 </Label>
               </div>
-
               <div className="space-y-2 pt-3 border-t border-primary/10">
                 <Label htmlFor="modelRotation" className="flex justify-between">
                   <span>Model Rotation</span>

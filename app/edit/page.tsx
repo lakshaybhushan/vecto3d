@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, Suspense, useEffect, useMemo } from "react";
+import { useRef, Suspense, useEffect, useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment, useTexture } from "@react-three/drei";
 import { Button } from "@/components/ui/button";
@@ -37,7 +37,7 @@ import {
 import {
   staggerContainer,
   cardAnimation,
-  fadeUp,
+  // fadeUp,
   modelContainerAnimation,
   tabContentAnimation,
   pageTransition,
@@ -50,18 +50,14 @@ import { BackgroundControls } from "@/components/controls/background-controls";
 import { ExportButtons } from "@/components/export-buttons";
 import { EditorMobileWarning } from "@/components/mobile-warning";
 
-import {
-  MATERIAL_PRESETS,
-  DARK_MODE_COLOR,
-  LIGHT_MODE_COLOR,
-} from "@/lib/constants";
-
 import { useDebounce } from "@/hooks/use-debounce";
 import { useMobileDetection } from "@/hooks/use-mobile-detection";
 import { NotAScam } from "@/components/not-a-scam";
+import { useEditorStore } from "@/lib/store";
+import { DARK_MODE_COLOR, LIGHT_MODE_COLOR } from "@/lib/constants";
 
 function useThemeBackgroundColor() {
-  const { theme, resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
 
   return useMemo(() => {
     if (resolvedTheme === "dark") return DARK_MODE_COLOR;
@@ -85,7 +81,18 @@ function SimpleEnvironment({
   environmentPreset,
   customHdriUrl,
 }: {
-  environmentPreset: string;
+  environmentPreset:
+    | "apartment"
+    | "city"
+    | "dawn"
+    | "forest"
+    | "lobby"
+    | "night"
+    | "park"
+    | "studio"
+    | "sunset"
+    | "warehouse"
+    | "custom";
   customHdriUrl: string | null;
 }) {
   return (
@@ -93,7 +100,12 @@ function SimpleEnvironment({
       {environmentPreset === "custom" && customHdriUrl ? (
         <CustomEnvironment imageUrl={customHdriUrl} />
       ) : (
-        <Environment preset={environmentPreset as any} background={false} />
+        <Environment
+          preset={
+            environmentPreset === "custom" ? undefined : environmentPreset
+          }
+          background={false}
+        />
       )}
     </>
   );
@@ -171,9 +183,9 @@ const ModelPreview = React.memo<ModelPreviewProps>(
     bloomIntensity,
     bloomMipmapBlur,
     isMobile,
-    onLoadStart,
-    onLoadComplete,
-    onError,
+    // onLoadStart,
+    // onLoadComplete,
+    // onError,
   }) => {
     const cameraRef = useRef(
       new THREE.PerspectiveCamera(
@@ -231,7 +243,20 @@ const ModelPreview = React.memo<ModelPreviewProps>(
 
       return (
         <SimpleEnvironment
-          environmentPreset={environmentPreset}
+          environmentPreset={
+            environmentPreset as
+              | "apartment"
+              | "city"
+              | "dawn"
+              | "forest"
+              | "lobby"
+              | "night"
+              | "park"
+              | "studio"
+              | "sunset"
+              | "warehouse"
+              | "custom"
+          }
           customHdriUrl={customHdriUrl}
         />
       );
@@ -358,72 +383,81 @@ const ModelErrorState = ({ error }: { error: string }) => (
 );
 
 export default function EditPage() {
-  const [svgData, setSvgData] = useState<string | null>(null);
-  const [depth, setDepth] = useState<number>(1);
-  const [isModelLoading, setIsModelLoading] = useState<boolean>(true);
-  const [svgProcessingError, setSvgProcessingError] = useState<string | null>(
-    null,
-  );
-
-  // Bevel options
-  const [bevelEnabled, setBevelEnabled] = useState<boolean>(true);
-  const [bevelThickness, setBevelThickness] = useState<number>(1.0);
-  const [bevelSize, setBevelSize] = useState<number>(0.5);
-  const [bevelSegments, setBevelSegments] = useState<number>(4);
-  const [bevelPreset, setBevelPreset] = useState<string>("medium");
-
-  const [fileName, setFileName] = useState<string>("");
-  const [customColor, setCustomColor] = useState<string>("#3498db");
-  const [useCustomColor, setUseCustomColor] = useState<boolean>(false);
-
-  const [materialPreset, setMaterialPreset] = useState<string>("metallic");
-  const initialPreset =
-    MATERIAL_PRESETS.find((p) => p.name === "metallic") || MATERIAL_PRESETS[0];
-  const [roughness, setRoughness] = useState<number>(initialPreset.roughness);
-  const [metalness, setMetalness] = useState<number>(initialPreset.metalness);
-  const [clearcoat, setClearcoat] = useState<number>(initialPreset.clearcoat);
-  const [envMapIntensity, setEnvMapIntensity] = useState<number>(
-    initialPreset.envMapIntensity,
-  );
-  const [transmission, setTransmission] = useState<number>(
-    initialPreset.transmission,
-  );
-
-  const [isHollowSvg, setIsHollowSvg] = useState<boolean>(false);
-
-  const [useEnvironment, setUseEnvironment] = useState<boolean>(true);
-  const [environmentPreset, setEnvironmentPreset] =
-    useState<string>("apartment");
-
-  const [modelRotationY, setModelRotationY] = useState<number>(0);
-
-  const [userSelectedBackground, setUserSelectedBackground] =
-    useState<boolean>(false);
-  const [backgroundColor, setBackgroundColor] =
-    useState<string>(LIGHT_MODE_COLOR);
-  const [solidColorPreset, setSolidColorPreset] = useState<string>("light");
-
-  const [autoRotate, setAutoRotate] = useState<boolean>(false);
-  const [autoRotateSpeed, setAutoRotateSpeed] = useState<number>(3);
+  const {
+    svgData,
+    fileName,
+    isModelLoading,
+    svgProcessingError,
+    depth,
+    isHollowSvg,
+    modelRotationY,
+    bevelEnabled,
+    bevelThickness,
+    bevelSize,
+    bevelSegments,
+    // bevelPreset,
+    customColor,
+    useCustomColor,
+    // materialPreset,
+    roughness,
+    metalness,
+    clearcoat,
+    transmission,
+    envMapIntensity,
+    useEnvironment,
+    environmentPreset,
+    customHdriUrl,
+    userSelectedBackground,
+    backgroundColor,
+    // solidColorPreset,
+    autoRotate,
+    autoRotateSpeed,
+    isFullscreen,
+    useBloom,
+    bloomIntensity,
+    bloomMipmapBlur,
+    // Actions
+    setSvgData,
+    setFileName,
+    setIsModelLoading,
+    setSvgProcessingError,
+    // setDepth,
+    setIsHollowSvg,
+    // setModelRotationY,
+    // setBevelEnabled,
+    // setBevelThickness,
+    // setBevelSize,
+    // setBevelSegments,
+    // setBevelPreset,
+    // setCustomColor,
+    // setUseCustomColor,
+    // setMaterialPreset,
+    // setRoughness,
+    // setMetalness,
+    // setClearcoat,
+    // setTransmission,
+    // setEnvMapIntensity,
+    // setUseEnvironment,
+    // setEnvironmentPreset,
+    // setCustomHdriUrl,
+    // setUserSelectedBackground,
+    setBackgroundColor,
+    setSolidColorPreset,
+    // setAutoRotate,
+    // setAutoRotateSpeed,
+    setIsFullscreen,
+    // setUseBloom,
+    // setBloomIntensity,
+    // setBloomMipmapBlur,
+    toggleVibeMode,
+  } = useEditorStore();
 
   const modelRef = useRef<THREE.Group | null>(null);
   const modelGroupRef = useRef<THREE.Group | null>(null);
-
-  const [customHdriUrl, setCustomHdriUrl] = useState<string | null>(null);
-
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
-  const [useBloom, setUseBloom] = useState<boolean>(false);
-  const [bloomIntensity, setBloomIntensity] = useState<number>(1.0);
-  const [bloomMipmapBlur, setBloomMipmapBlur] = useState<boolean>(true);
-
-  const [vibeModeOriginalMaterial, setVibeModeOriginalMaterial] = useState<
-    string | null
-  >(null);
-
   const router = useRouter();
-  const { theme, resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const {
     isMobile,
     continueOnMobile,
@@ -432,6 +466,7 @@ export default function EditPage() {
   } = useMobileDetection();
 
   const themeBackgroundColor = useThemeBackgroundColor();
+
   // cleanup
   useEffect(() => {
     return () => {
@@ -446,7 +481,13 @@ export default function EditPage() {
       setBackgroundColor(themeBackgroundColor);
       setSolidColorPreset(resolvedTheme === "dark" ? "dark" : "light");
     }
-  }, [resolvedTheme, themeBackgroundColor, userSelectedBackground]);
+  }, [
+    resolvedTheme,
+    themeBackgroundColor,
+    userSelectedBackground,
+    setBackgroundColor,
+    setSolidColorPreset,
+  ]);
 
   // debounce expensive operations
   const debouncedSvgData = useDebounce(svgData, 300);
@@ -462,7 +503,7 @@ export default function EditPage() {
 
       return () => clearTimeout(timer);
     }
-  }, [debouncedSvgData]);
+  }, [debouncedSvgData, setIsModelLoading]);
 
   useEffect(() => {
     if (!debouncedSvgData) return;
@@ -482,7 +523,7 @@ export default function EditPage() {
       debouncedSvgData.toLowerCase().includes("face");
 
     setIsHollowSvg(isLikelyHollow);
-  }, [debouncedSvgData]);
+  }, [debouncedSvgData, setIsHollowSvg]);
 
   useEffect(() => {
     setIsModelLoading(true);
@@ -502,56 +543,11 @@ export default function EditPage() {
     if (savedFileName) {
       setFileName(savedFileName);
     }
-  }, [router]);
+  }, [router, setSvgData, setFileName, setIsModelLoading]);
 
   const handleBackToHome = () => {
     clearMobilePreference();
     router.push("/");
-  };
-
-  const toggleVibeMode = (newState: boolean) => {
-    if (newState && environmentPreset === "custom" && customHdriUrl) {
-      toast.error("Vibe Mode is not available with custom images", {
-        duration: 3000,
-      });
-      return;
-    }
-
-    setUseBloom(newState);
-
-    if (newState) {
-      setUserSelectedBackground(true);
-      setBackgroundColor("#000000");
-      setSolidColorPreset("custom");
-
-      setAutoRotate(false);
-
-      if (useCustomColor) {
-        setVibeModeOriginalMaterial(customColor);
-      }
-
-      setUseCustomColor(true);
-      setCustomColor("#000000");
-
-      if (environmentPreset === "custom" && customHdriUrl) {
-      } else {
-        setEnvironmentPreset("dawn");
-      }
-    } else {
-      if (environmentPreset === "custom" && customHdriUrl) {
-        toast.info("Custom environment maintained after exiting Vibe Mode", {
-          duration: 3000,
-        });
-      }
-
-      if (vibeModeOriginalMaterial) {
-        setCustomColor(vibeModeOriginalMaterial);
-        setVibeModeOriginalMaterial(null);
-      } else if (useCustomColor) {
-      } else {
-        setUseCustomColor(false);
-      }
-    }
   };
 
   useEffect(() => {
@@ -564,7 +560,7 @@ export default function EditPage() {
         },
       );
     }
-  }, [environmentPreset, customHdriUrl, useBloom]);
+  }, [environmentPreset, customHdriUrl, useBloom, toggleVibeMode]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -586,7 +582,7 @@ export default function EditPage() {
         handleFullscreenChange,
       );
     };
-  }, []);
+  }, [setIsFullscreen]);
 
   const renderModelPreview = () => {
     if (!svgData) {
@@ -853,24 +849,7 @@ export default function EditPage() {
                             initial="hidden"
                             animate="show"
                             exit="exit">
-                            <GeometryControls
-                              depth={depth}
-                              setDepth={setDepth}
-                              bevelEnabled={bevelEnabled}
-                              setBevelEnabled={setBevelEnabled}
-                              bevelThickness={bevelThickness}
-                              setBevelThickness={setBevelThickness}
-                              bevelSize={bevelSize}
-                              setBevelSize={setBevelSize}
-                              bevelSegments={bevelSegments}
-                              setBevelSegments={setBevelSegments}
-                              bevelPreset={bevelPreset}
-                              setBevelPreset={setBevelPreset}
-                              autoRotate={autoRotate}
-                              setAutoRotate={setAutoRotate}
-                              autoRotateSpeed={autoRotateSpeed}
-                              setAutoRotateSpeed={setAutoRotateSpeed}
-                            />
+                            <GeometryControls />
                           </motion.div>
                         </TabsContent>
 
@@ -881,24 +860,7 @@ export default function EditPage() {
                             initial="hidden"
                             animate="show"
                             exit="exit">
-                            <MaterialControls
-                              materialPreset={materialPreset}
-                              setMaterialPreset={setMaterialPreset}
-                              roughness={roughness}
-                              setRoughness={setRoughness}
-                              metalness={metalness}
-                              setMetalness={setMetalness}
-                              clearcoat={clearcoat}
-                              setClearcoat={setClearcoat}
-                              transmission={transmission}
-                              setTransmission={setTransmission}
-                              envMapIntensity={envMapIntensity}
-                              setEnvMapIntensity={setEnvMapIntensity}
-                              useCustomColor={useCustomColor}
-                              setUseCustomColor={setUseCustomColor}
-                              customColor={customColor}
-                              setCustomColor={setCustomColor}
-                            />
+                            <MaterialControls />
                           </motion.div>
                         </TabsContent>
 
@@ -909,23 +871,7 @@ export default function EditPage() {
                             initial="hidden"
                             animate="show"
                             exit="exit">
-                            <EnvironmentControls
-                              useEnvironment={useEnvironment}
-                              setUseEnvironment={setUseEnvironment}
-                              environmentPreset={environmentPreset}
-                              setEnvironmentPreset={setEnvironmentPreset}
-                              customHdriUrl={customHdriUrl}
-                              setCustomHdriUrl={setCustomHdriUrl}
-                              useBloom={useBloom}
-                              setUseBloom={setUseBloom}
-                              bloomIntensity={bloomIntensity}
-                              setBloomIntensity={setBloomIntensity}
-                              bloomMipmapBlur={bloomMipmapBlur}
-                              setBloomMipmapBlur={setBloomMipmapBlur}
-                              modelRotationY={modelRotationY}
-                              setModelRotationY={setModelRotationY}
-                              toggleVibeMode={toggleVibeMode}
-                            />
+                            <EnvironmentControls />
                           </motion.div>
                         </TabsContent>
 
@@ -936,17 +882,7 @@ export default function EditPage() {
                             initial="hidden"
                             animate="show"
                             exit="exit">
-                            <BackgroundControls
-                              backgroundColor={backgroundColor}
-                              setBackgroundColor={setBackgroundColor}
-                              userSelectedBackground={userSelectedBackground}
-                              setUserSelectedBackground={
-                                setUserSelectedBackground
-                              }
-                              solidColorPreset={solidColorPreset}
-                              setSolidColorPreset={setSolidColorPreset}
-                              theme={theme}
-                            />
+                            <BackgroundControls />
                           </motion.div>
                         </TabsContent>
                       </AnimatePresence>

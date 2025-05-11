@@ -34,25 +34,25 @@ interface SVGModelProps {
   onError?: (error: Error) => void;
 }
 
-const getPathBoundingArea = (path: THREE.ShapePath) => {
-  if (path.subPaths.length === 0) return 0;
+// const getPathBoundingArea = (path: THREE.ShapePath) => {
+//   if (path.subPaths.length === 0) return 0;
 
-  let minX = Infinity,
-    minY = Infinity;
-  let maxX = -Infinity,
-    maxY = -Infinity;
+//   let minX = Infinity,
+//     minY = Infinity;
+//   let maxX = -Infinity,
+//     maxY = -Infinity;
 
-  path.subPaths.forEach((subPath) => {
-    subPath.getPoints().forEach((point) => {
-      minX = Math.min(minX, point.x);
-      minY = Math.min(minY, point.y);
-      maxX = Math.max(maxX, point.x);
-      maxY = Math.max(maxY, point.y);
-    });
-  });
+//   path.subPaths.forEach((subPath) => {
+//     subPath.getPoints().forEach((point) => {
+//       minX = Math.min(minX, point.x);
+//       minY = Math.min(minY, point.y);
+//       maxX = Math.max(maxX, point.x);
+//       maxY = Math.max(maxY, point.y);
+//     });
+//   });
 
-  return (maxX - minX) * (maxY - minY);
-};
+//   return (maxX - minX) * (maxY - minY);
+// };
 
 const applySpread = (
   shape: THREE.Shape,
@@ -103,43 +103,43 @@ const applySpread = (
   return newShape;
 };
 
-const isPathInsideAnother = (
-  innerPath: THREE.ShapePath,
-  outerPath: THREE.ShapePath,
-) => {
-  const innerPoints = innerPath.subPaths.flatMap((sp) => sp.getPoints());
-  if (innerPoints.length === 0) return false;
+// const isPathInsideAnother = (
+//   innerPath: THREE.ShapePath,
+//   outerPath: THREE.ShapePath,
+// ) => {
+//   const innerPoints = innerPath.subPaths.flatMap((sp) => sp.getPoints());
+//   if (innerPoints.length === 0) return false;
 
-  let outerMinX = Infinity,
-    outerMinY = Infinity;
-  let outerMaxX = -Infinity,
-    outerMaxY = -Infinity;
+//   let outerMinX = Infinity,
+//     outerMinY = Infinity;
+//   let outerMaxX = -Infinity,
+//     outerMaxY = -Infinity;
 
-  outerPath.subPaths.forEach((subPath) => {
-    subPath.getPoints().forEach((point) => {
-      outerMinX = Math.min(outerMinX, point.x);
-      outerMinY = Math.min(outerMinY, point.y);
-      outerMaxX = Math.max(outerMaxX, point.x);
-      outerMaxY = Math.max(outerMaxY, point.y);
-    });
-  });
+//   outerPath.subPaths.forEach((subPath) => {
+//     subPath.getPoints().forEach((point) => {
+//       outerMinX = Math.min(outerMinX, point.x);
+//       outerMinY = Math.min(outerMinY, point.y);
+//       outerMaxX = Math.max(outerMaxX, point.x);
+//       outerMaxY = Math.max(outerMaxY, point.y);
+//     });
+//   });
 
-  return innerPoints.every(
-    (p) =>
-      p.x > outerMinX && p.x < outerMaxX && p.y > outerMinY && p.y < outerMaxY,
-  );
-};
+//   return innerPoints.every(
+//     (p) =>
+//       p.x > outerMinX && p.x < outerMaxX && p.y > outerMinY && p.y < outerMaxY,
+//   );
+// };
 
-const isClosedPath = (path: THREE.ShapePath) => {
-  return path.subPaths.some((subPath) => {
-    const points = subPath.getPoints();
-    return (
-      points.length > 2 &&
-      Math.abs(points[0].x - points[points.length - 1].x) < 0.001 &&
-      Math.abs(points[0].y - points[points.length - 1].y) < 0.001
-    );
-  });
-};
+// const isClosedPath = (path: THREE.ShapePath) => {
+//   return path.subPaths.some((subPath) => {
+//     const points = subPath.getPoints();
+//     return (
+//       points.length > 2 &&
+//       Math.abs(points[0].x - points[points.length - 1].x) < 0.001 &&
+//       Math.abs(points[0].y - points[points.length - 1].y) < 0.001
+//     );
+//   });
+// };
 
 export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
   (
@@ -158,7 +158,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       transmission = 0,
       receiveShadow = true,
       castShadow = true,
-      isHollowSvg = false,
+      // isHollowSvg = false,
       spread = 0,
       onLoadStart,
       onLoadComplete,
@@ -169,36 +169,19 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     const [paths, setPaths] = useState<THREE.ShapePath[]>([]);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const groupRef = useRef<THREE.Group>(null);
-
     const materialsCache = useRef<Map<string, THREE.Material>>(new Map());
 
     useImperativeHandle(ref, () => groupRef.current!, []);
 
     useEffect(() => {
       if (!svgData) return;
-
-      const safeHash = (input: string) => {
-        try {
-          let hash = 0;
-          for (let i = 0; i < input.length; i++) {
-            const char = input.charCodeAt(i);
-            hash = (hash << 5) - hash + char;
-            hash = hash & hash;
-          }
-          return Math.abs(hash).toString(16).slice(0, 20);
-        } catch (e) {
-          console.warn("Hash generation fallback used");
-          return Date.now().toString(16);
-        }
-      };
-
-      const svgHash = safeHash(svgData);
+      const cache = materialsCache.current;
 
       onLoadStart?.();
 
       try {
         // Remove special characters and symbols
-        let processedSvgData = svgData
+        const processedSvgData = svgData
           .replace(/[™®©]/g, "") // Remove trademark, registered, and copyright symbols
           .replace(/&trade;|&reg;|&copy;/g, ""); // Remove HTML entities
 
@@ -266,7 +249,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       }
 
       return () => {
-        materialsCache.current.clear();
+        cache.clear();
       };
     }, [svgData, onLoadStart, onLoadComplete, onError]);
 
@@ -344,26 +327,24 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     };
 
     useEffect(() => {
+      const cache = materialsCache.current;
+      const group = groupRef.current;
       return () => {
-        materialsCache.current.forEach((material) => {
+        cache.forEach((material) => {
           if (material) material.dispose();
         });
-        materialsCache.current.clear();
+        cache.clear();
 
-        if (groupRef.current) {
-          groupRef.current.traverse((object) => {
+        if (group) {
+          group.traverse((object) => {
             if (object instanceof THREE.Mesh) {
               if (object.geometry) object.geometry.dispose();
 
               if (Array.isArray(object.material)) {
                 object.material.forEach((material) => {
-                  if (!materialsCache.current.has(material.uuid))
-                    material.dispose();
+                  if (!cache.has(material.uuid)) material.dispose();
                 });
-              } else if (
-                object.material &&
-                !materialsCache.current.has(object.material.uuid)
-              ) {
+              } else if (object.material && !cache.has(object.material.uuid)) {
                 object.material.dispose();
               }
             }

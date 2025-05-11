@@ -4,7 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle, Monitor, RotateCcw } from "lucide-react";
 import { MobileWarningProps } from "@/lib/types";
 
-export function MobileWarning({ onContinue, onReturn }: MobileWarningProps) {
+export function MobileWarning({
+  onContinue,
+}: Omit<MobileWarningProps, "onReturn">) {
   return (
     <div className="w-full max-w-md">
       <Alert variant="destructive" className="mb-6">

@@ -1,27 +1,29 @@
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { GeometryControlsProps } from "@/lib/types";
 import { BEVEL_PRESETS } from "@/lib/constants";
+import { useEditorStore } from "@/lib/store";
 
-export function GeometryControls({
-  depth,
-  setDepth,
-  bevelEnabled,
-  setBevelEnabled,
-  bevelThickness,
-  setBevelThickness,
-  bevelSize,
-  setBevelSize,
-  bevelSegments,
-  setBevelSegments,
-  bevelPreset,
-  setBevelPreset,
-  autoRotate,
-  setAutoRotate,
-  autoRotateSpeed,
-  setAutoRotateSpeed,
-}: GeometryControlsProps) {
+export function GeometryControls() {
+  const {
+    depth,
+    setDepth,
+    bevelEnabled,
+    setBevelEnabled,
+    bevelThickness,
+    setBevelThickness,
+    bevelSize,
+    setBevelSize,
+    bevelSegments,
+    setBevelSegments,
+    bevelPreset,
+    setBevelPreset,
+    autoRotate,
+    setAutoRotate,
+    autoRotateSpeed,
+    setAutoRotateSpeed,
+  } = useEditorStore();
+
   const displayToActualRotation = (displayValue: number) => {
     return displayValue + 1.5; // Convert 1-5 display scale to 2.5-7.5 actual scale
   };

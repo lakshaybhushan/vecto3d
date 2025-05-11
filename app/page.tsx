@@ -251,10 +251,7 @@ export default function Home() {
                 stiffness: 400,
                 damping: 25,
               }}>
-              <MobileWarning
-                onContinue={handleContinueOnMobile}
-                onReturn={() => {}}
-              />
+              <MobileWarning onContinue={handleContinueOnMobile} />
             </motion.div>
           ) : (
             <motion.div
