@@ -39,7 +39,7 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
   const handlePrintClick = async () => {
     setIsPrinting(true);
     try {
-      await handlePrint("stl", modelGroupRef, fileName, 1, "m3d");
+      await handlePrint("stl", modelGroupRef, fileName, "m3d");
     } finally {
       setIsPrinting(false);
     }
@@ -70,7 +70,7 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
                   resolution.multiplier,
                 )
               }>
-              <Image className="h-4 w-4 ml-1" />
+              <Image className="h-4 w-4 ml-1" aria-label="Export as PNG" />
               {resolution.label}
             </DropdownMenuItem>
           ))}

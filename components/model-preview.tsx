@@ -7,19 +7,49 @@ import { loadThreeModules } from "@/lib/three-imports";
 const LazyEnvironment = React.lazy(() =>
   import("./environment-presets").then((module) => ({
     default: module.SimpleEnvironment,
-  }))
+  })),
 );
 const LazySVGModel = React.lazy(() =>
-  import("./svg-model").then((module) => ({ default: module.SVGModel }))
+  import("./svg-model").then((module) => ({ default: module.SVGModel })),
 );
 
 interface PostProcessingModules {
-  EffectComposer: React.ComponentType<any>;
-  Bloom: React.ComponentType<any>;
-  BrightnessContrast: React.ComponentType<any>;
-  SMAA: React.ComponentType<any>;
-  ToneMapping: React.ComponentType<any>;
-  BlendFunction: any;
+  EffectComposer: React.ComponentType<{
+    children?: React.ReactNode;
+    enabled?: boolean;
+    [key: string]: unknown;
+  }>;
+  Bloom: React.ComponentType<{
+    intensity?: number;
+    luminanceThreshold?: number;
+    luminanceSmoothing?: number;
+    mipmapBlur?: boolean;
+    radius?: number;
+    [key: string]: unknown;
+  }>;
+  BrightnessContrast: React.ComponentType<{
+    brightness?: number;
+    contrast?: number;
+    blendFunction?: number;
+    [key: string]: unknown;
+  }>;
+  SMAA: React.ComponentType<{
+    preset?: number;
+    [key: string]: unknown;
+  }>;
+  ToneMapping: React.ComponentType<{
+    adaptive?: boolean;
+    resolution?: number;
+    middleGrey?: number;
+    maxLuminance?: number;
+    averageLuminance?: number;
+    adaptationRate?: number;
+    [key: string]: unknown;
+  }>;
+  BlendFunction: {
+    NORMAL: number;
+    [key: string]: number;
+  };
 }
 
 interface PostProcessingEffectsProps {
@@ -97,7 +127,7 @@ const PostProcessingEffects: React.FC<PostProcessingEffectsProps> = React.memo(
         />
       </EffectComposer>
     );
-  }
+  },
 );
 
 PostProcessingEffects.displayName = "PostProcessingEffects";
@@ -139,8 +169,8 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
         50,
         window.innerWidth / window.innerHeight,
         1,
-        1000
-      )
+        1000,
+      ),
     );
 
     useEffect(() => {
@@ -158,15 +188,17 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
     }, []);
 
     const [orbitControlsModule, setOrbitControlsModule] =
-      useState<React.ComponentType<any> | null>(null);
+      useState<React.ComponentType<{
+        enableDamping?: boolean;
+        dampingFactor?: number;
+        [key: string]: unknown;
+      }> | null>(null);
 
     useEffect(() => {
       let mounted = true;
       loadThreeModules().then((modules) => {
         if (mounted && modules.OrbitControls) {
-          setOrbitControlsModule(
-            modules.OrbitControls as React.ComponentType<any>
-          );
+          setOrbitControlsModule(modules.OrbitControls);
         }
       });
       return () => {
@@ -263,7 +295,7 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
         )}
       </Canvas>
     );
-  }
+  },
 );
 
 ModelPreviews.displayName = "ModelPreviews";

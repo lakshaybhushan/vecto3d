@@ -13,8 +13,8 @@ export default function NotFound() {
             Page not found
           </h2>
           <p className="text-muted-foreground max-w-[400px] mx-auto">
-            Oops! The page you're looking for doesn't exist. Please check the
-            URL or try searching for something else :D
+            Oops! The page you&apos;re looking for doesn&apos;t exist. Please
+            check the URL or try searching for something else :D
           </p>
         </div>
         <Button asChild className="text-base px-8">

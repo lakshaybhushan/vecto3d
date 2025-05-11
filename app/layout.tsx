@@ -61,7 +61,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange>
           {children}
-          <Analytics/>
+          <Analytics />
           <SonnerToaster
             position="top-center"
             richColors

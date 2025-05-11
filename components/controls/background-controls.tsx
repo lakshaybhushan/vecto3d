@@ -2,22 +2,26 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
-import { BackgroundControlsProps } from "@/lib/types";
 import {
   SOLID_COLOR_PRESETS,
   DARK_MODE_COLOR,
   LIGHT_MODE_COLOR,
 } from "@/lib/constants";
+import { useEditorStore } from "@/lib/store";
+import { useTheme } from "next-themes";
 
-export function BackgroundControls({
-  backgroundColor,
-  setBackgroundColor,
-  userSelectedBackground,
-  setUserSelectedBackground,
-  solidColorPreset,
-  setSolidColorPreset,
-  theme,
-}: BackgroundControlsProps) {
+export function BackgroundControls() {
+  const {
+    backgroundColor,
+    setBackgroundColor,
+    userSelectedBackground,
+    setUserSelectedBackground,
+    solidColorPreset,
+    setSolidColorPreset,
+  } = useEditorStore();
+
+  const { theme } = useTheme();
+
   const handleBackgroundChange = (color: string, preset: string) => {
     setUserSelectedBackground(true);
     setSolidColorPreset(preset);

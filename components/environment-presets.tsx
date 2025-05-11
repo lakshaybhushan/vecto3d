@@ -25,7 +25,22 @@ export function SimpleEnvironment({
       {environmentPreset === "custom" && customHdriUrl ? (
         <CustomEnvironment imageUrl={customHdriUrl} />
       ) : (
-        <Environment preset={environmentPreset as any} background={false} />
+        <Environment
+          preset={
+            environmentPreset as
+              | "apartment"
+              | "city"
+              | "dawn"
+              | "forest"
+              | "lobby"
+              | "night"
+              | "park"
+              | "studio"
+              | "sunset"
+              | "warehouse"
+          }
+          background={false}
+        />
       )}
     </>
   );
