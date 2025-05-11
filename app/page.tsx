@@ -177,7 +177,7 @@ export default function Home() {
                   duration: 1200,
                 }}
                 value={stars}
-              />
+              />    
               <span className="hidden sm:inline">Stars on GitHub</span>
               <FaGithub size={16} className="ml-0.5" />
             </Button>
