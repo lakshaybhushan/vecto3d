@@ -118,7 +118,7 @@ export default function Home() {
       <AnimatePresence>
         {isLoading && (
           <motion.div
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
+            className="fixed inset-0 bg-background/80 backdrop-blur-xs z-50 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -171,7 +171,7 @@ export default function Home() {
             <Button className="flex items-center gap-1 w-fit">
               <Star size={16} />
               <AnimatedNumber
-                className="inline-flex min-w-[1.5rem] justify-end"
+                className="inline-flex min-w-6 justify-end"
                 springOptions={{
                   bounce: 0,
                   duration: 1200,
@@ -373,7 +373,7 @@ export default function Home() {
               className="font-medium text-primary hover:underline flex items-center gap-0.5 transition-colors duration-200"
               target="_blank"
               rel="noopener noreferrer">
-              <VercelIcon size={14} />
+              <VercelIcon size={12} />
               <span className="hidden sm:inline">Vercel</span>
             </Link>
           </motion.div>
