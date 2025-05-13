@@ -349,7 +349,7 @@ ModelPreview.displayName = "ModelPreview";
 
 // Loading state component
 const ModelLoadingState = ({ message }: { message: string }) => (
-  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-muted/10 to-muted/20">
+  <div className="w-full h-full flex flex-col items-center justify-center bg-linear-to-b from-muted/10 to-muted/20">
     <div className="flex flex-col items-center gap-4 text-center max-w-xs px-4">
       <div className="relative h-20 w-20">
         <div className="absolute inset-0 rounded-full bg-background/20 animate-pulse"></div>
@@ -651,7 +651,7 @@ export default function EditPage() {
       animate="animate"
       exit="exit">
       <motion.header
-        className="sticky top-0 z-10 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b"
+        className="sticky top-0 z-10 w-full bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 border-b"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}>
@@ -704,8 +704,8 @@ export default function EditPage() {
               <motion.div
                 variants={modelContainerAnimation}
                 className="h-[400px] sm:h-[500px] lg:h-[600px] order-first lg:order-last relative overflow-hidden">
-                <Card className="w-full h-full flex flex-col overflow-hidden border-[1px] shadow-sm">
-                  <CardHeader className="p-4 pb-4 border-b bg-background/80 backdrop-blur-sm z-10 flex flex-row items-center justify-between">
+                <Card className="w-full h-full flex flex-col overflow-hidden border shadow-xs">
+                  <CardHeader className="p-4 pb-4 border-b bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-lg">Preview</CardTitle>
                       <CardDescription className="text-xs">
@@ -759,14 +759,14 @@ export default function EditPage() {
                           side="left"
                           align="center"
                           sideOffset={10}
-                          className="text-xs py-2 px-4 z-[99999] shadow-md">
+                          className="text-xs py-2 px-4 z-99999 shadow-md">
                           Performance may be affected
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </CardHeader>
 
-                  <div className="flex-grow relative" ref={previewContainerRef}>
+                  <div className="grow relative" ref={previewContainerRef}>
                     {renderModelPreview()}
                     {isFullscreen && (
                       <div className="absolute inset-0 pointer-events-none">
@@ -778,7 +778,7 @@ export default function EditPage() {
                                 variant={"ghost"}
                                 onClick={() => document.exitFullscreen()}
                                 aria-label="Exit fullscreen"
-                                className={`absolute top-6 right-6 z-[99999] pointer-events-auto bg-transparent
+                                className={`absolute top-6 right-6 z-99999 pointer-events-auto bg-transparent
                                   ${
                                     backgroundColor === "#000000" || useBloom
                                       ? "hover:bg-white/10"
@@ -786,7 +786,7 @@ export default function EditPage() {
                                           resolvedTheme === "dark"
                                         ? "hover:bg-black/10"
                                         : "hover:bg-background/80"
-                                  } backdrop-blur-sm`}>
+                                  } backdrop-blur-xs`}>
                                 <Minimize2
                                   className={`h-4 w-4 ${
                                     backgroundColor === "#000000" || useBloom
@@ -804,7 +804,7 @@ export default function EditPage() {
                               side="left"
                               align="center"
                               sideOffset={10}
-                              className="text-xs py-2 px-4 z-[99999] shadow-md">
+                              className="text-xs py-2 px-4 z-99999 shadow-md">
                               Exit fullscreen
                             </TooltipContent>
                           </Tooltip>
