@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FaGithub } from "react-icons/fa";
+// import { FaGithub } from "react-icons/fa";
+import { GitHubIcon } from "@/components/ui/example-icons";
 import { Logo } from "@/components/ui/logo";
 import { FileUpload } from "@/components/file-upload";
 import { MobileWarning } from "@/components/mobile-warning";
@@ -178,8 +179,8 @@ export default function Home() {
                 }}
                 value={stars}
               />
-              <span className="hidden sm:inline">Stars on GitHub</span>
-              <FaGithub size={16} className="ml-0.5" />
+              <span className="hidden sm:inline mr-0.5">Stars on GitHub</span>
+              <GitHubIcon size={16} />
             </Button>
           </Link>
         </motion.div>

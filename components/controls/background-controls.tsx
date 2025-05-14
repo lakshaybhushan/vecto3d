@@ -9,7 +9,7 @@ import {
 } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
 import { useTheme } from "next-themes";
-
+import { Input } from "@/components/ui/input";
 export function BackgroundControls() {
   const {
     backgroundColor,
@@ -70,14 +70,14 @@ export function BackgroundControls() {
         <div className="space-y-2 pt-2">
           <Label htmlFor="backgroundColor">Custom Color</Label>
           <div className="flex items-center space-x-2">
-            <input
+            <Input
               type="color"
               id="backgroundColor"
               value={backgroundColor}
               onChange={(e) => handleBackgroundChange(e.target.value, "custom")}
-              className="w-10 h-10 rounded cursor-pointer"
+              className="w-10"
             />
-            <input
+            <Input
               type="text"
               value={backgroundColor}
               onChange={(e) => handleBackgroundChange(e.target.value, "custom")}
@@ -100,7 +100,7 @@ export function BackgroundControls() {
                 setSolidColorPreset("light");
               }
             }}
-            className="w-full">
+            className="w-full h-10">
             Reset to Theme Default
           </Button>
         </div>

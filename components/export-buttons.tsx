@@ -5,13 +5,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Box, Camera, ChevronDown, Printer, Loader2 } from "lucide-react";
+import { ChevronDown, Printer, Loader2 } from "lucide-react";
 import { File, Image } from "lucide-react";
 import { PNG_RESOLUTIONS } from "@/lib/constants";
 import { handleExport, handlePrint } from "@/lib/exporters";
 import * as THREE from "three";
 import { useEffect, useState } from "react";
 import { checkIsUSLocation } from "@/lib/utils";
+import { ImageDownloadIcon, ThreeDExportIcon } from "@/components/ui/ui-icons";
 
 interface ExportButtonsProps {
   fileName: string;
@@ -53,9 +54,9 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
             size="sm"
             variant="default"
             className="flex items-center gap-1">
-            <Camera className="h-4 w-4 mr-0.5" />
+            <ImageDownloadIcon />
             <span className="hidden sm:inline">Export Image</span>
-            <ChevronDown className="h-4 w-4 ml-1" />
+            <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
@@ -67,10 +68,10 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
                   "png",
                   modelGroupRef,
                   fileName,
-                  resolution.multiplier,
+                  resolution.multiplier
                 )
               }>
-              <Image className="h-4 w-4 ml-1" aria-label="Export as PNG" />
+              <Image className="h-4 w-4" aria-label="Export as PNG" />
               {resolution.label}
             </DropdownMenuItem>
           ))}
@@ -83,25 +84,26 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
             size="sm"
             variant="default"
             className="flex items-center gap-1">
-            <Box className="h-4 w-4" />
+            {/* <Box className="h-4 w-4" /> */}
+            <ThreeDExportIcon />
             <span className="hidden sm:inline">Export 3D</span>
-            <ChevronDown className="h-4 w-4 ml-1" />
+            <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44" side="bottom">
           <DropdownMenuItem
             onSelect={() => handleExport("stl", modelGroupRef, fileName)}>
-            <File className="h-4 w-4 mr-0.5" />
+            <File className="h-4 w-4" />
             Export as STL
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => handleExport("glb", modelGroupRef, fileName)}>
-            <File className="h-4 w-4 mr-0.5" />
+            <File className="h-4 w-4" />
             Export as GLB
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => handleExport("gltf", modelGroupRef, fileName)}>
-            <File className="h-4 w-4 mr-0.5" />
+            <File className="h-4 w-4" />
             Export as GLTF
           </DropdownMenuItem>
         </DropdownMenuContent>

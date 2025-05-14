@@ -1,15 +1,9 @@
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { MATERIAL_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
+import { Input } from "../ui/input";
 
 export function MaterialControls() {
   const {
@@ -23,8 +17,6 @@ export function MaterialControls() {
     setClearcoat,
     transmission,
     setTransmission,
-    // envMapIntensity,
-    setEnvMapIntensity,
     useCustomColor,
     setUseCustomColor,
     customColor,
@@ -33,103 +25,87 @@ export function MaterialControls() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="materialPreset">Material Type</Label>
-        <Select
-          value={materialPreset}
-          onValueChange={(value) => {
-            setMaterialPreset(value);
-            // Apply preset values when selected
-            const preset = MATERIAL_PRESETS.find((p) => p.name === value);
-            if (preset) {
-              setRoughness(preset.roughness);
-              setMetalness(preset.metalness);
-              setClearcoat(preset.clearcoat);
-              setTransmission(preset.transmission);
-              setEnvMapIntensity(preset.envMapIntensity);
-            }
-          }}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select material type" />
-          </SelectTrigger>
-          <SelectContent>
-            {MATERIAL_PRESETS.map((preset) => (
-              <SelectItem key={preset.name} value={preset.name}>
-                {preset.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <p className="text-sm font-medium">Material Type</p>
 
-      <div className="grid grid-cols-5 gap-2 mb-3">
-        {MATERIAL_PRESETS.map((preset) => (
-          <div
-            key={preset.name}
-            className={`cursor-pointer rounded-md p-2 flex flex-col items-center ${
-              materialPreset === preset.name
-                ? "bg-primary/20 ring-1 ring-primary"
-                : "hover:bg-muted"
-            }`}
-            onClick={() => {
-              setMaterialPreset(preset.name);
-              setRoughness(preset.roughness);
-              setMetalness(preset.metalness);
-              setClearcoat(preset.clearcoat);
-              setTransmission(preset.transmission);
-              setEnvMapIntensity(preset.envMapIntensity);
-            }}>
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+      {MATERIAL_PRESETS.map((preset) => {
+          const reflectionColor =
+            preset.metalness > 0
+              ? `hsl(220, ${100 - preset.roughness * 60}%, ${
+                  85 - preset.roughness * 40
+                }%)`
+              : `hsl(0, 0%, ${90 - preset.roughness * 60}%)`;
+
+          const baseColor =
+            preset.metalness > 0
+              ? `hsl(220, ${70 - preset.roughness * 40}%, ${
+                  60 - preset.roughness * 30
+                }%)`
+              : `hsl(220, 20%, ${70 - preset.roughness * 40}%)`;
+
+          return (
             <div
-              className="w-12 h-12 rounded-full mb-1"
-              style={{
-                background: `linear-gradient(135deg, 
-                  hsl(210, ${100 - preset.roughness * 100}%, ${50 + preset.metalness * 30}%), 
-                  hsl(240, ${100 - preset.roughness * 80}%, ${20 + preset.metalness * 50}%))`,
-                boxShadow:
-                  preset.clearcoat > 0
-                    ? "0 0 10px rgba(255,255,255,0.5) inset"
-                    : "none",
-                opacity: preset.transmission > 0 ? 0.7 : 1,
-              }}
-            />
-            <span className="text-xs font-medium">{preset.label}</span>
-          </div>
-        ))}
-      </div>
+              key={preset.name}
+              className={`cursor-pointer rounded-lg p-4 flex flex-col items-center ${
+                materialPreset === preset.name
+                  ? "bg-primary/10 ring-1 ring-input"
+                  : "hover:bg-muted"
+              }`}
+              onClick={() => {
+                setMaterialPreset(preset.name);
+                setRoughness(preset.roughness);
+                setMetalness(preset.metalness);
+                setClearcoat(preset.clearcoat);
+                setTransmission(preset.transmission);
+              }}>
+              <div className="relative w-12 h-12 rounded-full mb-1">
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: `linear-gradient(135deg, 
+                      ${reflectionColor} 0%, 
+                      ${baseColor} 50%, 
+                      hsl(220, 15%, ${20 - preset.roughness * 10}%) 100%
+                    )`,
+                    opacity: preset.transmission > 0 ? 0.7 : 1,
+                  }}
+                />
+                {preset.clearcoat > 0 && (
+                  <div
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      background: `linear-gradient(135deg,
+                        hsla(0, 0%, 100%, ${0.2 * preset.clearcoat}) 0%,
+                        hsla(0, 0%, 100%, 0) 50%
+                      )`,
+                      mixBlendMode: "overlay",
+                    }}
+                  />
+                )}
 
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="useCustomColor"
-          checked={useCustomColor}
-          onCheckedChange={(checked) => setUseCustomColor(checked as boolean)}
-        />
-        <Label htmlFor="useCustomColor">Override SVG colors</Label>
+                {/* Glass/transmission effect */}
+                {preset.transmission > 0 && (
+                  <div
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      background: `linear-gradient(135deg,
+                        hsla(190, 90%, 80%, ${0.3 * preset.transmission}) 0%,
+                        hsla(190, 90%, 60%, ${0.1 * preset.transmission}) 100%
+                      )`,
+                      mixBlendMode: "screen",
+                    }}
+                  />
+                )}
+              </div>
+              <span className="text-xs font-medium">{preset.label}</span>
+            </div>
+          );
+        })}
       </div>
-
-      {useCustomColor && (
-        <div className="space-y-2">
-          <Label htmlFor="colorPicker">Custom Color</Label>
-          <div className="flex items-center space-x-2">
-            <input
-              type="color"
-              id="colorPicker"
-              value={customColor}
-              onChange={(e) => setCustomColor(e.target.value)}
-              className="w-10 h-10 rounded cursor-pointer"
-            />
-            <input
-              type="text"
-              value={customColor}
-              onChange={(e) => setCustomColor(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-          </div>
-        </div>
-      )}
 
       {materialPreset === "custom" && (
-        <>
-          <div className="space-y-2">
+        <div className="space-y-4">
+          <div className="space-y-4">
             <Label htmlFor="roughness">Roughness: {roughness.toFixed(2)}</Label>
             <Slider
               id="roughness"
@@ -141,7 +117,7 @@ export function MaterialControls() {
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             <Label htmlFor="metalness">Metalness: {metalness.toFixed(2)}</Label>
             <Slider
               id="metalness"
@@ -153,7 +129,7 @@ export function MaterialControls() {
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             <Label htmlFor="clearcoat">Clearcoat: {clearcoat.toFixed(2)}</Label>
             <Slider
               id="clearcoat"
@@ -165,7 +141,7 @@ export function MaterialControls() {
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             <Label htmlFor="transmission">
               Transmission: {transmission.toFixed(2)}
             </Label>
@@ -178,21 +154,38 @@ export function MaterialControls() {
               onValueChange={(value) => setTransmission(value[0])}
             />
           </div>
+        </div>
+      )}
+      <div className="border-t">
+        <div className="flex items-center space-x-2 pt-4">
+          <Checkbox
+            id="useCustomColor"
+            checked={useCustomColor}
+            onCheckedChange={(checked) => setUseCustomColor(checked as boolean)}
+          />
+          <Label htmlFor="useCustomColor">Override SVG colors</Label>
+        </div>
+      </div>
 
-          {/* <div className="space-y-2">
-            <Label htmlFor="envMapIntensity">
-              Environment Reflection: {envMapIntensity.toFixed(1)}
-            </Label>
-            <Slider
-              id="envMapIntensity"
-              min={0}
-              max={3}
-              step={0.1}
-              value={[envMapIntensity]}
-              onValueChange={(value) => setEnvMapIntensity(value[0])}
+      {useCustomColor && (
+        <div className="space-y-4">
+          <Label htmlFor="colorPicker">Custom Color</Label>
+          <div className="flex items-center space-x-2">
+            <Input
+              type="color"
+              id="colorPicker"
+              value={customColor}
+              onChange={(e) => setCustomColor(e.target.value)}
+              className="w-10 h-10 rounded cursor-pointer"
             />
-          </div> */}
-        </>
+            <Input
+              type="text"
+              value={customColor}
+              onChange={(e) => setCustomColor(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            />
+          </div>
+        </div>
       )}
     </div>
   );

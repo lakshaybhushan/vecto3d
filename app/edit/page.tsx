@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SVGModel } from "@/components/svg-model";
-import { ArrowLeft, Loader2, Maximize2, Minimize2 } from "lucide-react";
+import { Loader2, Maximize2, Minimize2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as THREE from "three";
 import { useRouter } from "next/navigation";
@@ -55,6 +55,7 @@ import { useMobileDetection } from "@/hooks/use-mobile-detection";
 import { NotAScam } from "@/components/not-a-scam";
 import { useEditorStore } from "@/lib/store";
 import { DARK_MODE_COLOR, LIGHT_MODE_COLOR } from "@/lib/constants";
+import { BackIcon } from "@/components/ui/ui-icons";
 
 function useThemeBackgroundColor() {
   const { resolvedTheme } = useTheme();
@@ -192,8 +193,8 @@ const ModelPreview = React.memo<ModelPreviewProps>(
         50,
         window.innerWidth / window.innerHeight,
         1,
-        1000,
-      ),
+        1000
+      )
     );
 
     useEffect(() => {
@@ -342,7 +343,7 @@ const ModelPreview = React.memo<ModelPreviewProps>(
         />
       </Canvas>
     );
-  },
+  }
 );
 
 ModelPreview.displayName = "ModelPreview";
@@ -557,7 +558,7 @@ export default function EditPage() {
         "Vibe Mode has been disabled because you selected a custom image",
         {
           duration: 3000,
-        },
+        }
       );
     }
   }, [environmentPreset, customHdriUrl, useBloom, toggleVibeMode]);
@@ -575,11 +576,11 @@ export default function EditPage() {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
       document.removeEventListener(
         "webkitfullscreenchange",
-        handleFullscreenChange,
+        handleFullscreenChange
       );
       document.removeEventListener(
         "mozfullscreenchange",
-        handleFullscreenChange,
+        handleFullscreenChange
       );
     };
   }, [setIsFullscreen]);
@@ -659,11 +660,10 @@ export default function EditPage() {
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              size="icon"
+              size="sm"
               onClick={handleBackToHome}
-              aria-label="Back to home"
-              className="rounded-md w-fit px-4 py-2">
-              <ArrowLeft className="h-5 w-5" />
+              aria-label="Back to home">
+              <BackIcon />
               <span className="hidden sm:inline">Back</span>
             </Button>
           </div>
@@ -712,8 +712,8 @@ export default function EditPage() {
                         {!svgData
                           ? "Loading SVG data..."
                           : isModelLoading
-                            ? "Processing SVG..."
-                            : "Interact with your 3D model"}
+                          ? "Processing SVG..."
+                          : "Interact with your 3D model"}
                       </CardDescription>
                     </div>
                     <TooltipProvider>
@@ -783,18 +783,18 @@ export default function EditPage() {
                                     backgroundColor === "#000000" || useBloom
                                       ? "hover:bg-white/10"
                                       : backgroundColor === "#FFFFFF" &&
-                                          resolvedTheme === "dark"
-                                        ? "hover:bg-black/10"
-                                        : "hover:bg-background/80"
+                                        resolvedTheme === "dark"
+                                      ? "hover:bg-black/10"
+                                      : "hover:bg-background/80"
                                   } backdrop-blur-xs`}>
                                 <Minimize2
                                   className={`h-4 w-4 ${
                                     backgroundColor === "#000000" || useBloom
                                       ? "text-white"
                                       : backgroundColor === "#FFFFFF" &&
-                                          resolvedTheme === "dark"
-                                        ? "text-black"
-                                        : "text-primary/80"
+                                        resolvedTheme === "dark"
+                                      ? "text-black"
+                                      : "text-primary/80"
                                   }`}
                                 />
                                 <span className="sr-only">Exit fullscreen</span>
@@ -817,12 +817,14 @@ export default function EditPage() {
               <motion.div
                 className="space-y-6 order-last lg:order-first"
                 variants={cardAnimation}>
-                <Card>
-                  <CardHeader className="p-4 pb-4">
-                    <CardTitle className="text-lg">Customize</CardTitle>
-                    <CardDescription className="text-xs truncate">
-                      {fileName}
-                    </CardDescription>
+                <Card className="w-full h-fit lex flex-col overflow-hidden border shadow-xs">
+                  <CardHeader className="p-4 pb-4 border-b bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg">Customize</CardTitle>
+                      <CardDescription className="text-xs truncate">
+                        {fileName}
+                      </CardDescription>
+                    </div>
                   </CardHeader>
                   <CardContent className="p-4">
                     <Tabs defaultValue="geometry">

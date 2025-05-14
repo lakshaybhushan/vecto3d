@@ -16,7 +16,7 @@ export function NotAScam() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="secondary" size="icon" className="">
+        <Button variant="secondary" size="icon">
           <Info className="w-4 h-4" />
         </Button>
       </AlertDialogTrigger>
