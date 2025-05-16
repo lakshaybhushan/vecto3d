@@ -111,7 +111,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   bevelThickness: 1.0,
   bevelSize: 0.5,
   bevelSegments: 4,
-  bevelPreset: "medium",
+  bevelPreset: "none",
 
   customColor: "#3498db",
   useCustomColor: false,

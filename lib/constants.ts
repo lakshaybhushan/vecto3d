@@ -8,15 +8,15 @@ import {
 
 // Environment presets
 export const ENVIRONMENT_PRESETS: EnvironmentPreset[] = [
-  { name: "apartment", label: "Apartment (Indoor)", color: "#e0ccae" },
-  { name: "city", label: "City (Urban)", color: "#b4bdc6" },
-  { name: "dawn", label: "Dawn (Sunrise)", color: "#ffd0b0" },
-  { name: "forest", label: "Forest (Natural)", color: "#a8c0a0" },
-  { name: "lobby", label: "Lobby (Interior)", color: "#d8c8b8" },
-  { name: "park", label: "Park (Daytime)", color: "#b3d9ff" },
-  { name: "studio", label: "Studio (Neutral)", color: "#d9d9d9" },
-  { name: "sunset", label: "Sunset (Warm)", color: "#ffb98c" },
-  { name: "warehouse", label: "Warehouse (Industrial)", color: "#9ba3ad" },
+  { name: "apartment", label: "Apartment", color: "#e0ccae" },
+  { name: "city", label: "City", color: "#b4bdc6" },
+  { name: "dawn", label: "Dawn", color: "#ffd0b0" },
+  { name: "forest", label: "Forest", color: "#a8c0a0" },
+  { name: "lobby", label: "Lobby", color: "#d8c8b8" },
+  { name: "park", label: "Park", color: "#b3d9ff" },
+  { name: "studio", label: "Studio", color: "#d9d9d9" },
+  { name: "sunset", label: "Sunset", color: "#ffb98c" },
+  { name: "warehouse", label: "Warehouse", color: "#9ba3ad" },
 ];
 
 // Theme-aware background color presets
@@ -27,9 +27,9 @@ export const LIGHT_MODE_COLOR = "#f5f5f5";
 export const SOLID_COLOR_PRESETS: ColorPreset[] = [
   { name: "light", label: "Light", color: "#f5f5f5" },
   { name: "dark", label: "Dark", color: "#121212" },
-  { name: "blue", label: "Blue", color: "#e6f7ff" },
-  { name: "gray", label: "Gray", color: "#e0e0e0" },
-  { name: "green", label: "Green", color: "#e6ffed" },
+  { name: "blue", label: "Blue", color: "#3C90FF" },
+  { name: "yellow", label: "Yellow", color: "#FFD700" },
+  { name: "green", label: "Green", color: "#90FF3C" },
 ];
 
 // Material presets

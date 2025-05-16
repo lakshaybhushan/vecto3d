@@ -7,10 +7,10 @@ import { loadThreeModules } from "@/lib/three-imports";
 const LazyEnvironment = React.lazy(() =>
   import("./environment-presets").then((module) => ({
     default: module.SimpleEnvironment,
-  })),
+  }))
 );
 const LazySVGModel = React.lazy(() =>
-  import("./svg-model").then((module) => ({ default: module.SVGModel })),
+  import("./svg-model").then((module) => ({ default: module.SVGModel }))
 );
 
 interface PostProcessingModules {
@@ -127,7 +127,7 @@ const PostProcessingEffects: React.FC<PostProcessingEffectsProps> = React.memo(
         />
       </EffectComposer>
     );
-  },
+  }
 );
 
 PostProcessingEffects.displayName = "PostProcessingEffects";
@@ -169,8 +169,8 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
         50,
         window.innerWidth / window.innerHeight,
         1,
-        1000,
-      ),
+        1000
+      )
     );
 
     useEffect(() => {
@@ -231,7 +231,6 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
         frameloop="demand"
         performance={{ min: 0.5 }}
         gl={{
-          antialias: true,
           outputColorSpace: "srgb",
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.2,
@@ -247,11 +246,11 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
         <directionalLight
           position={[50, 50, 100]}
           intensity={0.8 * Math.PI}
-          castShadow={false}
+          castShadow={true}
         />
         {environment}
         <group ref={modelGroupRef} rotation={[0, modelRotationY, 0]}>
-          <Suspense fallback={null}>
+          <Suspense fallback={<div>Loading...</div>}>
             <LazySVGModel
               svgData={svgData}
               depth={depth * 5}
@@ -265,8 +264,8 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
               clearcoat={clearcoat}
               transmission={transmission}
               envMapIntensity={useEnvironment ? envMapIntensity : 0.2}
-              receiveShadow={false}
-              castShadow={false}
+              receiveShadow={true}
+              castShadow={true}
               isHollowSvg={isHollowSvg}
               spread={spread}
               ref={modelRef}
@@ -295,7 +294,7 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
         )}
       </Canvas>
     );
-  },
+  }
 );
 
 ModelPreviews.displayName = "ModelPreviews";

@@ -1,23 +1,16 @@
 import { useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon } from "lucide-react";
+import { InfoIcon, PlusIcon } from "lucide-react";
 import { ENVIRONMENT_PRESETS } from "@/lib/constants";
 import { toast } from "sonner";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { motion } from "framer-motion";
-import { BsStars } from "react-icons/bs";
 import { useEditorStore } from "@/lib/store";
+import { Switch } from "@/components/ui/switch";
+import { VibeModeIcon } from "@/components/ui/ui-icons";
 
 export function EnvironmentControls() {
   const {
@@ -28,7 +21,6 @@ export function EnvironmentControls() {
     customHdriUrl,
     setCustomHdriUrl,
     useBloom,
-    // setUseBloom,
     bloomIntensity,
     setBloomIntensity,
     bloomMipmapBlur,
@@ -99,14 +91,16 @@ export function EnvironmentControls() {
     <div className="space-y-4">
       <Alert className="bg-muted/50 mb-4">
         <AlertDescription className="text-xs flex items-center">
-          <InfoIcon className="h-4 w-4 mr-2" />
-          Environment settings are for preview only and will not affect the
-          exported 3D model.
+          <div className="h-5 w-1 bg-blue-500 rounded-full mr-2" />
+          <p className="text-xs text-muted-foreground">
+            Environment settings are for preview only and will not affect the
+            exported 3D model.
+          </p>
         </AlertDescription>
       </Alert>
 
       <div className="flex items-center space-x-2">
-        <Checkbox
+        <Switch
           id="useEnvironment"
           checked={useEnvironment}
           onCheckedChange={(checked) => setUseEnvironment(checked as boolean)}
@@ -116,54 +110,44 @@ export function EnvironmentControls() {
 
       {useEnvironment && (
         <>
-          <div className="space-y-2">
-            <Label htmlFor="environmentPreset">Environment Preset</Label>
-            <Select
-              value={environmentPreset}
-              onValueChange={setEnvironmentPreset}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select environment" />
-              </SelectTrigger>
-              <SelectContent>
-                {ENVIRONMENT_PRESETS.map((preset) => (
-                  <SelectItem key={preset.name} value={preset.name}>
-                    {preset.label}
-                  </SelectItem>
-                ))}
-                {customHdriUrl && (
-                  <SelectItem value="custom">Custom Image</SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 my-3">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
             {ENVIRONMENT_PRESETS.map((preset) => (
               <div
                 key={preset.name}
-                className={`cursor-pointer rounded-md p-2 flex flex-col items-center ${
+                className={`cursor-pointer rounded-lg p-2 flex flex-col items-center ${
                   environmentPreset === preset.name
-                    ? "bg-primary/20 ring-1 ring-primary"
+                    ? "bg-primary/10 ring-1 ring-input"
                     : "hover:bg-muted"
                 }`}
                 onClick={() => setEnvironmentPreset(preset.name)}>
-                <div
-                  className="w-12 h-12 rounded-full mb-1 overflow-hidden"
-                  style={{
-                    background: preset.color,
-                    boxShadow: "0 0 8px rgba(0,0,0,0.15) inset",
-                  }}
-                />
+                <div className="w-full aspect-video rounded-md mb-2 overflow-hidden relative">
+                  <div
+                    className="w-full h-full absolute inset-0"
+                    style={{
+                      background: `linear-gradient(135deg, ${preset.color}40, ${preset.color}, ${preset.color}90)`,
+                    }}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                      className="w-10 h-10 rounded-full"
+                      style={{
+                        background: `radial-gradient(circle at 30% 30%, white, ${preset.color}80, rgba(0,0,0,0.2))`,
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                      }}
+                    />
+                  </div>
+                </div>
                 <span className="text-xs font-medium text-center">
-                  {preset.label.split(" ")[0]}
+                  {preset.label}
                 </span>
               </div>
             ))}
 
             <div
+              key="custom-preset"
               className={`cursor-pointer rounded-md p-2 flex flex-col items-center ${
                 environmentPreset === "custom"
-                  ? "bg-primary/20 ring-1 ring-primary"
+                  ? "bg-primary/10 ring-1 ring-input"
                   : "hover:bg-muted"
               }`}
               onClick={() => {
@@ -183,21 +167,23 @@ export function EnvironmentControls() {
 
               {customHdriUrl ? (
                 <>
-                  <div
-                    className="w-12 h-12 rounded-full mb-1 overflow-hidden"
-                    style={{
-                      backgroundImage: `url(${customHdriUrl})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    }}
-                  />
+                  <div className="w-full aspect-video rounded-md mb-2 overflow-hidden">
+                    <div
+                      className="w-full h-full"
+                      style={{
+                        backgroundImage: `url(${customHdriUrl})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
+                    />
+                  </div>
                   <span className="text-xs font-medium">Custom</span>
                 </>
               ) : (
                 <>
-                  <div className="w-12 h-12 rounded-full mb-1 flex items-center justify-center bg-primary/10">
+                  <div className="w-full aspect-video rounded-md mb-2 flex items-center justify-center bg-primary/5 border-2 border-dashed border-primary/20">
                     <span className="text-2xl font-semibold text-primary">
-                      +
+                      <PlusIcon className="h-4 w-4 text-primary" />
                     </span>
                   </div>
                   <span className="text-xs font-medium">Custom</span>
@@ -207,37 +193,37 @@ export function EnvironmentControls() {
           </div>
 
           {environmentPreset === "custom" && customHdriUrl && (
-            <div className="mt-3 p-3 bg-muted/30 rounded-md">
-              <div className="flex items-start">
-                <InfoIcon className="h-4 w-4 text-muted-foreground mr-2 mt-0.5" />
-                <div>
+            <Alert className="bg-muted/50 mb-4">
+              <AlertDescription className="text-xs flex items-center">
+                <div className="h-5 w-1 bg-blue-500 rounded-full mr-2" />
+                <div className="flex items-center justify-between w-full">
                   <p className="text-xs text-muted-foreground">
-                    Your image will be used for reflections in the 3D model
+                    Your image will be used for reflections in the 3D model.
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="mt-2 text-xs h-7"
+                    className="text-xs h-7"
                     onClick={() => hdriFileInputRef.current?.click()}>
                     Change Image
                   </Button>
                 </div>
-              </div>
-            </div>
+              </AlertDescription>
+            </Alert>
           )}
         </>
       )}
 
       {useEnvironment && (
         <div className="space-y-4 pt-4 mt-4 border-t">
-          <div className="w-full">
+          <div className="w-full cursor-not-allowed">
             {environmentPreset === "custom" && customHdriUrl ? (
               <Button
                 variant="outline"
                 size="lg"
                 disabled={true}
-                className="w-full opacity-50 cursor-not-allowed">
-                Vibe Mode Not Available with Custom Images
+                className="w-full">
+                Sorry, Vibe Mode is not available with custom images :(
               </Button>
             ) : (
               <RainbowButton
@@ -248,8 +234,10 @@ export function EnvironmentControls() {
                   const newValue = !useBloom;
                   toggleVibeMode(newValue);
                 }}>
-                {useBloom ? "Disable Vibe Mode" : "Enable Vibe Mode"}
-                <BsStars className="w-4 h-4 ml-2" />
+                <VibeModeIcon />
+                <span className="ml-1">
+                  {useBloom ? "Disable Vibe Mode" : "Enable Vibe Mode"}
+                </span>
               </RainbowButton>
             )}
           </div>
@@ -261,10 +249,8 @@ export function EnvironmentControls() {
               animate={{ opacity: 1, height: "auto", y: 0 }}
               exit={{ opacity: 0, height: 0, y: -10 }}
               transition={{ duration: 0.15 }}>
-              <div className="space-y-2">
-                <Label
-                  htmlFor="bloomIntensity"
-                  className="flex justify-between">
+              <div className="space-y-4">
+                <Label htmlFor="bloomIntensity">
                   <span>Bloom Intensity</span>
                   <span className="text-primary font-mono">
                     {bloomIntensity.toFixed(1)}
@@ -281,20 +267,20 @@ export function EnvironmentControls() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <Checkbox
+                <Switch
                   id="bloomMipmapBlur"
                   checked={bloomMipmapBlur}
                   onCheckedChange={(checked) =>
                     setBloomMipmapBlur(checked as boolean)
                   }
                 />
-                <Label htmlFor="bloomMipmapBlur">
-                  Smooth Bloom (Better Quality)
-                </Label>
+
+                <Label htmlFor="bloomMipmapBlur">Smooth Bloom</Label>
               </div>
+
               <div className="space-y-2 pt-3 border-t border-primary/10">
                 <Label htmlFor="modelRotation" className="flex justify-between">
-                  <span>Model Rotation</span>
+                  <span>Rotate Model</span>
                   <span className="text-primary font-mono">
                     {(modelRotationY * (180 / Math.PI)).toFixed(0)}°
                   </span>

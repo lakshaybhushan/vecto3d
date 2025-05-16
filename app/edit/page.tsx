@@ -37,7 +37,6 @@ import {
 import {
   staggerContainer,
   cardAnimation,
-  // fadeUp,
   modelContainerAnimation,
   tabContentAnimation,
   pageTransition,
@@ -717,7 +716,7 @@ export default function EditPage() {
                       </CardDescription>
                     </div>
                     <TooltipProvider>
-                      <Tooltip delayDuration={300}>
+                      <Tooltip delayDuration={100}>
                         <TooltipTrigger asChild>
                           <Button
                             variant="outline"
@@ -740,7 +739,7 @@ export default function EditPage() {
                                   backgroundColor === "#FFFFFF" &&
                                   resolvedTheme === "dark"
                                     ? "text-black"
-                                    : ""
+                                    : "text-white"
                                 }`}
                               />
                             ) : (
@@ -749,7 +748,7 @@ export default function EditPage() {
                                   backgroundColor === "#FFFFFF" &&
                                   resolvedTheme === "dark"
                                     ? "text-black"
-                                    : ""
+                                    : "text-white"
                                 }`}
                               />
                             )}
@@ -771,14 +770,14 @@ export default function EditPage() {
                     {isFullscreen && (
                       <div className="absolute inset-0 pointer-events-none">
                         <TooltipProvider>
-                          <Tooltip delayDuration={300}>
+                          <Tooltip delayDuration={100}>
                             <TooltipTrigger asChild>
                               <Button
                                 size="icon"
                                 variant={"ghost"}
                                 onClick={() => document.exitFullscreen()}
                                 aria-label="Exit fullscreen"
-                                className={`absolute top-6 right-6 z-99999 pointer-events-auto bg-transparent
+                                className={`absolute top-6 right-6 pointer-events-auto bg-transparent
                                   ${
                                     backgroundColor === "#000000" || useBloom
                                       ? "hover:bg-white/10"
@@ -801,10 +800,8 @@ export default function EditPage() {
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent
-                              side="left"
-                              align="center"
-                              sideOffset={10}
-                              className="text-xs py-2 px-4 z-99999 shadow-md">
+                              // sideOffset={10}
+                              className="text-xs py-2 px-4 shadow-md">
                               Exit fullscreen
                             </TooltipContent>
                           </Tooltip>
@@ -817,7 +814,7 @@ export default function EditPage() {
               <motion.div
                 className="space-y-6 order-last lg:order-first"
                 variants={cardAnimation}>
-                <Card className="w-full h-fit lex flex-col overflow-hidden border shadow-xs">
+                <Card className="w-full h-fit flex flex-col overflow-hidden border shadow-xs">
                   <CardHeader className="p-4 pb-4 border-b bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-lg">Customize</CardTitle>

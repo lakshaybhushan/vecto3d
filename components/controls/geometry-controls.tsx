@@ -1,8 +1,8 @@
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
 import { BEVEL_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
+import { Switch } from "@/components/ui/switch";
 
 export function GeometryControls() {
   const {
@@ -46,7 +46,10 @@ export function GeometryControls() {
   return (
     <div className="space-y-4">
       <div className="space-y-4">
-        <Label htmlFor="depth">Adjust Thickness: {depth}</Label>
+        <Label htmlFor="depth">
+          <span>Adjust Thickness</span>
+          <span className="text-primary font-mono">{depth.toFixed(1)}</span>
+        </Label>
         <Slider
           id="depth"
           min={0.1}
@@ -63,7 +66,7 @@ export function GeometryControls() {
           {BEVEL_PRESETS.map((preset) => (
             <div
               key={preset.name}
-              className={`cursor-pointer rounded-lg p-4 flex flex-col items-center ${
+              className={`cursor-pointer rounded-lg pt-4 pb-2 flex flex-col items-center ${
                 bevelPreset === preset.name
                   ? "bg-primary/10 ring-1 ring-input"
                   : "hover:bg-muted"
@@ -167,7 +170,7 @@ export function GeometryControls() {
                   </div>
                 )}
               </div>
-              <span className="text-xs font-medium">{preset.label}</span>
+              <span className="text-xs font-medium pt-1">{preset.label}</span>
             </div>
           ))}
         </div>
@@ -176,7 +179,10 @@ export function GeometryControls() {
           <div className="space-y-4 pb-2">
             <div className="space-y-4">
               <Label htmlFor="bevelThickness">
-                Bevel Thickness: {bevelThickness.toFixed(1)}
+                <span>Bevel Thickness</span>
+                <span className="text-primary font-mono">
+                  {bevelThickness.toFixed(1)}
+                </span>
               </Label>
               <Slider
                 id="bevelThickness"
@@ -192,7 +198,10 @@ export function GeometryControls() {
 
             <div className="space-y-4">
               <Label htmlFor="bevelSize">
-                Bevel Size: {bevelSize.toFixed(1)}
+                <span>Bevel Size</span>
+                <span className="text-primary font-mono">
+                  {bevelSize.toFixed(1)}
+                </span>
               </Label>
               <Slider
                 id="bevelSize"
@@ -208,7 +217,10 @@ export function GeometryControls() {
 
             <div className="space-y-4">
               <Label htmlFor="bevelSegments">
-                Bevel Quality: {bevelSegments}
+                <span>Bevel Quality</span>
+                <span className="text-primary font-mono">
+                  {bevelSegments.toFixed(1)}
+                </span>
               </Label>
               <Slider
                 id="bevelSegments"
@@ -227,7 +239,7 @@ export function GeometryControls() {
 
       <div className="border-t">
         <div className="flex items-center space-x-2 pt-4">
-          <Checkbox
+          <Switch
             id="autoRotate"
             checked={autoRotate}
             onCheckedChange={(checked) => setAutoRotate(checked as boolean)}
@@ -238,13 +250,15 @@ export function GeometryControls() {
         {autoRotate && (
           <div className="space-y-4 mt-4 py-2">
             <Label htmlFor="autoRotateSpeed">
-              Rotation Speed:{" "}
-              {actualToDisplayRotation(autoRotateSpeed).toFixed(1)}
+              <span>Rotation Speed</span>
+              <span className="text-primary font-mono">
+                {actualToDisplayRotation(autoRotateSpeed).toFixed(1)}
+              </span>
             </Label>
             <Slider
               id="autoRotateSpeed"
               min={1}
-              max={10}
+              max={20}
               step={0.5}
               value={[actualToDisplayRotation(autoRotateSpeed)]}
               onValueChange={(value) =>

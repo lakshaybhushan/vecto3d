@@ -1,7 +1,6 @@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon } from "lucide-react";
 import {
   SOLID_COLOR_PRESETS,
   DARK_MODE_COLOR,
@@ -10,6 +9,8 @@ import {
 import { useEditorStore } from "@/lib/store";
 import { useTheme } from "next-themes";
 import { Input } from "@/components/ui/input";
+import { PopoverPicker } from "../ui/color-picker";
+
 export function BackgroundControls() {
   const {
     backgroundColor,
@@ -32,27 +33,23 @@ export function BackgroundControls() {
     <div className="space-y-4">
       <Alert className="bg-muted/50 mb-4">
         <AlertDescription className="text-xs flex items-center">
-          <InfoIcon className="h-4 w-4 mr-2" />
-          Background settings are for preview only and will not be included in
-          the exported 3D model.
+          <div className="h-5 w-1 bg-blue-500 rounded-full mr-2" />
+          <p className="text-xs text-muted-foreground">
+            Background settings are for preview only and will not affect the
+            exported 3D model.
+          </p>
         </AlertDescription>
       </Alert>
-
       <div className="space-y-4">
         <Label>Background Color</Label>
-        <div className="flex items-center mb-2 text-sm text-muted-foreground">
-          <span>
-            Currently using:{" "}
-            {userSelectedBackground ? "Custom selection" : "Theme default"}
-          </span>
-        </div>
-        <div className="grid grid-cols-5 gap-2">
+
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
           {SOLID_COLOR_PRESETS.map((preset) => (
             <div
               key={preset.name}
-              className={`cursor-pointer rounded-md p-2 flex flex-col items-center ${
+              className={`cursor-pointer rounded-lg pt-3 pb-2 flex flex-col items-center ${
                 solidColorPreset === preset.name
-                  ? "bg-primary/20 ring-1 ring-primary"
+                  ? "bg-primary/10 ring-1 ring-input"
                   : "hover:bg-muted"
               }`}
               onClick={() => handleBackgroundChange(preset.color, preset.name)}>
@@ -62,31 +59,28 @@ export function BackgroundControls() {
                   background: preset.color,
                 }}
               />
-              <span className="text-xs font-medium">{preset.label}</span>
+              <span className="text-xs font-medium pt-1">{preset.label}</span>
             </div>
           ))}
         </div>
 
-        <div className="space-y-2 pt-2">
-          <Label htmlFor="backgroundColor">Custom Color</Label>
+        <div className="space-y-4 pt-2">
+          <Label htmlFor="backgroundColor">Custom color</Label>
           <div className="flex items-center space-x-2">
-            <Input
-              type="color"
-              id="backgroundColor"
-              value={backgroundColor}
-              onChange={(e) => handleBackgroundChange(e.target.value, "custom")}
-              className="w-10"
+            <PopoverPicker
+              color={backgroundColor}
+              onChange={setBackgroundColor}
             />
             <Input
               type="text"
               value={backgroundColor}
               onChange={(e) => handleBackgroundChange(e.target.value, "custom")}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="w-22 font-mono uppercase"
             />
           </div>
         </div>
 
-        <div className="pt-2">
+        <div className="pt-1">
           <Button
             variant="outline"
             size="sm"
@@ -100,7 +94,7 @@ export function BackgroundControls() {
                 setSolidColorPreset("light");
               }
             }}
-            className="w-full h-10">
+            className="w-full h-11">
             Reset to Theme Default
           </Button>
         </div>

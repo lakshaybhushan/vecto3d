@@ -4,6 +4,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { MATERIAL_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
 import { Input } from "../ui/input";
+import { HexColorPicker } from "react-colorful";
+import { PopoverPicker } from "../ui/color-picker";
+
 
 export function MaterialControls() {
   const {
@@ -23,12 +26,15 @@ export function MaterialControls() {
     setCustomColor,
   } = useEditorStore();
 
+
   return (
     <div className="space-y-4">
-      <p className="text-sm font-medium">Material Type</p>
+      <div className="space-y-4">
+        <Label htmlFor="materialPreset">Material Type</Label>
+      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
-      {MATERIAL_PRESETS.map((preset) => {
+        {MATERIAL_PRESETS.map((preset) => {
           const reflectionColor =
             preset.metalness > 0
               ? `hsl(220, ${100 - preset.roughness * 60}%, ${
@@ -46,7 +52,7 @@ export function MaterialControls() {
           return (
             <div
               key={preset.name}
-              className={`cursor-pointer rounded-lg p-4 flex flex-col items-center ${
+              className={`cursor-pointer rounded-lg pt-3 pb-2 flex flex-col items-center ${
                 materialPreset === preset.name
                   ? "bg-primary/10 ring-1 ring-input"
                   : "hover:bg-muted"
@@ -97,7 +103,7 @@ export function MaterialControls() {
                   />
                 )}
               </div>
-              <span className="text-xs font-medium">{preset.label}</span>
+              <span className="text-xs font-medium pt-1">{preset.label}</span>
             </div>
           );
         })}
@@ -163,26 +169,19 @@ export function MaterialControls() {
             checked={useCustomColor}
             onCheckedChange={(checked) => setUseCustomColor(checked as boolean)}
           />
-          <Label htmlFor="useCustomColor">Override SVG colors</Label>
+          <Label htmlFor="useCustomColor">Override material color</Label>
         </div>
       </div>
 
       {useCustomColor && (
         <div className="space-y-4">
-          <Label htmlFor="colorPicker">Custom Color</Label>
           <div className="flex items-center space-x-2">
-            <Input
-              type="color"
-              id="colorPicker"
-              value={customColor}
-              onChange={(e) => setCustomColor(e.target.value)}
-              className="w-10 h-10 rounded cursor-pointer"
-            />
+            <PopoverPicker color={customColor} onChange={setCustomColor} />
             <Input
               type="text"
               value={customColor}
               onChange={(e) => setCustomColor(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="w-22 font-mono uppercase"
             />
           </div>
         </div>
