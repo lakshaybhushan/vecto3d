@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-// import { FaGithub } from "react-icons/fa";
 import { GitHubIcon } from "@/components/ui/example-icons";
 import { Logo } from "@/components/ui/logo";
 import { FileUpload } from "@/components/file-upload";
@@ -12,7 +11,8 @@ import { useMobileDetection } from "@/hooks/use-mobile-detection";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { ModeToggle } from "@/components/ui/theme-toggle";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Loader2, Star } from "lucide-react";
+import { Loader2, Star } from "lucide-react";
+import { BackIcon } from "@/components/ui/ui-icons";
 import {
   staggerContainer,
   fadeUp,
@@ -119,7 +119,7 @@ export default function Home() {
       <AnimatePresence>
         {isLoading && (
           <motion.div
-            className="fixed inset-0 bg-background/80 backdrop-blur-xs z-50 flex items-center justify-center"
+            className="fixed inset-0 bg-background/80 backdrop-blur-lg z-50 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -143,7 +143,7 @@ export default function Home() {
 
       {/* Header */}
       <motion.header
-        className="w-full py-6 px-6 md:px-12 flex justify-between items-center"
+        className="fixed top-0 w-full py-6 px-6 md:px-12 flex justify-between items-center"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{
@@ -207,7 +207,7 @@ export default function Home() {
             },
           }}>
           <motion.h1
-            className="font-serif text-4xl md:text-5xl lg:text-7xl tracking-tight leading-tight md:leading-tight"
+            className="font-serif text-4xl tracking-tight md:text-5xl lg:text-7xl leading-tighter"
             variants={{
               hidden: { opacity: 0, filter: "blur(10px)" },
               visible: {
@@ -257,7 +257,7 @@ export default function Home() {
           ) : (
             <motion.div
               key="desktop-content"
-              className="w-full max-w-4xl mx-auto"
+              className="w-fit mx-auto"
               variants={{
                 hidden: { opacity: 0, y: 30 },
                 visible: {
@@ -327,7 +327,7 @@ export default function Home() {
                       }}
                       className="w-full flex justify-center">
                       <RainbowButton
-                        className="max-w-xl w-full md:w-1/2 mx-auto text-md py-6"
+                        className="max-w-lg w-full md:w-1/2 mx-auto text-md py-6"
                         onClick={handleContinue}
                         disabled={isLoading}>
                         <span className="flex items-center gap-2">
@@ -337,9 +337,7 @@ export default function Home() {
                               Processing...
                             </>
                           ) : (
-                            <>
-                              Continue to Editor <ArrowRight size={16} />
-                            </>
+                            <>Continue to Editor</>
                           )}
                         </span>
                       </RainbowButton>

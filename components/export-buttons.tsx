@@ -12,7 +12,11 @@ import { handleExport, handlePrint } from "@/lib/exporters";
 import * as THREE from "three";
 import { useEffect, useState } from "react";
 import { checkIsUSLocation } from "@/lib/utils";
-import { ImageDownloadIcon, ThreeDExportIcon } from "@/components/ui/ui-icons";
+import {
+  ImageDownloadIcon,
+  ThreeDExportIcon,
+  ThreeDPrintIcon,
+} from "@/components/ui/ui-icons";
 
 interface ExportButtonsProps {
   fileName: string;
@@ -112,14 +116,13 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
       {isUS === true && (
         <Button
           size="sm"
-          variant="outline"
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600"
           onClick={handlePrintClick}
           disabled={isPrinting}>
           {isPrinting ? (
-            <Loader2 className="h-4 w-4 mr-0.5 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <Printer className="h-4 w-4 mr-0.5" />
+            <ThreeDPrintIcon />
           )}
           <span className="hidden sm:inline">
             {isPrinting ? "Processing..." : "3D Print"}

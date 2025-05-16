@@ -421,34 +421,10 @@ export default function EditPage() {
     setFileName,
     setIsModelLoading,
     setSvgProcessingError,
-    // setDepth,
     setIsHollowSvg,
-    // setModelRotationY,
-    // setBevelEnabled,
-    // setBevelThickness,
-    // setBevelSize,
-    // setBevelSegments,
-    // setBevelPreset,
-    // setCustomColor,
-    // setUseCustomColor,
-    // setMaterialPreset,
-    // setRoughness,
-    // setMetalness,
-    // setClearcoat,
-    // setTransmission,
-    // setEnvMapIntensity,
-    // setUseEnvironment,
-    // setEnvironmentPreset,
-    // setCustomHdriUrl,
-    // setUserSelectedBackground,
     setBackgroundColor,
     setSolidColorPreset,
-    // setAutoRotate,
-    // setAutoRotateSpeed,
     setIsFullscreen,
-    // setUseBloom,
-    // setBloomIntensity,
-    // setBloomMipmapBlur,
     toggleVibeMode,
   } = useEditorStore();
 
@@ -645,17 +621,18 @@ export default function EditPage() {
 
   return (
     <motion.main
-      className="min-h-screen flex flex-col"
+      className="flex flex-col"
       variants={pageTransition}
       initial="initial"
       animate="animate"
       exit="exit">
       <motion.header
-        className="sticky top-0 z-10 w-full bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 border-b"
+        className="sticky top-0 z-10 w-full bg-background/80 backdrop-blur-sm supports-backdrop-filter:bg-background/60 border-b border-dashed"
+
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}>
-        <div className="container flex items-center justify-between h-16 px-4">
+        <div className="container flex items-center justify-between h-16 px-8">
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -679,7 +656,7 @@ export default function EditPage() {
         </div>
       </motion.header>
 
-      <div className="container flex-1 px-4 py-6">
+      <div className="container flex-1 py-8">
         <AnimatePresence mode="wait">
           {isMobile && !continueOnMobile ? (
             <motion.div
@@ -696,7 +673,7 @@ export default function EditPage() {
           ) : (
             <motion.div
               key="editor-content"
-              className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+              className="grid grid-cols-1 lg:grid-cols-2 gap-8"
               variants={staggerContainer(0.2)}
               initial="hidden"
               animate="show">
@@ -704,10 +681,10 @@ export default function EditPage() {
                 variants={modelContainerAnimation}
                 className="h-[400px] sm:h-[500px] lg:h-[600px] order-first lg:order-last relative overflow-hidden">
                 <Card className="w-full h-full flex flex-col overflow-hidden border shadow-xs">
-                  <CardHeader className="p-4 pb-4 border-b bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
+                  <CardHeader className="p-4 border-b [.border-b]:pb-4 bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle className="text-lg">Preview</CardTitle>
-                      <CardDescription className="text-xs">
+                      <CardTitle className="text-xl font-medium">Preview</CardTitle>
+                      <CardDescription className="text-xs mt-1">
                         {!svgData
                           ? "Loading SVG data..."
                           : isModelLoading
@@ -739,7 +716,7 @@ export default function EditPage() {
                                   backgroundColor === "#FFFFFF" &&
                                   resolvedTheme === "dark"
                                     ? "text-black"
-                                    : "text-white"
+                                    : ""
                                 }`}
                               />
                             ) : (
@@ -748,7 +725,7 @@ export default function EditPage() {
                                   backgroundColor === "#FFFFFF" &&
                                   resolvedTheme === "dark"
                                     ? "text-black"
-                                    : "text-white"
+                                    : ""
                                 }`}
                               />
                             )}
@@ -789,7 +766,7 @@ export default function EditPage() {
                                 <Minimize2
                                   className={`h-4 w-4 ${
                                     backgroundColor === "#000000" || useBloom
-                                      ? "text-white"
+                                      ? "text"
                                       : backgroundColor === "#FFFFFF" &&
                                         resolvedTheme === "dark"
                                       ? "text-black"
@@ -800,7 +777,9 @@ export default function EditPage() {
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent
-                              // sideOffset={10}
+                              side="left"
+                              align="center"
+                              sideOffset={10}
                               className="text-xs py-2 px-4 shadow-md">
                               Exit fullscreen
                             </TooltipContent>
@@ -815,10 +794,10 @@ export default function EditPage() {
                 className="space-y-6 order-last lg:order-first"
                 variants={cardAnimation}>
                 <Card className="w-full h-fit flex flex-col overflow-hidden border shadow-xs">
-                  <CardHeader className="p-4 pb-4 border-b bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
+                  <CardHeader className="p-4 pb-4 border-b [.border-b]:pb-4 bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle className="text-lg">Customize</CardTitle>
-                      <CardDescription className="text-xs truncate">
+                      <CardTitle className="text-xl font-medium">Customize</CardTitle>
+                      <CardDescription className="text-xs mt-1 truncate">
                         {fileName}
                       </CardDescription>
                     </div>

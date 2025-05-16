@@ -1,6 +1,6 @@
 import type React from "react";
 import "@/styles/globals.css";
-import { Instrument_Sans, Instrument_Serif } from "next/font/google";
+import { Host_Grotesk, Instrument_Serif } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster as SonnerToaster } from "sonner";
 import Script from "next/script";
@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 
-const instrumentSans = Instrument_Sans({
+const instrumentSans = Host_Grotesk({
   subsets: ["latin"],
   variable: "--font-instrument-sans",
 });
@@ -54,7 +54,9 @@ export default function RootLayout({
         defer
         data-website-id="237f1de7-ab04-44dd-a7b4-6b0b819b7991"
       />
-      <body className={cn(instrumentSans.className, instrumentSerif.variable)} suppressHydrationWarning>
+      <body
+        className={cn(instrumentSans.className, instrumentSerif.variable)}
+        suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

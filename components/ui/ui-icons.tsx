@@ -35,28 +35,27 @@ export const ImageDownloadIcon = ({ size = 16 }: { size?: number }) => {
 export const ThreeDExportIcon = ({ size = 16 }: { size?: number }) => {
   return (
     <svg
-      width={size}
-      height={size}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      stroke="currentColor"
+      width={size}
+      height={size}
+      color="currentColor"
       fill="none">
-      <path
-        d="M12 11.5C12.4955 11.5 12.9562 11.3015 13.8775 10.9045L14.5423 10.618C16.1808 9.91202 17 9.55902 17 9C17 8.44098 16.1808 8.08798 14.5423 7.38197L13.8775 7.09549C12.9562 6.6985 12.4955 6.5 12 6.5C11.5045 6.5 11.0438 6.6985 10.1225 7.09549L9.45768 7.38197C7.81923 8.08798 7 8.44098 7 9C7 9.55902 7.81923 9.91202 9.45768 10.618L10.1225 10.9045C11.0438 11.3015 11.5045 11.5 12 11.5ZM12 11.5V17.5"
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
         stroke="currentColor"
         strokeWidth="2"
-        strokeLinejoin="round"></path>
+        strokeLinecap="round"></circle>
       <path
-        d="M17 9V15C17 15.559 16.1808 15.912 14.5423 16.618L13.8775 16.9045C12.9562 17.3015 12.4955 17.5 12 17.5C11.5045 17.5 11.0438 17.3015 10.1225 16.9045L9.45768 16.618C7.81923 15.912 7 15.559 7 15V9"
+        d="M2 12C7.18491 16.8269 16.4642 16.3877 22 12.3556"
         stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"></path>
+        strokeWidth="2"></path>
       <path
-        d="M9.14426 2.5C6.48724 2.56075 4.93529 2.81456 3.87493 3.87493C2.81456 4.93529 2.56075 6.48724 2.5 9.14426M14.8557 2.5C17.5128 2.56075 19.0647 2.81456 20.1251 3.87493C21.1854 4.93529 21.4392 6.48724 21.5 9.14426M14.8557 21.5C17.5128 21.4392 19.0647 21.1854 20.1251 20.1251C21.1854 19.0647 21.4392 17.5128 21.5 14.8557M9.14426 21.5C6.48724 21.4392 4.93529 21.1854 3.87493 20.1251C2.81456 19.0647 2.56075 17.5128 2.5 14.8557"
+        d="M11.5368 2C6.98939 6.5 6.48408 17 11.9941 22"
         stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"></path>
+        strokeWidth="2"></path>
     </svg>
   );
 };
@@ -109,6 +108,87 @@ export const VibeModeIcon = ({ size = 16 }: { size?: number }) => {
         stroke="currentColor"
         strokeWidth="2"
         strokeLinejoin="round"></path>
+    </svg>
+  );
+};
+
+export const ThreeDPrintIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      color="currentColor"
+      fill="none">
+      <path
+        d="M8 2H2V2.5C2 3.60457 2.89543 4.5 4 4.5H8V2Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"></path>
+      <path
+        d="M22 2H16V4.5H20C21.1046 4.5 22 3.60457 22 2.5V2Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"></path>
+      <path
+        d="M16 2H8V10H16V2Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"></path>
+      <path
+        d="M13.5 13H10.5L8 10H16L13.5 13Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"></path>
+      <path
+        d="M13.5 13H10.5V14.7574C10.5 15.553 10.8161 16.3161 11.3787 16.8787L12 17.5L12.6213 16.8787C13.1839 16.3161 13.5 15.553 13.5 14.7574V13Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"></path>
+      <path
+        d="M2 22H10C11.1046 22 12 21.1046 12 20"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"></path>
+      <path
+        d="M14 5V5.01"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"></path>
+      <path
+        d="M14 7.5V7.51"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"></path>
+    </svg>
+  );
+};
+
+export const AsteriskIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      color="currentColor"
+      fill="none">
+      <path
+        d="M12.0001 4V20M19 8L5.00025 16M18.9997 16L5 8"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 };

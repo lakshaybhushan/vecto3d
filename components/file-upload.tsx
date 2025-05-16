@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileType } from "lucide-react";
+// import { FileType } from "lucide-react";
 import { FileUploadProps } from "@/lib/types";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ import {
   ChatAppIcon,
   Vecto3dIcon,
 } from "@/components/ui/example-icons";
+import { AsteriskIcon } from "@/components/ui/ui-icons";
 import { Button } from "@/components/ui/button";
 
 const exampleIcons = [
@@ -68,7 +69,7 @@ export function FileUpload({
       onIconSelect(iconName);
 
       const selectedIconObj = exampleIcons.find(
-        (icon) => icon.name === iconName,
+        (icon) => icon.name === iconName
       );
       if (selectedIconObj) {
         let svgContent = "";
@@ -134,7 +135,7 @@ export function FileUpload({
   const renderSelectedIcon = () => {
     if (selectedIcon) {
       const IconComponent = exampleIcons.find(
-        (icon) => icon.name === selectedIcon,
+        (icon) => icon.name === selectedIcon
       )?.component;
       if (IconComponent) {
         return (
@@ -159,13 +160,13 @@ export function FileUpload({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}>
-      <Card className="border-none shadow-lg overflow-hidden">
+      <Card className="border-2 shadow-lg w-full p-2">
         <CardContent className="p-0">
           <motion.div
             ref={dropZoneRef}
-            className={`relative min-h-[270px] flex flex-col items-center justify-center cursor-pointer px-10 py-14 transition-all duration-300 ${
+            className={`relative flex flex-col py-4 px-8 items-center justify-center cursor-pointer transition-all duration-500 ${
               isDragging
-                ? "border-primary border-4 border-dashed bg-primary/10"
+                ? "border-primary border-2 border-dashed bg-primary/10"
                 : "border-border border-2 border-dashed hover:bg-muted/30"
             }`}
             onClick={handleUploadClick}
@@ -174,7 +175,7 @@ export function FileUpload({
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             animate={{
-              borderRadius: "12px",
+              borderRadius: "8px",
             }}
             style={{
               backgroundColor: "transparent",
@@ -200,13 +201,13 @@ export function FileUpload({
                 transition={{ type: "spring", stiffness: 300, damping: 15 }}>
                 {svgContent ? (
                   <motion.div
-                    className="relative z-10 flex items-center justify-center w-32 h-32"
+                    className="relative z-10 flex items-center justify-center"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ type: "spring", damping: 20 }}>
                     <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl transform scale-75" />
                     <div
-                      className="relative z-10 w-22 h-22 p-6 rounded-xl bg-background/80 backdrop-blur-xs border-2 border-primary/30 shadow-xl shadow-primary/20 flex items-center justify-center overflow-hidden"
+                      className="relative z-10 w-24 h-24 p-6 rounded-xl bg-primary-foreground backdrop-blur-xs border-2 shadow-xl shadow-primary/20 flex items-center justify-center overflow-hidden"
                       dangerouslySetInnerHTML={{
                         __html: svgContent
                           .replace(/width="[^"]*"/, 'width="100%"')
@@ -226,20 +227,14 @@ export function FileUpload({
                           ? "border-primary bg-primary-foreground"
                           : "border-border bg-muted"
                       }`}
-                      animate={{
-                        rotate: isDragging ? [-2, 2, -2] : 0,
-                      }}
-                      transition={{
-                        rotate: { repeat: Infinity, duration: 0.5 },
-                      }}>
-                      <FileType
-                        className={`h-12 w-12 ${
-                          isDragging
-                            ? "text-primary animate-pulse"
-                            : "text-primary"
-                        }`}
-                        strokeWidth={1.5}
-                      />
+                      // animate={{
+                      //   rotate: isDragging ? [-2, 2, -2] : 0,
+                      // }}
+                      // transition={{
+                      //   rotate: { repeat: Infinity, duration: 0.5 },
+                      // }}>
+                    >
+                      <AsteriskIcon size={48} />
                     </motion.div>
                   </div>
                 )}
@@ -261,22 +256,23 @@ export function FileUpload({
                         {fileName}
                       </motion.span>
                     ) : (
-                      "Click or drop your SVG file here"
+                      "Click this space / Drop Your SVG File Here"
                     )}
                   </p>
                   <p className="text-muted-foreground text-sm mt-1.5">
                     {svgContent || selectedIcon
                       ? "Let's make it 3D!"
-                      : "We'll convert it to a 3D model and let you edit it"}
+                      : "And see the magic happen!"}
                   </p>
-
-                  <div className="mt-7">
-                    <div className="w-full h-px bg-border my-3.5"></div>
-                    <p className="text-xs text-muted-foreground mb-3.5">
-                      Or choose from below
-                    </p>
+                  <div className="w-full flex items-center justify-center gap-2 my-3">
+                    <div className="w-full h-px border border-dashed"></div>
+                    <span className="text-sm text-muted-foreground">or</span>
+                    <div className="w-full h-px border border-dashed"></div>
+                  </div>
+                  <div className="w-full space-y-4">
+                    <p className="text-sm">Select any of the below</p>
                     <motion.div
-                      className="flex flex-wrap justify-center gap-3.5"
+                      className="flex flex-wrap justify-center gap-4"
                       variants={{
                         hidden: { opacity: 0 },
                         show: {
