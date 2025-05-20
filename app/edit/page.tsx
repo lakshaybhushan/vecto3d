@@ -272,7 +272,6 @@ const ModelPreview = React.memo<ModelPreviewProps>(
         frameloop="demand"
         performance={{ min: 0.5 }}
         gl={{
-          antialias: true,
           outputColorSpace: "srgb",
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.2,
@@ -347,7 +346,6 @@ const ModelPreview = React.memo<ModelPreviewProps>(
 
 ModelPreview.displayName = "ModelPreview";
 
-// Loading state component
 const ModelLoadingState = ({ message }: { message: string }) => (
   <div className="w-full h-full flex flex-col items-center justify-center bg-linear-to-b from-muted/10 to-muted/20">
     <div className="flex flex-col items-center gap-4 text-center max-w-xs px-4">
@@ -621,18 +619,17 @@ export default function EditPage() {
 
   return (
     <motion.main
-      className="flex flex-col"
+      className="flex flex-col overflow-hidden relative w-full h-screen bg-background"
       variants={pageTransition}
       initial="initial"
       animate="animate"
       exit="exit">
       <motion.header
-        className="sticky top-0 z-10 w-full bg-background/80 backdrop-blur-sm supports-backdrop-filter:bg-background/60 border-b border-dashed"
-
+        className="sticky top-0 z-10 w-full border-b border-dashed"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}>
-        <div className="container flex items-center justify-between h-16 px-8">
+        <div className="flex items-center justify-between py-4 px-8">
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -656,7 +653,7 @@ export default function EditPage() {
         </div>
       </motion.header>
 
-      <div className="container flex-1 py-8">
+      <div className="flex-1 py-8 px-8">
         <AnimatePresence mode="wait">
           {isMobile && !continueOnMobile ? (
             <motion.div
@@ -673,17 +670,19 @@ export default function EditPage() {
           ) : (
             <motion.div
               key="editor-content"
-              className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+              className="grid grid-cols-1 lg:grid-cols-5 gap-8"
               variants={staggerContainer(0.2)}
               initial="hidden"
               animate="show">
               <motion.div
                 variants={modelContainerAnimation}
-                className="h-[400px] sm:h-[500px] lg:h-[600px] order-first lg:order-last relative overflow-hidden">
+                className="lg:h-[calc(100vh-8rem)] h-[60dvh] col order-first lg:order-last relative overflow-hidden lg:col-span-3">
                 <Card className="w-full h-full flex flex-col overflow-hidden border shadow-xs">
                   <CardHeader className="p-4 border-b [.border-b]:pb-4 bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle className="text-xl font-medium">Preview</CardTitle>
+                      <CardTitle className="text-xl font-medium">
+                        Preview
+                      </CardTitle>
                       <CardDescription className="text-xs mt-1">
                         {!svgData
                           ? "Loading SVG data..."
@@ -791,12 +790,14 @@ export default function EditPage() {
                 </Card>
               </motion.div>
               <motion.div
-                className="space-y-6 order-last lg:order-first"
+                className="space-y-6 order-last lg:order-first lg:col-span-2"
                 variants={cardAnimation}>
                 <Card className="w-full h-fit flex flex-col overflow-hidden border shadow-xs">
                   <CardHeader className="p-4 pb-4 border-b [.border-b]:pb-4 bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle className="text-xl font-medium">Customize</CardTitle>
+                      <CardTitle className="text-xl font-medium">
+                        Customize
+                      </CardTitle>
                       <CardDescription className="text-xs mt-1 truncate">
                         {fileName}
                       </CardDescription>

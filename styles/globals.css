@@ -46,21 +46,20 @@
   --rainbow: rainbow var(--speed, 2s) infinite linear;
 
   @keyframes rainbow {
-  0% {
-    background-position: 0%;
+    0% {
+      background-position: 0%;
     }
-  100% {
-    background-position: 200%;
+    100% {
+      background-position: 200%;
     }
   }
 }
 
 :root {
-
   /* font */
 
-  --font-sans: Instrument Sans;
-  --font-serif: Instrument Serif;
+  --font-sans: Host Grotesk, sans-serif;
+  --font-serif: Instrument Serif, serif;
 
   /* colors */
   --background: oklch(0.99 0 0);
@@ -98,11 +97,16 @@
   --radius: 0.5rem;
   --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
   --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
-  --shadow-sm: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-  --shadow: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-  --shadow-md: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 2px 4px -1px hsl(0 0% 0% / 0.18);
-  --shadow-lg: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 4px 6px -1px hsl(0 0% 0% / 0.18);
-  --shadow-xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 8px 10px -1px hsl(0 0% 0% / 0.18);
+  --shadow-sm: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 1px 2px -1px hsl(0 0% 0% / 0.18);
+  --shadow: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 1px 2px -1px hsl(0 0% 0% / 0.18);
+  --shadow-md: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 2px 4px -1px hsl(0 0% 0% / 0.18);
+  --shadow-lg: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 4px 6px -1px hsl(0 0% 0% / 0.18);
+  --shadow-xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 8px 10px -1px hsl(0 0% 0% / 0.18);
   --shadow-2xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.45);
 
   /* rainbow */
@@ -153,7 +157,7 @@
   --color-4: oklch(80.2% 0.134 225);
   --color-5: oklch(90.7% 0.231 133);
 }
-
+/* 
 @utility container {
   margin-inline: auto;
   padding-inline: 2rem;
@@ -163,7 +167,7 @@
   @media (width >= 1400px) {
     max-width: 1400px;
   }
-}
+} */
 
 @layer base {
   * {
@@ -171,10 +175,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: url("../public/noise.png");
-    background-repeat: repeat;
-    background-position: 0 0;
-    background-attachment: fixed;
   }
 }
 

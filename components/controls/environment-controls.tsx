@@ -267,13 +267,14 @@ export function EnvironmentControls() {
               </div>
 
               <div className="flex items-center space-x-2">
+
                 <Switch
                   id="bloomMipmapBlur"
                   checked={bloomMipmapBlur}
                   onCheckedChange={(checked) =>
                     setBloomMipmapBlur(checked as boolean)
                   }
-                />
+                  />
 
                 <Label htmlFor="bloomMipmapBlur">Smooth Bloom</Label>
               </div>

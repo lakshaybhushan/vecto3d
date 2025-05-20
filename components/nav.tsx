@@ -1,0 +1,54 @@
+import { Logo } from "@/components/ui/logo";
+import { NotAScam } from "@/components/not-a-scam";
+import { ModeToggle } from "@/components/ui/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
+import { GitHubIcon } from "@/components/ui/example-icons";
+import { AnimatedNumber } from "@/components/ui/animated-numbers";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+export default function Nav() {
+  const [stars, setStars] = useState(1001);
+
+  useEffect(() => {
+    fetch("https://api.github.com/repos/lakshaybhushan/vecto3d")
+      .then((response) => response.json())
+      .then((data) => {
+        const starCount = data.stargazers_count;
+        setStars(starCount);
+      })
+      .catch(() => setStars(0));
+  }, []);
+
+  return (
+    <header className="w-full py-4 px-8 flex items-center justify-between">
+      <div className="flex items-center space-x-2">
+        <Logo className="h-8 w-8 text-primary" />
+        {/* <span className="text-xl font-semibold"></span> */}
+      </div>
+      <div className="flex items-center space-x-3">
+        <NotAScam />
+        <ModeToggle />
+        <Link
+          href="https://github.com/lakshaybhushan/vecto3d"
+          target="_blank"
+          rel="noopener noreferrer">
+          <Button className="flex items-center gap-1 w-fit">
+            <Star size={16} />
+            <AnimatedNumber
+              className="inline-flex min-w-6 justify-end"
+              springOptions={{
+                bounce: 0,
+                duration: 800,
+              }}
+              value={stars}
+            />
+            <span className="hidden sm:inline mr-0.5">Stars on GitHub</span>
+            <GitHubIcon size={16} />
+          </Button>
+        </Link>
+      </div>
+    </header>
+  );
+}

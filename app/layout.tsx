@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 
-const instrumentSans = Host_Grotesk({
+const hostGrotesk = Host_Grotesk({
   subsets: ["latin"],
   variable: "--font-instrument-sans",
 });
@@ -55,7 +55,7 @@ export default function RootLayout({
         data-website-id="237f1de7-ab04-44dd-a7b4-6b0b819b7991"
       />
       <body
-        className={cn(instrumentSans.className, instrumentSerif.variable)}
+        className={cn(hostGrotesk.className, instrumentSerif.variable)}
         suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
