@@ -20,13 +20,13 @@ export const ENVIRONMENT_PRESETS: EnvironmentPreset[] = [
 ];
 
 // Theme-aware background color presets
-export const DARK_MODE_COLOR = "#121212";
-export const LIGHT_MODE_COLOR = "#f5f5f5";
+export const DARK_MODE_COLOR = "#181818";
+export const LIGHT_MODE_COLOR = "#FFFFFF";
 
 // Solid color presets
 export const SOLID_COLOR_PRESETS: ColorPreset[] = [
-  { name: "light", label: "Light", color: "#f5f5f5" },
-  { name: "dark", label: "Dark", color: "#121212" },
+  { name: "light", label: "Light", color: "#FFFFFF" },
+  { name: "dark", label: "Dark", color: "#181818" },
   { name: "blue", label: "Blue", color: "#3C90FF" },
   { name: "yellow", label: "Yellow", color: "#FFD700" },
   { name: "green", label: "Green", color: "#90FF3C" },

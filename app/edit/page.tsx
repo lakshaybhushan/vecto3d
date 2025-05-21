@@ -55,6 +55,7 @@ import { NotAScam } from "@/components/not-a-scam";
 import { useEditorStore } from "@/lib/store";
 import { DARK_MODE_COLOR, LIGHT_MODE_COLOR } from "@/lib/constants";
 import { BackIcon } from "@/components/ui/ui-icons";
+import AnimatedLogo from "@/components/ui/animated-logo";
 
 function useThemeBackgroundColor() {
   const { resolvedTheme } = useTheme();
@@ -347,12 +348,12 @@ const ModelPreview = React.memo<ModelPreviewProps>(
 ModelPreview.displayName = "ModelPreview";
 
 const ModelLoadingState = ({ message }: { message: string }) => (
-  <div className="w-full h-full flex flex-col items-center justify-center bg-linear-to-b from-muted/10 to-muted/20">
+  <div className="w-full h-full flex flex-col items-center justify-center bg-card">
     <div className="flex flex-col items-center gap-4 text-center max-w-xs px-4">
       <div className="relative h-20 w-20">
         <div className="absolute inset-0 rounded-full bg-background/20 animate-pulse"></div>
         <div className="absolute inset-4 rounded-full bg-background/40 animate-pulse [animation-delay:200ms]"></div>
-        <Loader2 className="absolute inset-0 h-full w-full animate-spin text-primary opacity-80" />
+        <AnimatedLogo className="absolute inset-0 h-full w-full" />
       </div>
       <div className="space-y-2">
         <p className="text-sm font-medium">{message}</p>
@@ -440,6 +441,11 @@ export default function EditPage() {
   } = useMobileDetection();
 
   const themeBackgroundColor = useThemeBackgroundColor();
+  const [hasMounted, setHasMounted] = React.useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   // cleanup
   useEffect(() => {
@@ -572,7 +578,7 @@ export default function EditPage() {
     }
 
     return (
-      <div className="w-full h-full overflow-hidden">
+      <div className="w-full h-full md:overflow-hidden">
         <ModelPreview
           svgData={svgData}
           depth={depth}
@@ -619,13 +625,13 @@ export default function EditPage() {
 
   return (
     <motion.main
-      className="flex flex-col overflow-hidden relative w-full h-screen bg-background"
+      className="flex flex-col md:overflow-hidden relative w-full h-screen bg-background"
       variants={pageTransition}
       initial="initial"
       animate="animate"
       exit="exit">
       <motion.header
-        className="sticky top-0 z-10 w-full border-b border-dashed"
+        className="sticky top-0 z-10 w-full border-b border-dashed bg-background/80 backdrop-blur-xs"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}>
@@ -677,7 +683,7 @@ export default function EditPage() {
               <motion.div
                 variants={modelContainerAnimation}
                 className="lg:h-[calc(100vh-8rem)] h-[60dvh] col order-first lg:order-last relative overflow-hidden lg:col-span-3">
-                <Card className="w-full h-full flex flex-col overflow-hidden border shadow-xs">
+                <Card className="w-full h-full flex flex-col overflow-hidden border">
                   <CardHeader className="p-4 border-b [.border-b]:pb-4 bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-xl font-medium">
@@ -712,19 +718,21 @@ export default function EditPage() {
                             {isFullscreen ? (
                               <Minimize2
                                 className={`h-4 w-4 ${
+                                  hasMounted &&
                                   backgroundColor === "#FFFFFF" &&
                                   resolvedTheme === "dark"
                                     ? "text-black"
-                                    : ""
+                                    : "text-primary"
                                 }`}
                               />
                             ) : (
                               <Maximize2
                                 className={`h-4 w-4 ${
+                                  hasMounted &&
                                   backgroundColor === "#FFFFFF" &&
                                   resolvedTheme === "dark"
                                     ? "text-black"
-                                    : ""
+                                    : "text-primary"
                                 }`}
                               />
                             )}
@@ -764,9 +772,11 @@ export default function EditPage() {
                                   } backdrop-blur-xs`}>
                                 <Minimize2
                                   className={`h-4 w-4 ${
-                                    backgroundColor === "#000000" || useBloom
-                                      ? "text"
-                                      : backgroundColor === "#FFFFFF" &&
+                                    hasMounted &&
+                                    (backgroundColor === "#000000" || useBloom)
+                                      ? "text-white"
+                                      : hasMounted &&
+                                        backgroundColor === "#FFFFFF" &&
                                         resolvedTheme === "dark"
                                       ? "text-black"
                                       : "text-primary/80"
@@ -792,7 +802,7 @@ export default function EditPage() {
               <motion.div
                 className="space-y-6 order-last lg:order-first lg:col-span-2"
                 variants={cardAnimation}>
-                <Card className="w-full h-fit flex flex-col overflow-hidden border shadow-xs">
+                <Card className="w-full h-fit flex flex-col overflow-hidden border">
                   <CardHeader className="p-4 pb-4 border-b [.border-b]:pb-4 bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-xl font-medium">

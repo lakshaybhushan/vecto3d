@@ -54,7 +54,7 @@ export function BackgroundControls() {
               }`}
               onClick={() => handleBackgroundChange(preset.color, preset.name)}>
               <div
-                className="w-12 h-12 rounded-full mb-1"
+                className="w-12 h-12 rounded-full mb-1 border border-input"
                 style={{
                   background: preset.color,
                 }}

@@ -9,7 +9,6 @@ import { RainbowButton } from "@/components/ui/rainbow-button";
 import Footer from "@/components/footer";
 import Nav from "@/components/nav";
 import AnimatedLogo from "@/components/ui/animated-logo";
-import { Loader2 } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
@@ -131,13 +130,7 @@ export default function Home() {
                     onClick={handleContinue}
                     disabled={isLoading}>
                     <span className="flex items-center gap-2">
-                      {isLoading ? (
-                        <>
-                          <Loader2 size={16} className="animate-spin" />
-                        </>
-                      ) : (
-                        "Continue to Editor"
-                      )}
+                      {isLoading ? "Processing..." : "Continue to Editor"}
                     </span>
                   </RainbowButton>
                 </div>
