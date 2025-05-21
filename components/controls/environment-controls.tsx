@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { ENVIRONMENT_PRESETS } from "@/lib/constants";
 import { toast } from "sonner";
 import { RainbowButton } from "@/components/ui/rainbow-button";
@@ -267,14 +267,13 @@ export function EnvironmentControls() {
               </div>
 
               <div className="flex items-center space-x-2">
-
                 <Switch
                   id="bloomMipmapBlur"
                   checked={bloomMipmapBlur}
                   onCheckedChange={(checked) =>
                     setBloomMipmapBlur(checked as boolean)
                   }
-                  />
+                />
 
                 <Label htmlFor="bloomMipmapBlur">Smooth Bloom</Label>
               </div>

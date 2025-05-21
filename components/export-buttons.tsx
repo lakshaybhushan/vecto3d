@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Printer, Loader2 } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { File, Image } from "lucide-react";
 import { PNG_RESOLUTIONS } from "@/lib/constants";
 import { handleExport, handlePrint } from "@/lib/exporters";
@@ -72,7 +72,7 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
                   "png",
                   modelGroupRef,
                   fileName,
-                  resolution.multiplier
+                  resolution.multiplier,
                 )
               }>
               <Image className="h-4 w-4" aria-label="Export as PNG" />

@@ -7,10 +7,10 @@ import { loadThreeModules } from "@/lib/three-imports";
 const LazyEnvironment = React.lazy(() =>
   import("./environment-presets").then((module) => ({
     default: module.SimpleEnvironment,
-  }))
+  })),
 );
 const LazySVGModel = React.lazy(() =>
-  import("./svg-model").then((module) => ({ default: module.SVGModel }))
+  import("./svg-model").then((module) => ({ default: module.SVGModel })),
 );
 
 interface PostProcessingModules {
@@ -127,7 +127,7 @@ const PostProcessingEffects: React.FC<PostProcessingEffectsProps> = React.memo(
         />
       </EffectComposer>
     );
-  }
+  },
 );
 
 PostProcessingEffects.displayName = "PostProcessingEffects";
@@ -169,8 +169,8 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
         50,
         window.innerWidth / window.innerHeight,
         1,
-        1000
-      )
+        1000,
+      ),
     );
 
     useEffect(() => {
@@ -294,7 +294,7 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
         )}
       </Canvas>
     );
-  }
+  },
 );
 
 ModelPreviews.displayName = "ModelPreviews";

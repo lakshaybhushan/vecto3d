@@ -15,7 +15,7 @@ export function BackgroundControls() {
   const {
     backgroundColor,
     setBackgroundColor,
-    userSelectedBackground,
+    // userSelectedBackground,
     setUserSelectedBackground,
     solidColorPreset,
     setSolidColorPreset,

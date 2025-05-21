@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 
 const useClickOutside = (
   ref: React.RefObject<HTMLElement>,
-  handler: (event: MouseEvent | TouchEvent) => void
+  handler: (event: MouseEvent | TouchEvent) => void,
 ) => {
   useEffect(() => {
     let startedInside = false;
@@ -97,7 +97,7 @@ export const PopoverPicker = ({ color, onChange }: PopoverPickerProps) => {
             style={{ top: position.y, left: position.x }}>
             <HexColorPicker color={color} onChange={onChange} />
           </div>,
-          document.body
+          document.body,
         )}
     </>
   );

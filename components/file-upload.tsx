@@ -75,7 +75,7 @@ export function FileUpload({
       onIconSelect(iconName);
 
       const selectedIconObj = exampleIcons.find(
-        (icon) => icon.name === iconName
+        (icon) => icon.name === iconName,
       );
       if (selectedIconObj) {
         let svgContent = "";
@@ -146,7 +146,7 @@ export function FileUpload({
   const renderSelectedIcon = () => {
     if (selectedIcon) {
       const IconComponent = exampleIcons.find(
-        (icon) => icon.name === selectedIcon
+        (icon) => icon.name === selectedIcon,
       )?.component;
       if (IconComponent) {
         return (

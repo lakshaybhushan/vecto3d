@@ -4,9 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { MATERIAL_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
 import { Input } from "../ui/input";
-import { HexColorPicker } from "react-colorful";
 import { PopoverPicker } from "../ui/color-picker";
-
 
 export function MaterialControls() {
   const {
@@ -25,7 +23,6 @@ export function MaterialControls() {
     customColor,
     setCustomColor,
   } = useEditorStore();
-
 
   return (
     <div className="space-y-4">
