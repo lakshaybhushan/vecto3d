@@ -29,3 +29,6 @@ next-env.d.ts
 
 #omiting demo
 demo/
+
+#rules
+.cursor

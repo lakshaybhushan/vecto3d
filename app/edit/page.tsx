@@ -27,20 +27,20 @@ import {
 import { BlendFunction } from "postprocessing";
 import React from "react";
 import { ModeToggle } from "@/components/ui/theme-toggle";
-import { motion, AnimatePresence } from "framer-motion";
+
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  staggerContainer,
-  cardAnimation,
-  modelContainerAnimation,
-  tabContentAnimation,
-  pageTransition,
-} from "@/lib/animation-values";
+// import {
+//   staggerContainer,
+//   cardAnimation,
+//   modelContainerAnimation,
+//   tabContentAnimation,
+//   pageTransition,
+// } from "@/lib/animation-values";
 
 import { GeometryControls } from "@/components/controls/geometry-controls";
 import { MaterialControls } from "@/components/controls/material-controls";
@@ -184,9 +184,6 @@ const ModelPreview = React.memo<ModelPreviewProps>(
     bloomIntensity,
     bloomMipmapBlur,
     isMobile,
-    // onLoadStart,
-    // onLoadComplete,
-    // onError,
   }) => {
     const cameraRef = useRef(
       new THREE.PerspectiveCamera(
@@ -624,17 +621,8 @@ export default function EditPage() {
   };
 
   return (
-    <motion.main
-      className="flex flex-col md:overflow-hidden relative w-full h-screen bg-background"
-      variants={pageTransition}
-      initial="initial"
-      animate="animate"
-      exit="exit">
-      <motion.header
-        className="sticky top-0 z-10 w-full border-b border-dashed bg-background/80 backdrop-blur-xs"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}>
+    <main className="flex flex-col md:overflow-hidden relative w-full h-screen bg-background">
+      <header className="sticky top-0 z-10 w-full border-b border-dashed bg-background/80 backdrop-blur-xs">
         <div className="flex items-center justify-between py-4 px-8">
           <div className="flex items-center gap-2">
             <Button
@@ -657,111 +645,98 @@ export default function EditPage() {
             )}
           </div>
         </div>
-      </motion.header>
+      </header>
 
       <div className="flex-1 py-8 px-8">
-        <AnimatePresence mode="wait">
-          {isMobile && !continueOnMobile ? (
-            <motion.div
-              key="mobile-warning"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}>
-              <EditorMobileWarning
-                onContinue={handleContinueOnMobile}
-                onReturn={handleBackToHome}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="editor-content"
-              className="grid grid-cols-1 lg:grid-cols-5 gap-8"
-              variants={staggerContainer(0.2)}
-              initial="hidden"
-              animate="show">
-              <motion.div
-                variants={modelContainerAnimation}
-                className="lg:h-[calc(100vh-8rem)] h-[60dvh] col order-first lg:order-last relative overflow-hidden lg:col-span-3">
-                <Card className="w-full h-full flex flex-col overflow-hidden border">
-                  <CardHeader className="p-4 border-b [.border-b]:pb-4 bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-xl font-medium">
-                        Preview
-                      </CardTitle>
-                      <CardDescription className="text-xs mt-1">
-                        {!svgData
-                          ? "Loading SVG data..."
-                          : isModelLoading
-                            ? "Processing SVG..."
-                            : "Interact with your 3D model"}
-                      </CardDescription>
-                    </div>
-                    <TooltipProvider>
-                      <Tooltip delayDuration={100}>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => {
-                              if (isFullscreen) {
-                                document.exitFullscreen();
-                              } else if (previewContainerRef.current) {
-                                previewContainerRef.current.requestFullscreen();
-                              }
-                            }}
-                            aria-label={
-                              isFullscreen
-                                ? "Exit fullscreen"
-                                : "Enter fullscreen"
-                            }>
-                            {isFullscreen ? (
-                              <Minimize2
-                                className={`h-4 w-4 ${
-                                  hasMounted &&
-                                  backgroundColor === "#FFFFFF" &&
-                                  resolvedTheme === "dark"
-                                    ? "text-black"
-                                    : "text-primary"
-                                }`}
-                              />
-                            ) : (
-                              <Maximize2
-                                className={`h-4 w-4 ${
-                                  hasMounted &&
-                                  backgroundColor === "#FFFFFF" &&
-                                  resolvedTheme === "dark"
-                                    ? "text-black"
-                                    : "text-primary"
-                                }`}
-                              />
-                            )}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent
-                          side="left"
-                          align="center"
-                          sideOffset={10}
-                          className="text-xs py-2 px-4 z-99999 shadow-md">
-                          Performance may be affected
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </CardHeader>
+        {isMobile && !continueOnMobile ? (
+          <EditorMobileWarning
+            onContinue={handleContinueOnMobile}
+            onReturn={handleBackToHome}
+          />
+        ) : (
+          <div
+            key="editor-content"
+            className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <div className="lg:h-[calc(100vh-8rem)] h-[60dvh] col order-first lg:order-last relative overflow-hidden lg:col-span-3">
+              <Card className="w-full h-full flex flex-col overflow-hidden border">
+                <CardHeader className="p-4 border-b [.border-b]:pb-4 bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl font-medium">
+                      Preview
+                    </CardTitle>
+                    <CardDescription className="text-xs mt-1">
+                      {!svgData
+                        ? "Loading SVG data..."
+                        : isModelLoading
+                          ? "Processing SVG..."
+                          : "Interact with your 3D model"}
+                    </CardDescription>
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip delayDuration={100}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            if (isFullscreen) {
+                              document.exitFullscreen();
+                            } else if (previewContainerRef.current) {
+                              previewContainerRef.current.requestFullscreen();
+                            }
+                          }}
+                          aria-label={
+                            isFullscreen
+                              ? "Exit fullscreen"
+                              : "Enter fullscreen"
+                          }>
+                          {isFullscreen ? (
+                            <Minimize2
+                              className={`h-4 w-4 ${
+                                hasMounted &&
+                                backgroundColor === "#FFFFFF" &&
+                                resolvedTheme === "dark"
+                                  ? "text-black"
+                                  : "text-primary"
+                              }`}
+                            />
+                          ) : (
+                            <Maximize2
+                              className={`h-4 w-4 ${
+                                hasMounted &&
+                                backgroundColor === "#FFFFFF" &&
+                                resolvedTheme === "dark"
+                                  ? "text-black"
+                                  : "text-primary"
+                              }`}
+                            />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="left"
+                        align="center"
+                        sideOffset={10}
+                        className="text-xs py-2 px-4 z-99999 shadow-md">
+                        Performance may be affected
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </CardHeader>
 
-                  <div className="grow relative" ref={previewContainerRef}>
-                    {renderModelPreview()}
-                    {isFullscreen && (
-                      <div className="absolute inset-0 pointer-events-none">
-                        <TooltipProvider>
-                          <Tooltip delayDuration={100}>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="icon"
-                                variant={"ghost"}
-                                onClick={() => document.exitFullscreen()}
-                                aria-label="Exit fullscreen"
-                                className={`absolute top-6 right-6 pointer-events-auto bg-transparent
+                <div className="grow relative" ref={previewContainerRef}>
+                  {renderModelPreview()}
+                  {isFullscreen && (
+                    <div className="absolute inset-0 pointer-events-none">
+                      <TooltipProvider>
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant={"ghost"}
+                              onClick={() => document.exitFullscreen()}
+                              aria-label="Exit fullscreen"
+                              className={`absolute top-6 right-6 pointer-events-auto bg-transparent
                                   ${
                                     backgroundColor === "#000000" || useBloom
                                       ? "hover:bg-white/10"
@@ -770,119 +745,86 @@ export default function EditPage() {
                                         ? "hover:bg-black/10"
                                         : "hover:bg-background/80"
                                   } backdrop-blur-xs`}>
-                                <Minimize2
-                                  className={`h-4 w-4 ${
-                                    hasMounted &&
-                                    (backgroundColor === "#000000" || useBloom)
-                                      ? "text-white"
-                                      : hasMounted &&
-                                          backgroundColor === "#FFFFFF" &&
-                                          resolvedTheme === "dark"
-                                        ? "text-black"
-                                        : "text-primary/80"
-                                  }`}
-                                />
-                                <span className="sr-only">Exit fullscreen</span>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent
-                              side="left"
-                              align="center"
-                              sideOffset={10}
-                              className="text-xs py-2 px-4 shadow-md">
-                              Exit fullscreen
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              </motion.div>
-              <motion.div
-                className="space-y-6 order-last lg:order-first lg:col-span-2"
-                variants={cardAnimation}>
-                <Card className="w-full h-fit flex flex-col overflow-hidden border">
-                  <CardHeader className="p-4 pb-4 border-b [.border-b]:pb-4 bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-xl font-medium">
-                        Customize
-                      </CardTitle>
-                      <CardDescription className="text-xs mt-1 truncate">
-                        {fileName}
-                      </CardDescription>
+                              <Minimize2
+                                className={`h-4 w-4 ${
+                                  hasMounted &&
+                                  (backgroundColor === "#000000" || useBloom)
+                                    ? "text-white"
+                                    : hasMounted &&
+                                        backgroundColor === "#FFFFFF" &&
+                                        resolvedTheme === "dark"
+                                      ? "text-black"
+                                      : "text-primary/80"
+                                }`}
+                              />
+                              <span className="sr-only">Exit fullscreen</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="left"
+                            align="center"
+                            sideOffset={10}
+                            className="text-xs py-2 px-4 shadow-md">
+                            Exit fullscreen
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <Tabs defaultValue="geometry">
-                      <TabsList className="w-full flex justify-between mb-4 overflow-x-auto">
-                        <TabsTrigger value="geometry" className="flex-1">
-                          Geometry
-                        </TabsTrigger>
-                        <TabsTrigger value="material" className="flex-1">
-                          Material
-                        </TabsTrigger>
-                        <TabsTrigger value="environment" className="flex-1">
-                          Environment
-                        </TabsTrigger>
-                        <TabsTrigger value="background" className="flex-1">
-                          Background
-                        </TabsTrigger>
-                      </TabsList>
+                  )}
+                </div>
+              </Card>
+            </div>
+            <div className="space-y-6 order-last lg:order-first lg:col-span-2">
+              <Card className="w-full h-fit flex flex-col overflow-hidden border">
+                <CardHeader className="p-4 pb-4 border-b [.border-b]:pb-4 bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl font-medium">
+                      Customize
+                    </CardTitle>
+                    <CardDescription className="text-xs mt-1 truncate">
+                      {fileName}
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <Tabs defaultValue="geometry">
+                    <TabsList className="w-full flex justify-between mb-4 overflow-x-auto">
+                      <TabsTrigger value="geometry" className="flex-1">
+                        Geometry
+                      </TabsTrigger>
+                      <TabsTrigger value="material" className="flex-1">
+                        Material
+                      </TabsTrigger>
+                      <TabsTrigger value="environment" className="flex-1">
+                        Environment
+                      </TabsTrigger>
+                      <TabsTrigger value="background" className="flex-1">
+                        Background
+                      </TabsTrigger>
+                    </TabsList>
 
-                      <AnimatePresence mode="sync">
-                        <TabsContent value="geometry" key="geometry">
-                          <motion.div
-                            key="geometry-content"
-                            variants={tabContentAnimation}
-                            initial="hidden"
-                            animate="show"
-                            exit="exit">
-                            <GeometryControls />
-                          </motion.div>
-                        </TabsContent>
+                    <TabsContent value="geometry" key="geometry">
+                      <GeometryControls />
+                    </TabsContent>
 
-                        <TabsContent value="material" key="material">
-                          <motion.div
-                            key="material-content"
-                            variants={tabContentAnimation}
-                            initial="hidden"
-                            animate="show"
-                            exit="exit">
-                            <MaterialControls />
-                          </motion.div>
-                        </TabsContent>
+                    <TabsContent value="material" key="material">
+                      <MaterialControls />
+                    </TabsContent>
 
-                        <TabsContent value="environment" key="environment">
-                          <motion.div
-                            key="environment-content"
-                            variants={tabContentAnimation}
-                            initial="hidden"
-                            animate="show"
-                            exit="exit">
-                            <EnvironmentControls />
-                          </motion.div>
-                        </TabsContent>
+                    <TabsContent value="environment" key="environment">
+                      <EnvironmentControls />
+                    </TabsContent>
 
-                        <TabsContent value="background" key="background">
-                          <motion.div
-                            key="background-content"
-                            variants={tabContentAnimation}
-                            initial="hidden"
-                            animate="show"
-                            exit="exit">
-                            <BackgroundControls />
-                          </motion.div>
-                        </TabsContent>
-                      </AnimatePresence>
-                    </Tabs>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                    <TabsContent value="background" key="background">
+                      <BackgroundControls />
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
       </div>
-    </motion.main>
+    </main>
   );
 }
