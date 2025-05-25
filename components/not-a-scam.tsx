@@ -17,18 +17,18 @@ export function NotAScam() {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="secondary" size="icon">
-          <Info className="w-4 h-4" />
+          <Info className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="w-[320px] md:w-[480px] p-0 border rounded-lg">
-        <AlertDialogHeader className="px-4 md:px-6 pt-4 md:pt-6">
+      <AlertDialogContent className="w-[320px] rounded-lg border p-0 md:w-[480px]">
+        <AlertDialogHeader className="px-4 pt-4 md:px-6 md:pt-6">
           <AlertDialogTitle className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
-            <Info className="w-5 h-5" />
+            <Info className="h-5 w-5" />
             <span className="text-yellow-600 dark:text-yellow-400">
               Warning
             </span>
           </AlertDialogTitle>
-          <AlertDialogDescription className="leading-6 mt-2 text-left">
+          <AlertDialogDescription className="mt-2 text-left leading-6">
             Vecto3d has no involvement with cryptocurrencies, memecoins, or
             tokens. Please be aware of scams and impersonators claiming to be
             Vecto3d. The official website is{" "}
@@ -43,7 +43,7 @@ export function NotAScam() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="border-t p-6">
-          <AlertDialogAction className="w-full h-10">
+          <AlertDialogAction className="h-10 w-full">
             Yes, I understand
           </AlertDialogAction>
         </AlertDialogFooter>

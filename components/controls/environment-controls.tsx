@@ -90,9 +90,9 @@ export function EnvironmentControls() {
   return (
     <div className="space-y-4">
       <Alert className="bg-muted/50 mb-4">
-        <AlertDescription className="text-xs flex items-center">
-          <div className="h-5 w-1 bg-blue-500 rounded-full mr-2" />
-          <p className="text-xs text-muted-foreground mt-0.5">
+        <AlertDescription className="flex items-center text-xs">
+          <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
+          <p className="text-muted-foreground mt-0.5 text-xs">
             Environment settings are for preview only and will not affect the
             exported 3D model.
           </p>
@@ -110,26 +110,26 @@ export function EnvironmentControls() {
 
       {useEnvironment && (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+          <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-5">
             {ENVIRONMENT_PRESETS.map((preset) => (
               <div
                 key={preset.name}
-                className={`cursor-pointer rounded-lg p-2 flex flex-col items-center ${
+                className={`flex cursor-pointer flex-col items-center rounded-lg p-2 ${
                   environmentPreset === preset.name
-                    ? "bg-primary/10 ring-1 ring-input"
+                    ? "bg-primary/10 ring-input ring-1"
                     : "hover:bg-muted"
                 }`}
                 onClick={() => setEnvironmentPreset(preset.name)}>
-                <div className="w-full aspect-video rounded-md mb-2 overflow-hidden relative">
+                <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-md">
                   <div
-                    className="w-full h-full absolute inset-0"
+                    className="absolute inset-0 h-full w-full"
                     style={{
                       background: `linear-gradient(135deg, ${preset.color}40, ${preset.color}, ${preset.color}90)`,
                     }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div
-                      className="w-10 h-10 rounded-full"
+                      className="h-10 w-10 rounded-full"
                       style={{
                         background: `radial-gradient(circle at 30% 30%, white, ${preset.color}80, rgba(0,0,0,0.2))`,
                         boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
@@ -137,7 +137,7 @@ export function EnvironmentControls() {
                     />
                   </div>
                 </div>
-                <span className="text-xs font-medium text-center">
+                <span className="text-center text-xs font-medium">
                   {preset.label}
                 </span>
               </div>
@@ -145,9 +145,9 @@ export function EnvironmentControls() {
 
             <div
               key="custom-preset"
-              className={`cursor-pointer rounded-md p-2 flex flex-col items-center ${
+              className={`flex cursor-pointer flex-col items-center rounded-md p-2 ${
                 environmentPreset === "custom"
-                  ? "bg-primary/10 ring-1 ring-input"
+                  ? "bg-primary/10 ring-input ring-1"
                   : "hover:bg-muted"
               }`}
               onClick={() => {
@@ -167,9 +167,9 @@ export function EnvironmentControls() {
 
               {customHdriUrl ? (
                 <>
-                  <div className="w-full aspect-video rounded-md mb-2 overflow-hidden">
+                  <div className="mb-2 aspect-video w-full overflow-hidden rounded-md">
                     <div
-                      className="w-full h-full"
+                      className="h-full w-full"
                       style={{
                         backgroundImage: `url(${customHdriUrl})`,
                         backgroundSize: "cover",
@@ -181,9 +181,9 @@ export function EnvironmentControls() {
                 </>
               ) : (
                 <>
-                  <div className="w-full aspect-video rounded-md mb-2 flex items-center justify-center bg-primary/5 border-2 border-dashed border-primary/20">
-                    <span className="text-2xl font-semibold text-primary">
-                      <PlusIcon className="h-4 w-4 text-primary" />
+                  <div className="bg-primary/5 border-primary/20 mb-2 flex aspect-video w-full items-center justify-center rounded-md border-2 border-dashed">
+                    <span className="text-primary text-2xl font-semibold">
+                      <PlusIcon className="text-primary h-4 w-4" />
                     </span>
                   </div>
                   <span className="text-xs font-medium">Custom</span>
@@ -194,16 +194,16 @@ export function EnvironmentControls() {
 
           {environmentPreset === "custom" && customHdriUrl && (
             <Alert className="bg-muted/50 mb-4">
-              <AlertDescription className="text-xs flex items-center">
-                <div className="h-5 w-1 bg-blue-500 rounded-full mr-2" />
-                <div className="flex items-center justify-between w-full">
-                  <p className="text-xs text-muted-foreground">
+              <AlertDescription className="flex items-center text-xs">
+                <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
+                <div className="flex w-full items-center justify-between">
+                  <p className="text-muted-foreground text-xs">
                     Your image will be used for reflections in the 3D model.
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-xs h-7"
+                    className="h-7 text-xs"
                     onClick={() => hdriFileInputRef.current?.click()}>
                     Change Image
                   </Button>
@@ -215,7 +215,7 @@ export function EnvironmentControls() {
       )}
 
       {useEnvironment && (
-        <div className="space-y-4 pt-4 mt-4 border-t">
+        <div className="mt-4 space-y-4 border-t pt-4">
           <div className="w-full cursor-not-allowed">
             {environmentPreset === "custom" && customHdriUrl ? (
               <Button
@@ -244,7 +244,7 @@ export function EnvironmentControls() {
 
           {useBloom && (
             <motion.div
-              className="space-y-4 mt-2 p-4 bg-muted/20 rounded-md border border-primary/20"
+              className="bg-muted/20 border-primary/20 mt-2 space-y-4 rounded-md border p-4"
               initial={{ opacity: 0, height: 0, y: -10 }}
               animate={{ opacity: 1, height: "auto", y: 0 }}
               exit={{ opacity: 0, height: 0, y: -10 }}
@@ -278,7 +278,7 @@ export function EnvironmentControls() {
                 <Label htmlFor="bloomMipmapBlur">Smooth Bloom</Label>
               </div>
 
-              <div className="space-y-2 pt-3 border-t border-primary/10">
+              <div className="border-primary/10 space-y-2 border-t pt-3">
                 <Label htmlFor="modelRotation" className="flex justify-between">
                   <span>Rotate Model</span>
                   <span className="text-primary font-mono">

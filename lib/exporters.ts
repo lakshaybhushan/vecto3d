@@ -572,7 +572,7 @@ export async function handlePrint(
             });
 
             const data = await response.json();
-            console.log(data);
+            // console.log(data);
 
             if (response.ok) {
               success = true;
@@ -602,13 +602,13 @@ export async function handlePrint(
 
             const data = await response.json();
 
-            console.log(data);
+            // console.log(data);
 
             if (data.url) {
               const bambuUrl = `bambustudioopen://open?file=${encodeURIComponent(
                 data.url,
               )}`;
-              console.log(bambuUrl);
+              // console.log(bambuUrl);
               window.location.href = bambuUrl;
             } else {
               throw new Error("Failed to get public URL");

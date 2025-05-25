@@ -19,9 +19,9 @@ export function MobileWarning({
       </Alert>
 
       <Card className="mb-6">
-        <CardContent className="pt-6 pb-4 px-6">
-          <div className="flex flex-col items-center text-center mb-4">
-            <Monitor className="h-16 w-16 text-primary mb-4" />
+        <CardContent className="px-6 pt-6 pb-4">
+          <div className="mb-4 flex flex-col items-center text-center">
+            <Monitor className="text-primary mb-4 h-16 w-16" />
             <h2 className="text-xl font-semibold">Recommended</h2>
             <p className="text-muted-foreground mt-2">
               Please switch to a desktop or laptop computer for the best
@@ -31,7 +31,7 @@ export function MobileWarning({
 
           <Button
             variant="outline"
-            className="w-full mt-2"
+            className="mt-2 w-full"
             onClick={onContinue}>
             Continue on Mobile Anyway
           </Button>
@@ -46,7 +46,7 @@ export function EditorMobileWarning({
   onReturn,
 }: MobileWarningProps) {
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="mx-auto w-full max-w-md">
       <Alert variant="destructive" className="mb-6">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Mobile Device Detected</AlertTitle>
@@ -57,9 +57,9 @@ export function EditorMobileWarning({
       </Alert>
 
       <Card className="mb-6">
-        <CardContent className="pt-6 pb-4 px-6">
-          <div className="flex flex-col items-center text-center mb-4">
-            <RotateCcw className="h-16 w-16 text-primary mb-4" />
+        <CardContent className="px-6 pt-6 pb-4">
+          <div className="mb-4 flex flex-col items-center text-center">
+            <RotateCcw className="text-primary mb-4 h-16 w-16" />
             <h2 className="text-xl font-semibold">Recommended</h2>
             <p className="text-muted-foreground mt-2">
               Please switch to a desktop or laptop computer for the best
@@ -67,7 +67,7 @@ export function EditorMobileWarning({
             </p>
           </div>
 
-          <div className="flex flex-col gap-2 mt-4">
+          <div className="mt-4 flex flex-col gap-2">
             <Button variant="default" className="w-full" onClick={onReturn}>
               Return to Homepage
             </Button>

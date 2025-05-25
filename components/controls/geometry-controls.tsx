@@ -62,18 +62,18 @@ export function GeometryControls() {
 
       <div className="space-y-4 pt-2">
         <Label htmlFor="bevelPreset">Bevel Style</Label>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+        <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-5">
           {BEVEL_PRESETS.map((preset) => (
             <div
               key={preset.name}
-              className={`cursor-pointer rounded-lg pt-4 pb-2 flex flex-col items-center ${
+              className={`flex cursor-pointer flex-col items-center rounded-lg pt-4 pb-2 ${
                 bevelPreset === preset.name
-                  ? "bg-primary/10 ring-1 ring-input"
+                  ? "bg-primary/10 ring-input ring-1"
                   : "hover:bg-muted"
               }`}
               onClick={() => applyBevelPreset(preset.name)}>
               <div
-                className="w-14 h-14 mb-1 overflow-hidden relative"
+                className="relative mb-1 h-14 w-14 overflow-hidden"
                 style={{
                   backgroundColor:
                     preset.name === "none" ? "var(--input)" : "var(--input)",
@@ -84,7 +84,7 @@ export function GeometryControls() {
                 {preset.name === "none" && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div
-                      className="w-10 h-10 bg-primary/40 relative bg-gradient-to-tl from-primary/40 to-primary/20"
+                      className="bg-primary/40 from-primary/40 to-primary/20 relative h-10 w-10 bg-gradient-to-tl"
                       style={{
                         position: "absolute",
                         bottom: "-2px",
@@ -98,7 +98,7 @@ export function GeometryControls() {
                 {preset.name === "light" && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div
-                      className="w-10 h-10 bg-primary/40 relative bg-gradient-to-tl from-primary/40 to-primary/20"
+                      className="bg-primary/40 from-primary/40 to-primary/20 relative h-10 w-10 bg-gradient-to-tl"
                       style={{
                         position: "absolute",
                         bottom: "-2px",
@@ -113,7 +113,7 @@ export function GeometryControls() {
                 {preset.name === "medium" && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div
-                      className="w-10 h-10 bg-primary/40 relative bg-gradient-to-tl from-primary/40 to-primary/20"
+                      className="bg-primary/40 from-primary/40 to-primary/20 relative h-10 w-10 bg-gradient-to-tl"
                       style={{
                         position: "absolute",
                         bottom: "-2px",
@@ -128,7 +128,7 @@ export function GeometryControls() {
                 {preset.name === "heavy" && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div
-                      className="w-10 h-10 bg-primary/40 relative bg-gradient-to-tl from-primary/40 to-primary/20"
+                      className="bg-primary/40 from-primary/40 to-primary/20 relative h-10 w-10 bg-gradient-to-tl"
                       style={{
                         position: "absolute",
                         bottom: "-2px",
@@ -143,7 +143,7 @@ export function GeometryControls() {
                 {preset.name === "custom" && (
                   <div className="absolute inset-0 flex items-end justify-center">
                     <div
-                      className="w-10 h-10 bg-primary/40 relative bg-gradient-to-tl from-primary/40 to-primary/20"
+                      className="bg-primary/40 from-primary/40 to-primary/20 relative h-10 w-10 bg-gradient-to-tl"
                       style={{
                         position: "absolute",
                         bottom: "-2px",
@@ -153,24 +153,24 @@ export function GeometryControls() {
                       }}></div>
 
                     <div
-                      className="absolute w-3 h-3"
+                      className="absolute h-3 w-3"
                       style={{
                         right: "8px",
                         top: "8px",
                       }}>
                       <div
-                        className="w-full h-full rounded-full bg-primary/40 relative bg-gradient-to-tl from-primary/40 to-primary/20"
+                        className="bg-primary/40 from-primary/40 to-primary/20 relative h-full w-full rounded-full bg-gradient-to-tl"
                         style={{
                           boxShadow:
                             "inset 1px 1px 3px rgba(255,255,255,0.6), 0 1px 3px rgba(0,0,0,0.1)",
                         }}>
-                        <div className="absolute top-1 left-1 w-1.5 h-1.5 bg-white/40 rounded-full blur-[3px]"></div>
+                        <div className="absolute top-1 left-1 h-1.5 w-1.5 rounded-full bg-white/40 blur-[3px]"></div>
                       </div>
                     </div>
                   </div>
                 )}
               </div>
-              <span className="text-xs font-medium pt-1">{preset.label}</span>
+              <span className="pt-1 text-xs font-medium">{preset.label}</span>
             </div>
           ))}
         </div>
@@ -248,7 +248,7 @@ export function GeometryControls() {
         </div>
 
         {autoRotate && (
-          <div className="space-y-4 mt-4 py-2">
+          <div className="mt-4 space-y-4 py-2">
             <Label htmlFor="autoRotateSpeed">
               <span>Rotation Speed</span>
               <span className="text-primary font-mono">

@@ -3,8 +3,8 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MATERIAL_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
-import { Input } from "../ui/input";
-import { PopoverPicker } from "../ui/color-picker";
+import { Input } from "@/components/ui/input";
+import { PopoverPicker } from "@/components/ui/color-picker";
 
 export function MaterialControls() {
   const {
@@ -30,7 +30,7 @@ export function MaterialControls() {
         <Label htmlFor="materialPreset">Material Type</Label>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+      <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-5">
         {MATERIAL_PRESETS.map((preset) => {
           const reflectionColor =
             preset.metalness > 0
@@ -49,9 +49,9 @@ export function MaterialControls() {
           return (
             <div
               key={preset.name}
-              className={`cursor-pointer rounded-lg pt-3 pb-2 flex flex-col items-center ${
+              className={`flex cursor-pointer flex-col items-center rounded-lg pt-3 pb-2 ${
                 materialPreset === preset.name
-                  ? "bg-primary/10 ring-1 ring-input"
+                  ? "bg-primary/10 ring-input ring-1"
                   : "hover:bg-muted"
               }`}
               onClick={() => {
@@ -61,7 +61,7 @@ export function MaterialControls() {
                 setClearcoat(preset.clearcoat);
                 setTransmission(preset.transmission);
               }}>
-              <div className="relative w-12 h-12 rounded-full mb-1">
+              <div className="relative mb-1 h-12 w-12 rounded-full">
                 <div
                   className="absolute inset-0 rounded-full"
                   style={{
@@ -100,7 +100,7 @@ export function MaterialControls() {
                   />
                 )}
               </div>
-              <span className="text-xs font-medium pt-1">{preset.label}</span>
+              <span className="pt-1 text-xs font-medium">{preset.label}</span>
             </div>
           );
         })}

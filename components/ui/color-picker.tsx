@@ -84,7 +84,7 @@ export const PopoverPicker = ({ color, onChange }: PopoverPickerProps) => {
     <>
       <div ref={triggerRef} onClick={openPopover} className="inline-block">
         <div
-          className="w-16 h-9 rounded-sm border border-input cursor-pointer"
+          className="border-input h-9 w-16 cursor-pointer rounded-sm border"
           style={{ backgroundColor: color }}
         />
       </div>
@@ -93,7 +93,7 @@ export const PopoverPicker = ({ color, onChange }: PopoverPickerProps) => {
         createPortal(
           <div
             ref={popoverRef}
-            className="fixed rounded-lg shadow-lg z-[9999]"
+            className="fixed z-[9999] rounded-lg shadow-lg"
             style={{ top: position.y, left: position.x }}>
             <HexColorPicker color={color} onChange={onChange} />
           </div>,

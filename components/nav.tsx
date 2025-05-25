@@ -22,9 +22,9 @@ export default function Nav() {
   }, []);
 
   return (
-    <header className="w-full py-4 px-8 flex items-center justify-between">
+    <header className="flex w-full items-center justify-between px-8 py-4">
       <div className="flex items-center space-x-2">
-        <Logo className="h-8 w-8 text-primary" />
+        <Logo className="text-primary h-8 w-8" />
         {/* <span className="text-xl font-semibold"></span> */}
       </div>
       <div className="flex items-center space-x-3">
@@ -34,7 +34,7 @@ export default function Nav() {
           href="https://github.com/lakshaybhushan/vecto3d"
           target="_blank"
           rel="noopener noreferrer">
-          <Button className="flex items-center gap-1 w-fit">
+          <Button className="flex w-fit items-center gap-1">
             <Star size={16} />
             <AnimatedNumber
               className="inline-flex min-w-6 justify-end"
@@ -44,7 +44,7 @@ export default function Nav() {
               }}
               value={stars}
             />
-            <span className="hidden sm:inline mr-0.5">Stars on GitHub</span>
+            <span className="mr-0.5 hidden sm:inline">Stars on GitHub</span>
             <GitHubIcon size={16} />
           </Button>
         </Link>

@@ -31,7 +31,7 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
     const checkLocation = async () => {
       try {
         const isUSLocation = await checkIsUSLocation();
-        console.log("Location check result:", isUSLocation);
+        // console.log("Location check result:", isUSLocation);
         setIsUS(isUSLocation);
       } catch (error) {
         console.error("Error in location check:", error);
@@ -116,7 +116,7 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
       {isUS === true && (
         <Button
           size="sm"
-          className="flex items-center gap-1 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600"
+          className="flex items-center gap-1 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
           onClick={handlePrintClick}
           disabled={isPrinting}>
           {isPrinting ? (

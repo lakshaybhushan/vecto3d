@@ -65,8 +65,6 @@ export default function Home() {
         const baseDuration = 2.7;
         const animationCycleDuration = baseDuration / animationSpeed;
         const delayMs = Math.ceil(animationCycleDuration * 1000) + 300;
-
-        console.log(`Waiting ${delayMs}ms for animation to complete...`);
         await new Promise((resolve) => setTimeout(resolve, delayMs));
 
         router.push("/edit");
@@ -78,11 +76,11 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col relative w-full">
+    <main className="relative flex min-h-screen w-full flex-col">
       <Nav />
 
       {isLoading && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-lg z-50 flex items-center justify-center">
+        <div className="bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg">
           <div className="flex flex-col items-center gap-4">
             <AnimatedLogo
               size={128}
@@ -93,9 +91,9 @@ export default function Home() {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col items-center justify-center px-6 md:px-12">
-        <div className="text-center mb-8">
-          <h1 className="font-serif text-4xl tracking-tight md:text-5xl lg:text-7xl leading-tighter text-primary">
+      <div className="flex flex-1 flex-col items-center justify-center px-6 md:px-12">
+        <div className="mb-8 text-center">
+          <h1 className="leading-tighter text-primary font-serif text-4xl tracking-tight md:text-5xl lg:text-7xl">
             Transform Your Vectors <br className="hidden sm:block" />
             <span className="text-primary">in a New Dimension</span>
           </h1>
@@ -106,7 +104,7 @@ export default function Home() {
             <MobileWarning onContinue={handleContinueOnMobile} />
           </div>
         ) : (
-          <div className="w-fit mx-auto">
+          <div className="mx-auto w-fit">
             <div className="w-full">
               <FileUpload
                 onFileUpload={handleFileUpload}
@@ -114,7 +112,7 @@ export default function Home() {
                 selectedIcon={selectedIcon}
                 onIconSelect={handleIconSelect}
               />
-              <p className="text-base text-center text-muted-foreground mt-4 mb-4">
+              <p className="text-muted-foreground mt-4 mb-4 text-center text-base">
                 Works best with SVGs having simple geometry and transparent
                 background
               </p>
@@ -124,9 +122,9 @@ export default function Home() {
               id="continue-button-section"
               className="flex items-center justify-center">
               {svgData && (
-                <div className="w-full flex justify-center">
+                <div className="flex w-full justify-center">
                   <RainbowButton
-                    className="max-w-lg w-full md:w-1/2 mx-auto text-md py-6"
+                    className="text-md mx-auto w-full max-w-lg py-6 md:w-1/2"
                     onClick={handleContinue}
                     disabled={isLoading}>
                     <span className="flex items-center gap-2">

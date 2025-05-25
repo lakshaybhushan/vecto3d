@@ -54,6 +54,8 @@
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.5",
     "@types/three": "^0.176.0",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4.1.6",
     "tw-animate-css": "^1.2.9",
     "typescript": "^5.8.3"

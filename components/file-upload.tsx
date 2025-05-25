@@ -150,9 +150,9 @@ export function FileUpload({
       )?.component;
       if (IconComponent) {
         return (
-          <div className="relative z-10 flex items-center justify-center w-32 h-32">
-            <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl transform scale-75" />
-            <div className="relative z-10 w-22 h-22 p-1 rounded-xl bg-background/80 backdrop-blur-xs border-2 border-primary/30 shadow-xl shadow-primary/20 flex items-center justify-center overflow-hidden">
+          <div className="relative z-10 flex h-32 w-32 items-center justify-center">
+            <div className="bg-primary/10 absolute inset-0 scale-75 transform rounded-full blur-xl" />
+            <div className="bg-background/80 border-primary/30 shadow-primary/20 relative z-10 flex h-22 w-22 items-center justify-center overflow-hidden rounded-xl border-2 p-1 shadow-xl backdrop-blur-xs">
               <IconComponent size={58} />
             </div>
           </div>
@@ -164,14 +164,14 @@ export function FileUpload({
 
   return (
     <div className="opacity-100">
-      <Card className="border-2 shadow-lg w-full p-2">
+      <Card className="w-full border-2 p-2 shadow-lg">
         <CardContent className="p-0">
           <div
             ref={dropZoneRef}
-            className={`relative flex flex-col py-6 px-10 items-center justify-center cursor-pointer transition-all duration-500 min-w-[200px] min-h-[340px] rounded-lg ${
+            className={`relative flex min-h-[340px] min-w-[200px] cursor-pointer flex-col items-center justify-center rounded-lg px-10 py-6 transition-all duration-500 ${
               isDragging
-                ? "border-primary border-2 border-dashed bg-primary/10"
-                : "border-border border-2 border-dashed hover:bg-muted/30"
+                ? "border-primary bg-primary/10 border-2 border-dashed"
+                : "border-border hover:bg-muted/30 border-2 border-dashed"
             }`}
             onClick={handleUploadClick}
             onDragEnter={handleDragEnter}
@@ -189,13 +189,13 @@ export function FileUpload({
               onChange={handleFileChange}
             />
 
-            <div className="flex flex-col items-center justify-center h-full">
-              <div className="relative h-fit mb-5 flex items-center justify-center">
+            <div className="flex h-full flex-col items-center justify-center">
+              <div className="relative mb-5 flex h-fit items-center justify-center">
                 {svgContent ? (
                   <div className="relative z-10 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl transform scale-75" />
+                    <div className="bg-primary/10 absolute inset-0 scale-75 transform rounded-full blur-xl" />
                     <div
-                      className="relative z-10 w-24 h-24 p-6 rounded-xl bg-primary-foreground backdrop-blur-xs border-2 shadow-xl shadow-primary/20 flex items-center justify-center overflow-hidden"
+                      className="bg-primary-foreground shadow-primary/20 relative z-10 flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl border-2 p-6 shadow-xl backdrop-blur-xs"
                       dangerouslySetInnerHTML={{
                         __html: svgContent
                           .replace(/width="[^"]*"/, 'width="100%"')
@@ -210,7 +210,7 @@ export function FileUpload({
                 ) : (
                   <div>
                     <div
-                      className={`relative z-10 p-3.5 rounded-xl border-2 shadow-lg ${
+                      className={`relative z-10 rounded-xl border-2 p-3.5 shadow-lg ${
                         isDragging
                           ? "border-primary bg-primary-foreground"
                           : "border-border bg-muted"
@@ -221,22 +221,22 @@ export function FileUpload({
                 )}
               </div>
 
-              <div className="text-center w-full">
+              <div className="w-full text-center">
                 <div className={isDragging ? "hidden" : "block"}>
                   <p className="text-lg font-medium">
                     {fileName
                       ? fileName
                       : "Click this space / Drop Your SVG File Here"}
                   </p>
-                  <p className="text-muted-foreground text-sm mt-1">
+                  <p className="text-muted-foreground mt-1 text-sm">
                     {svgContent || selectedIcon
                       ? "Let's make it 3D!"
                       : "And see the magic happen!"}
                   </p>
-                  <div className="w-full flex items-center justify-center gap-2 my-3">
-                    <div className="w-full h-px border border-dashed"></div>
-                    <span className="text-sm text-muted-foreground">or</span>
-                    <div className="w-full h-px border border-dashed"></div>
+                  <div className="my-3 flex w-full items-center justify-center gap-2">
+                    <div className="h-px w-full border border-dashed"></div>
+                    <span className="text-muted-foreground text-sm">or</span>
+                    <div className="h-px w-full border border-dashed"></div>
                   </div>
                   <div className="w-full space-y-4">
                     <p className="text-sm">Select any of the below</p>
@@ -248,10 +248,10 @@ export function FileUpload({
                               selectedIcon === icon.name ? "default" : "outline"
                             }
                             size="lg"
-                            className={`flex flex-col items-center justify-center p-3.5 h-auto w-[81px] gap-1.5 rounded-lg transition-transform duration-300 ease-out ${
+                            className={`flex h-auto w-[81px] flex-col items-center justify-center gap-1.5 rounded-lg p-3.5 transition-transform duration-300 ease-out ${
                               selectedIcon === icon.name
-                                ? "bg-primary text-primary-foreground shadow-lg scale-105"
-                                : "bg-background text-foreground hover:scale-105 hover:bg-muted/60 active:scale-100 active:duration-75"
+                                ? "bg-primary text-primary-foreground scale-105 shadow-lg"
+                                : "bg-background text-foreground hover:bg-muted/60 hover:scale-105 active:scale-100 active:duration-75"
                             }`}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -270,7 +270,7 @@ export function FileUpload({
 
                 {isDragging && (
                   <div>
-                    <p className="text-lg font-medium text-primary">
+                    <p className="text-primary text-lg font-medium">
                       Drop your SVG file here
                     </p>
                   </div>
@@ -281,11 +281,11 @@ export function FileUpload({
             {isDragging && (
               <>
                 <div
-                  className="absolute w-18 h-18 rounded-full bg-primary/20 blur-xl"
+                  className="bg-primary/20 absolute h-18 w-18 rounded-full blur-xl"
                   style={{ top: "20%", left: "20%" }}
                 />
                 <div
-                  className="absolute w-14 h-14 rounded-full bg-primary/20 blur-xl"
+                  className="bg-primary/20 absolute h-14 w-14 rounded-full blur-xl"
                   style={{ bottom: "20%", right: "20%" }}
                 />
               </>

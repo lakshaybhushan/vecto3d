@@ -34,13 +34,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-// import {
-//   staggerContainer,
-//   cardAnimation,
-//   modelContainerAnimation,
-//   tabContentAnimation,
-//   pageTransition,
-// } from "@/lib/animation-values";
 
 import { GeometryControls } from "@/components/controls/geometry-controls";
 import { MaterialControls } from "@/components/controls/material-controls";
@@ -345,16 +338,16 @@ const ModelPreview = React.memo<ModelPreviewProps>(
 ModelPreview.displayName = "ModelPreview";
 
 const ModelLoadingState = ({ message }: { message: string }) => (
-  <div className="w-full h-full flex flex-col items-center justify-center bg-card">
-    <div className="flex flex-col items-center gap-4 text-center max-w-xs px-4">
+  <div className="bg-card flex h-full w-full flex-col items-center justify-center">
+    <div className="flex max-w-xs flex-col items-center gap-4 px-4 text-center">
       <div className="relative h-20 w-20">
-        <div className="absolute inset-0 rounded-full bg-background/20 animate-pulse"></div>
-        <div className="absolute inset-4 rounded-full bg-background/40 animate-pulse [animation-delay:200ms]"></div>
+        <div className="bg-background/20 absolute inset-0 animate-pulse rounded-full"></div>
+        <div className="bg-background/40 absolute inset-4 animate-pulse rounded-full [animation-delay:200ms]"></div>
         <AnimatedLogo className="absolute inset-0 h-full w-full" />
       </div>
       <div className="space-y-2">
         <p className="text-sm font-medium">{message}</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           This may take a moment for complex SVGs
         </p>
       </div>
@@ -363,10 +356,10 @@ const ModelLoadingState = ({ message }: { message: string }) => (
 );
 
 const ModelErrorState = ({ error }: { error: string }) => (
-  <div className="w-full h-full flex items-center justify-center bg-destructive/5">
+  <div className="bg-destructive/5 flex h-full w-full items-center justify-center">
     <div className="max-w-sm p-6 text-center">
-      <p className="text-destructive font-medium mb-2">Error processing SVG</p>
-      <p className="text-xs text-muted-foreground">{error}</p>
+      <p className="text-destructive mb-2 font-medium">Error processing SVG</p>
+      <p className="text-muted-foreground text-xs">{error}</p>
       <Button
         variant="outline"
         size="sm"
@@ -575,7 +568,7 @@ export default function EditPage() {
     }
 
     return (
-      <div className="w-full h-full md:overflow-hidden">
+      <div className="h-full w-full md:overflow-hidden">
         <ModelPreview
           svgData={svgData}
           depth={depth}
@@ -621,9 +614,9 @@ export default function EditPage() {
   };
 
   return (
-    <main className="flex flex-col md:overflow-hidden relative w-full h-screen bg-background">
-      <header className="sticky top-0 z-10 w-full border-b border-dashed bg-background/80 backdrop-blur-xs">
-        <div className="flex items-center justify-between py-4 px-8">
+    <main className="bg-background relative flex h-screen w-full flex-col md:overflow-hidden">
+      <header className="bg-background/80 sticky top-0 z-10 w-full border-b border-dashed backdrop-blur-xs">
+        <div className="flex items-center justify-between px-8 py-4">
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -647,7 +640,7 @@ export default function EditPage() {
         </div>
       </header>
 
-      <div className="flex-1 py-8 px-8">
+      <div className="flex-1 px-8 py-8">
         {isMobile && !continueOnMobile ? (
           <EditorMobileWarning
             onContinue={handleContinueOnMobile}
@@ -656,15 +649,15 @@ export default function EditPage() {
         ) : (
           <div
             key="editor-content"
-            className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <div className="lg:h-[calc(100vh-8rem)] h-[60dvh] col order-first lg:order-last relative overflow-hidden lg:col-span-3">
-              <Card className="w-full h-full flex flex-col overflow-hidden border">
-                <CardHeader className="p-4 border-b [.border-b]:pb-4 bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
+            className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+            <div className="col relative order-first h-[60dvh] overflow-hidden lg:order-last lg:col-span-3 lg:h-[calc(100vh-8rem)]">
+              <Card className="flex h-full w-full flex-col overflow-hidden border">
+                <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 backdrop-blur-xs [.border-b]:pb-4">
                   <div>
                     <CardTitle className="text-xl font-medium">
                       Preview
                     </CardTitle>
-                    <CardDescription className="text-xs mt-1">
+                    <CardDescription className="mt-1 text-xs">
                       {!svgData
                         ? "Loading SVG data..."
                         : isModelLoading
@@ -717,17 +710,17 @@ export default function EditPage() {
                         side="left"
                         align="center"
                         sideOffset={10}
-                        className="text-xs py-2 px-4 z-99999 shadow-md">
+                        className="z-99999 px-4 py-2 text-xs shadow-md">
                         Performance may be affected
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </CardHeader>
 
-                <div className="grow relative" ref={previewContainerRef}>
+                <div className="relative grow" ref={previewContainerRef}>
                   {renderModelPreview()}
                   {isFullscreen && (
-                    <div className="absolute inset-0 pointer-events-none">
+                    <div className="pointer-events-none absolute inset-0">
                       <TooltipProvider>
                         <Tooltip delayDuration={100}>
                           <TooltipTrigger asChild>
@@ -736,15 +729,14 @@ export default function EditPage() {
                               variant={"ghost"}
                               onClick={() => document.exitFullscreen()}
                               aria-label="Exit fullscreen"
-                              className={`absolute top-6 right-6 pointer-events-auto bg-transparent
-                                  ${
-                                    backgroundColor === "#000000" || useBloom
-                                      ? "hover:bg-white/10"
-                                      : backgroundColor === "#FFFFFF" &&
-                                          resolvedTheme === "dark"
-                                        ? "hover:bg-black/10"
-                                        : "hover:bg-background/80"
-                                  } backdrop-blur-xs`}>
+                              className={`pointer-events-auto absolute top-6 right-6 bg-transparent ${
+                                backgroundColor === "#000000" || useBloom
+                                  ? "hover:bg-white/10"
+                                  : backgroundColor === "#FFFFFF" &&
+                                      resolvedTheme === "dark"
+                                    ? "hover:bg-black/10"
+                                    : "hover:bg-background/80"
+                              } backdrop-blur-xs`}>
                               <Minimize2
                                 className={`h-4 w-4 ${
                                   hasMounted &&
@@ -764,7 +756,7 @@ export default function EditPage() {
                             side="left"
                             align="center"
                             sideOffset={10}
-                            className="text-xs py-2 px-4 shadow-md">
+                            className="px-4 py-2 text-xs shadow-md">
                             Exit fullscreen
                           </TooltipContent>
                         </Tooltip>
@@ -774,21 +766,21 @@ export default function EditPage() {
                 </div>
               </Card>
             </div>
-            <div className="space-y-6 order-last lg:order-first lg:col-span-2">
-              <Card className="w-full h-fit flex flex-col overflow-hidden border">
-                <CardHeader className="p-4 pb-4 border-b [.border-b]:pb-4 bg-background/80 backdrop-blur-xs z-10 flex flex-row items-center justify-between">
+            <div className="order-last space-y-6 lg:order-first lg:col-span-2">
+              <Card className="flex h-fit w-full flex-col overflow-hidden border">
+                <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 pb-4 backdrop-blur-xs [.border-b]:pb-4">
                   <div>
                     <CardTitle className="text-xl font-medium">
                       Customize
                     </CardTitle>
-                    <CardDescription className="text-xs mt-1 truncate">
+                    <CardDescription className="mt-1 truncate text-xs">
                       {fileName}
                     </CardDescription>
                   </div>
                 </CardHeader>
                 <CardContent className="p-4">
                   <Tabs defaultValue="geometry">
-                    <TabsList className="w-full flex justify-between mb-4 overflow-x-auto">
+                    <TabsList className="mb-4 flex w-full justify-between overflow-x-auto">
                       <TabsTrigger value="geometry" className="flex-1">
                         Geometry
                       </TabsTrigger>

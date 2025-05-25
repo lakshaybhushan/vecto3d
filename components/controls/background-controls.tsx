@@ -32,9 +32,9 @@ export function BackgroundControls() {
   return (
     <div className="space-y-4">
       <Alert className="bg-muted/50 mb-4">
-        <AlertDescription className="text-xs flex items-center">
-          <div className="h-5 w-1 bg-blue-500 rounded-full mr-2" />
-          <p className="text-xs text-muted-foreground mt-0.5">
+        <AlertDescription className="flex items-center text-xs">
+          <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
+          <p className="text-muted-foreground mt-0.5 text-xs">
             Background settings are for preview only and will not affect the
             exported 3D model.
           </p>
@@ -43,23 +43,23 @@ export function BackgroundControls() {
       <div className="space-y-4">
         <Label>Background Color</Label>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+        <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-5">
           {SOLID_COLOR_PRESETS.map((preset) => (
             <div
               key={preset.name}
-              className={`cursor-pointer rounded-lg pt-3 pb-2 flex flex-col items-center ${
+              className={`flex cursor-pointer flex-col items-center rounded-lg pt-3 pb-2 ${
                 solidColorPreset === preset.name
-                  ? "bg-primary/10 ring-1 ring-input"
+                  ? "bg-primary/10 ring-input ring-1"
                   : "hover:bg-muted"
               }`}
               onClick={() => handleBackgroundChange(preset.color, preset.name)}>
               <div
-                className="w-12 h-12 rounded-full mb-1 border border-input"
+                className="border-input mb-1 h-12 w-12 rounded-full border"
                 style={{
                   background: preset.color,
                 }}
               />
-              <span className="text-xs font-medium pt-1">{preset.label}</span>
+              <span className="pt-1 text-xs font-medium">{preset.label}</span>
             </div>
           ))}
         </div>
@@ -94,7 +94,7 @@ export function BackgroundControls() {
                 setSolidColorPreset("light");
               }
             }}
-            className="w-full h-11">
+            className="h-11 w-full">
             Reset to Theme Default
           </Button>
         </div>
