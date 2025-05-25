@@ -80,7 +80,7 @@ export function BackgroundControls() {
           </div>
         </div>
 
-        <div className="pt-1">
+        <div className="border-primary/10 space-y-2 border-t pt-4">
           <Button
             variant="outline"
             size="sm"
