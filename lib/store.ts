@@ -190,7 +190,7 @@ export const useEditorStore = create<EditorState>((set) => ({
         state.environmentPreset === "custom" &&
         state.customHdriUrl
       ) {
-        return state; // Don't change state if trying to enable vibe mode with custom HDRI
+        return state;
       }
 
       const updates: Partial<EditorState> = {
@@ -202,22 +202,10 @@ export const useEditorStore = create<EditorState>((set) => ({
       };
 
       if (newState) {
-        if (state.useCustomColor) {
-          updates.vibeModeOriginalMaterial = state.customColor;
-        }
-        updates.useCustomColor = true;
-        updates.customColor = "#000000";
-
         if (state.environmentPreset !== "custom" || !state.customHdriUrl) {
           updates.environmentPreset = "dawn";
         }
-      } else {
-        if (state.vibeModeOriginalMaterial) {
-          updates.customColor = state.vibeModeOriginalMaterial;
-          updates.vibeModeOriginalMaterial = null;
-        }
       }
-
       return updates;
     }),
 }));

@@ -226,19 +226,19 @@ export function EnvironmentControls() {
                 Sorry, Vibe Mode is not available with custom images :(
               </Button>
             ) : (
-              <RainbowButton
-                className={`w-full py-5 text-base font-semibold transition-all ${
+              <Button
+                className={`w-full py-5 text-base font-medium transition-all ${
                   useBloom ? "animate-rainbow" : "opacity-90 hover:opacity-100"
                 }`}
                 onClick={() => {
                   const newValue = !useBloom;
                   toggleVibeMode(newValue);
                 }}>
-                <VibeModeIcon />
+
                 <span className="ml-1">
                   {useBloom ? "Disable Vibe Mode" : "Enable Vibe Mode"}
                 </span>
-              </RainbowButton>
+              </Button>
             )}
           </div>
 

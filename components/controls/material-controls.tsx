@@ -18,6 +18,8 @@ export function MaterialControls() {
     setClearcoat,
     transmission,
     setTransmission,
+    envMapIntensity,
+    setEnvMapIntensity,
     useCustomColor,
     setUseCustomColor,
     customColor,
@@ -60,6 +62,7 @@ export function MaterialControls() {
                 setMetalness(preset.metalness);
                 setClearcoat(preset.clearcoat);
                 setTransmission(preset.transmission);
+                setEnvMapIntensity(preset.envMapIntensity);
               }}>
               <div className="relative mb-1 h-12 w-12 rounded-full">
                 <div
@@ -155,6 +158,20 @@ export function MaterialControls() {
               step={0.01}
               value={[transmission]}
               onValueChange={(value) => setTransmission(value[0])}
+            />
+          </div>
+
+          <div className="space-y-4">
+            <Label htmlFor="envMapIntensity">
+              Environment Reflection: {envMapIntensity.toFixed(2)}
+            </Label>
+            <Slider
+              id="envMapIntensity"
+              min={0}
+              max={3}
+              step={0.1}
+              value={[envMapIntensity]}
+              onValueChange={(value) => setEnvMapIntensity(value[0])}
             />
           </div>
         </div>

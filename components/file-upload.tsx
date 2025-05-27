@@ -23,10 +23,10 @@ import {
 
 const exampleIcons = [
   { name: "GitHub", component: GitHubIcon },
-  { name: "v0.dev", component: V0Icon },
+  { name: "v0", component: V0Icon },
   { name: "Vercel", component: VercelIcon },
-  { name: "X", component: XIcon },
-  { name: "Chat App", component: ChatAppIcon },
+  { name: "X/Twitter", component: XIcon },
+  { name: "AI Chat", component: ChatAppIcon },
   { name: "Vecto3d", component: Vecto3dIcon },
 ];
 
@@ -49,7 +49,6 @@ export function FileUpload({
           const svgData = event.target.result as string;
           onFileUpload(svgData, file.name);
           setSvgContent(svgData);
-          // Reset selected icon when uploading a new file
           if (onIconSelect) onIconSelect("");
         }
       };
@@ -81,13 +80,13 @@ export function FileUpload({
         let svgContent = "";
         if (iconName === "GitHub") {
           svgContent = GITHUB_SVG;
-        } else if (iconName === "v0.dev") {
+        } else if (iconName === "v0") {
           svgContent = V0_SVG;
         } else if (iconName === "Vercel") {
           svgContent = VERCEL_SVG;
-        } else if (iconName === "X") {
+        } else if (iconName === "X/Twitter") {
           svgContent = X_SVG;
-        } else if (iconName === "Chat App") {
+        } else if (iconName === "AI Chat") {
           svgContent = CHAT_APP_SVG;
         } else if (iconName === "Vecto3d") {
           svgContent = VECTO3D_SVG;
@@ -151,7 +150,7 @@ export function FileUpload({
       if (IconComponent) {
         return (
           <div className="relative z-10 flex h-32 w-32 items-center justify-center">
-            <div className="bg-primary/10 absolute inset-0 scale-75 transform rounded-full blur-xl" />
+            <div className="bg-primary/10 absolute inset-0 transform rounded-full blur-xl" />
             <div className="bg-background/80 border-primary/30 shadow-primary/20 relative z-10 flex h-22 w-22 items-center justify-center overflow-hidden rounded-xl border-2 p-1 shadow-xl backdrop-blur-xs">
               <IconComponent size={58} />
             </div>
@@ -190,12 +189,11 @@ export function FileUpload({
             />
 
             <div className="flex h-full flex-col items-center justify-center">
-              <div className="relative mb-5 flex h-fit items-center justify-center">
+              <div className="relative mb-4 flex h-fit items-center justify-center">
                 {svgContent ? (
                   <div className="relative z-10 flex items-center justify-center">
-                    <div className="bg-primary/10 absolute inset-0 scale-75 transform rounded-full blur-xl" />
                     <div
-                      className="bg-primary-foreground shadow-primary/20 relative z-10 flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl border-2 p-6 shadow-xl backdrop-blur-xs"
+                      className="bg-muted relative z-10 flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border-2 p-3.5 shadow-lg"
                       dangerouslySetInnerHTML={{
                         __html: svgContent
                           .replace(/width="[^"]*"/, 'width="100%"')
@@ -250,8 +248,8 @@ export function FileUpload({
                             size="lg"
                             className={`flex h-auto w-[81px] flex-col items-center justify-center gap-1.5 rounded-lg p-3.5 transition-transform duration-300 ease-out ${
                               selectedIcon === icon.name
-                                ? "bg-primary text-primary-foreground scale-105 shadow-lg"
-                                : "bg-background text-foreground hover:bg-muted/60 hover:scale-105 active:scale-100 active:duration-75"
+                                ? "bg-primary text-primary-foreground shadow-lg"
+                                : "bg-background text-foreground hover:bg-muted/60 border-primary/10"
                             }`}
                             onClick={(e) => {
                               e.stopPropagation();

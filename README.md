@@ -11,13 +11,14 @@
 
 </p>
 
+
+![GithubBanner](./app/opengraph-image.png)
+
 <a href="https://vercel.com/oss">
   <img alt="Vercel OSS Program" src="https://vercel.com/oss/program-badge.svg" />
 </a>
 
 <br/>
-
-![GithubBanner](./app/opengraph-image.png)
 
 A super simple tool to convert your simple SVGs, mostly logos, to 3D models.
 Check it out at [https://vecto3d.xyz](https://vecto3d.xyz)

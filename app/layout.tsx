@@ -1,6 +1,7 @@
 import type React from "react";
 import "@/styles/globals.css";
-import { Host_Grotesk, Instrument_Serif } from "next/font/google";
+import { Geist_Mono, Instrument_Serif } from "next/font/google";
+import LocalFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster as SonnerToaster } from "sonner";
 import Script from "next/script";
@@ -8,14 +9,22 @@ import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 
-const hostGrotesk = Host_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-instrument-sans",
-});
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
   weight: "400",
-  variable: "--font-instrument-serif",
+  variable: "--font-serif",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-mono",
+});
+
+const clashGrotesk = LocalFont({
+  src: "../public/fonts/ClashGrotesk-Variable.woff2",
+  display: "swap",
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
@@ -55,7 +64,11 @@ export default function RootLayout({
         data-website-id="237f1de7-ab04-44dd-a7b4-6b0b819b7991"
       />
       <body
-        className={cn(hostGrotesk.className, instrumentSerif.variable)}
+        className={cn(
+          clashGrotesk.className,
+          instrumentSerif.variable,
+          geistMono.variable,
+        )}
         suppressHydrationWarning>
         <ThemeProvider
           attribute="class"

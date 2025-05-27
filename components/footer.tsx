@@ -12,7 +12,9 @@ export default function Footer() {
             className="text-primary flex items-center gap-0.5 font-medium transition-colors duration-200 hover:underline"
             target="_blank"
             rel="noopener noreferrer">
-            <VercelIcon size={12} />
+            <span className="-mt-0.5">
+              <VercelIcon size={12} />
+            </span>
             <span className="hidden sm:inline">Vercel</span>
           </Link>
         </div>
@@ -27,13 +29,13 @@ export default function Footer() {
               <V0Icon size={20} />
             </span>
           </Link>
-          {/* <span className="text-muted-foreground">by</span> */}
+          —
           <Link
             href="https://lakshb.dev"
             className="hover:text-primary font-medium transition-colors duration-200 hover:underline"
             target="_blank"
             rel="noopener noreferrer">
-            — lakshaybhushan
+            lakshaybhushan
           </Link>
         </div>
       </div>

@@ -58,8 +58,9 @@
 :root {
   /* font */
 
-  --font-sans: Host Grotesk, sans-serif;
+  --font-sans: Clash Grotesk, sans-serif;
   --font-serif: Instrument Serif, serif;
+  --font-mono: Geist Mono, monospace;
 
   /* colors */
   --background: oklch(0.99 0 0);

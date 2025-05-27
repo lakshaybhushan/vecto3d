@@ -1,151 +1,119 @@
-import React, { useRef, useEffect, useMemo, useState, Suspense } from "react";
-import * as THREE from "three";
+import React, { useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { ModelPreviewProps } from "@/lib/types";
-import { loadThreeModules } from "@/lib/three-imports";
+import { OrbitControls, Environment, useTexture } from "@react-three/drei";
+import * as THREE from "three";
+import {
+  EffectComposer,
+  Bloom,
+  BrightnessContrast,
+} from "@react-three/postprocessing";
+import { BlendFunction } from "postprocessing";
 
-const LazyEnvironment = React.lazy(() =>
-  import("./environment-presets").then((module) => ({
-    default: module.SimpleEnvironment,
+const SVGModel = lazy(() =>
+  import("@/components/svg-model").then((module) => ({
+    default: module.SVGModel,
   })),
 );
-const LazySVGModel = React.lazy(() =>
-  import("./svg-model").then((module) => ({ default: module.SVGModel })),
-);
 
-interface PostProcessingModules {
-  EffectComposer: React.ComponentType<{
-    children?: React.ReactNode;
-    enabled?: boolean;
-    [key: string]: unknown;
-  }>;
-  Bloom: React.ComponentType<{
-    intensity?: number;
-    luminanceThreshold?: number;
-    luminanceSmoothing?: number;
-    mipmapBlur?: boolean;
-    radius?: number;
-    [key: string]: unknown;
-  }>;
-  BrightnessContrast: React.ComponentType<{
-    brightness?: number;
-    contrast?: number;
-    blendFunction?: number;
-    [key: string]: unknown;
-  }>;
-  SMAA: React.ComponentType<{
-    preset?: number;
-    [key: string]: unknown;
-  }>;
-  ToneMapping: React.ComponentType<{
-    adaptive?: boolean;
-    resolution?: number;
-    middleGrey?: number;
-    maxLuminance?: number;
-    averageLuminance?: number;
-    adaptationRate?: number;
-    [key: string]: unknown;
-  }>;
-  BlendFunction: {
-    NORMAL: number;
-    [key: string]: number;
-  };
+function CustomEnvironment({ imageUrl }: { imageUrl: string }) {
+  const texture = useTexture(imageUrl);
+
+  useEffect(() => {
+    if (texture) {
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+    }
+  }, [texture]);
+
+  return <Environment map={texture} background={false} />;
 }
 
-interface PostProcessingEffectsProps {
+function SimpleEnvironment({
+  environmentPreset,
+  customHdriUrl,
+}: {
+  environmentPreset:
+    | "apartment"
+    | "city"
+    | "dawn"
+    | "forest"
+    | "lobby"
+    | "night"
+    | "park"
+    | "studio"
+    | "sunset"
+    | "warehouse"
+    | "custom";
+  customHdriUrl: string | null;
+}) {
+  return (
+    <>
+      {environmentPreset === "custom" && customHdriUrl ? (
+        <CustomEnvironment imageUrl={customHdriUrl} />
+      ) : (
+        <Environment
+          preset={
+            environmentPreset === "custom" ? undefined : environmentPreset
+          }
+          background={false}
+        />
+      )}
+    </>
+  );
+}
+
+export interface ModelPreviewProps {
+  svgData: string;
+  depth: number;
+  modelRotationY: number;
+  modelGroupRef: React.RefObject<THREE.Group | null>;
+  modelRef: React.RefObject<THREE.Group | null>;
+  // Geometry settings
+  bevelEnabled: boolean;
+  bevelThickness: number;
+  bevelSize: number;
+  bevelSegments: number;
+  isHollowSvg: boolean;
+  spread: number;
+  // Material settings
+  useCustomColor: boolean;
+  customColor: string;
+  roughness: number;
+  metalness: number;
+  clearcoat: number;
+  transmission: number;
+  envMapIntensity: number;
+  // Environment settings
+  backgroundColor: string;
+  useEnvironment: boolean;
+  environmentPreset: string;
+  customHdriUrl: string | null;
+  // Rendering options
+  autoRotate: boolean;
+  autoRotateSpeed: number;
   useBloom: boolean;
   bloomIntensity: number;
   bloomMipmapBlur: boolean;
   isMobile: boolean;
+  onLoadStart?: () => void;
+  onLoadComplete?: () => void;
+  onError?: (error: Error) => void;
 }
 
-const PostProcessingEffects: React.FC<PostProcessingEffectsProps> = React.memo(
-  ({ useBloom, bloomIntensity, bloomMipmapBlur, isMobile }) => {
-    const [modules, setModules] = useState<PostProcessingModules | null>(null);
-
-    useEffect(() => {
-      let mounted = true;
-      loadThreeModules().then((loadedModules) => {
-        if (mounted) {
-          setModules(loadedModules as unknown as PostProcessingModules);
-        }
-      });
-      return () => {
-        mounted = false;
-      };
-    }, []);
-
-    if (!modules) return null;
-
-    const {
-      EffectComposer,
-      Bloom,
-      BrightnessContrast,
-      SMAA,
-      ToneMapping,
-      BlendFunction,
-    } = modules;
-
-    if (useBloom) {
-      return (
-        <EffectComposer multisampling={isMobile ? 0 : 8}>
-          <SMAA />
-          <Bloom
-            intensity={bloomIntensity * 0.7}
-            luminanceThreshold={0.4}
-            luminanceSmoothing={0.95}
-            mipmapBlur={bloomMipmapBlur}
-            radius={0.9}
-          />
-          <BrightnessContrast
-            brightness={0.07}
-            contrast={0.05}
-            blendFunction={BlendFunction.NORMAL}
-          />
-          <ToneMapping
-            adaptive
-            resolution={256}
-            middleGrey={0.6}
-            maxLuminance={16.0}
-            averageLuminance={1.0}
-            adaptationRate={1.0}
-          />
-        </EffectComposer>
-      );
-    }
-
-    return (
-      <EffectComposer multisampling={isMobile ? 2 : 8}>
-        <SMAA preset={isMobile ? 1 : 3} />
-        <ToneMapping
-          adaptive
-          resolution={256}
-          middleGrey={0.6}
-          maxLuminance={16.0}
-          averageLuminance={1.0}
-          adaptationRate={1.0}
-        />
-      </EffectComposer>
-    );
-  },
-);
-
-PostProcessingEffects.displayName = "PostProcessingEffects";
-
-// Main ModelPreviews component
-const ModelPreviews = React.memo<ModelPreviewProps>(
+export const ModelPreview = React.memo<ModelPreviewProps>(
   ({
     svgData,
     depth,
     modelRotationY,
     modelGroupRef,
     modelRef,
+    // Geometry settings
     bevelEnabled,
     bevelThickness,
     bevelSize,
     bevelSegments,
     isHollowSvg,
     spread,
+    // Material settings
     useCustomColor,
     customColor,
     roughness,
@@ -153,10 +121,12 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
     clearcoat,
     transmission,
     envMapIntensity,
+    // Environment settings
     backgroundColor,
     useEnvironment,
     environmentPreset,
     customHdriUrl,
+    // Rendering options
     autoRotate,
     autoRotateSpeed,
     useBloom,
@@ -167,7 +137,9 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
     const cameraRef = useRef(
       new THREE.PerspectiveCamera(
         50,
-        window.innerWidth / window.innerHeight,
+        typeof window !== "undefined"
+          ? window.innerWidth / window.innerHeight
+          : 1,
         1,
         1000,
       ),
@@ -180,78 +152,119 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
           cameraRef.current.updateProjectionMatrix();
         }
       };
-
-      window.addEventListener("resize", handleResize);
-      return () => {
-        window.removeEventListener("resize", handleResize);
-      };
+      if (typeof window !== "undefined") {
+        window.addEventListener("resize", handleResize);
+        handleResize(); // Initial call
+        return () => {
+          window.removeEventListener("resize", handleResize);
+        };
+      }
     }, []);
 
-    const [orbitControlsModule, setOrbitControlsModule] =
-      useState<React.ComponentType<{
-        enableDamping?: boolean;
-        dampingFactor?: number;
-        [key: string]: unknown;
-      }> | null>(null);
+    const effects = useMemo(() => {
+      const msaaSamples = isMobile ? 4 : 8; // 4 samples for mobile, 8 for desktop
 
-    useEffect(() => {
-      let mounted = true;
-      loadThreeModules().then((modules) => {
-        if (mounted && modules.OrbitControls) {
-          setOrbitControlsModule(modules.OrbitControls);
+      if (useBloom) {
+        return (
+          <EffectComposer multisampling={msaaSamples}>
+            <Bloom
+              intensity={bloomIntensity * 0.7}
+              luminanceThreshold={0.4}
+              luminanceSmoothing={0.95}
+              mipmapBlur={bloomMipmapBlur}
+              radius={0.9}
+            />
+            <BrightnessContrast
+              brightness={0.07}
+              contrast={0.05}
+              blendFunction={BlendFunction.NORMAL}
+            />
+          </EffectComposer>
+        );
+      } else {
+        // If not using bloom, use EffectComposer just for MSAA.
+        if (msaaSamples > 0) {
+          return (
+            <EffectComposer multisampling={msaaSamples}>
+              <>{/* Empty fragment to satisfy children prop */}</>
+            </EffectComposer>
+          );
         }
-      });
-      return () => {
-        mounted = false;
-      };
-    }, []);
+      }
+      return null; // Fallback if msaaSamples is 0 (though current logic prevents this)
+    }, [useBloom, bloomIntensity, bloomMipmapBlur, isMobile]);
 
     const environment = useMemo(() => {
       if (!useEnvironment) return null;
 
       return (
-        <Suspense fallback={null}>
-          <LazyEnvironment
-            environmentPreset={environmentPreset}
-            customHdriUrl={customHdriUrl}
-          />
-        </Suspense>
+        <SimpleEnvironment
+          environmentPreset={
+            environmentPreset as
+              | "apartment"
+              | "city"
+              | "dawn"
+              | "forest"
+              | "lobby"
+              | "night"
+              | "park"
+              | "studio"
+              | "sunset"
+              | "warehouse"
+              | "custom"
+          }
+          customHdriUrl={customHdriUrl}
+        />
       );
     }, [useEnvironment, environmentPreset, customHdriUrl]);
 
     if (!svgData) return null;
 
-    const OrbitControls = orbitControlsModule;
-
     return (
       <Canvas
         shadows
         camera={{ position: [0, 0, 150], fov: 50 }}
-        dpr={[1, isMobile ? 1.5 : 2]} // Optimize DPR for mobile
+        dpr={
+          typeof window !== "undefined" ? window?.devicePixelRatio || 1.5 : 1.5
+        }
         frameloop="demand"
         performance={{ min: 0.5 }}
         gl={{
+          antialias: true,
           outputColorSpace: "srgb",
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.2,
           preserveDrawingBuffer: true,
           powerPreference: "high-performance",
           alpha: true,
-          logarithmicDepthBuffer: true,
+          logarithmicDepthBuffer: false,
           precision: isMobile ? "mediump" : "highp",
           stencil: false,
+        }}
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
         }}>
-        <color attach="background" args={[backgroundColor]} />
-        <ambientLight intensity={0.6 * Math.PI} />
-        <directionalLight
-          position={[50, 50, 100]}
-          intensity={0.8 * Math.PI}
-          castShadow={true}
-        />
-        {environment}
-        <group ref={modelGroupRef} rotation={[0, modelRotationY, 0]}>
-          <Suspense fallback={<div>Loading...</div>}>
-            <LazySVGModel
+        <Suspense fallback={null}>
+          <color attach="background" args={[backgroundColor]} />
+
+          <ambientLight intensity={0.6 * Math.PI} />
+
+          <directionalLight
+            position={[50, 50, 100]}
+            intensity={0.8 * Math.PI}
+            castShadow={false}
+          />
+
+          {environment}
+
+          <group ref={modelGroupRef} rotation={[0, modelRotationY, 0]}>
+            <SVGModel
               svgData={svgData}
               depth={depth * 5}
               bevelEnabled={bevelEnabled}
@@ -264,39 +277,32 @@ const ModelPreviews = React.memo<ModelPreviewProps>(
               clearcoat={clearcoat}
               transmission={transmission}
               envMapIntensity={useEnvironment ? envMapIntensity : 0.2}
-              receiveShadow={true}
-              castShadow={true}
+              receiveShadow={false}
+              castShadow={false}
               isHollowSvg={isHollowSvg}
               spread={spread}
               ref={modelRef}
             />
-          </Suspense>
-        </group>
-        <Suspense fallback={null}>
-          <PostProcessingEffects
-            useBloom={useBloom}
-            bloomIntensity={bloomIntensity}
-            bloomMipmapBlur={bloomMipmapBlur}
-            isMobile={isMobile}
-          />
+          </group>
         </Suspense>
-        {OrbitControls && (
-          <OrbitControls
-            autoRotate={autoRotate}
-            autoRotateSpeed={autoRotateSpeed}
-            minDistance={50}
-            maxDistance={400}
-            enablePan={true}
-            enableZoom={true}
-            enableRotate={true}
-            target={[0, 0, 0]}
-          />
-        )}
+
+        {effects}
+
+        <OrbitControls
+          autoRotate={autoRotate}
+          autoRotateSpeed={autoRotateSpeed}
+          minDistance={50}
+          maxDistance={400}
+          enablePan={true}
+          enableZoom={true}
+          enableRotate={true}
+          target={[0, 0, 0]}
+        />
       </Canvas>
     );
   },
 );
 
-ModelPreviews.displayName = "ModelPreviews";
+ModelPreview.displayName = "ModelPreview";
 
-export { ModelPreviews };
+export default ModelPreview;

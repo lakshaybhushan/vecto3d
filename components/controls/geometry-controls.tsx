@@ -4,6 +4,13 @@ import { BEVEL_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
 import { Switch } from "@/components/ui/switch";
 
+const MIN_ACTUAL_DEPTH = 0.01;
+const MAX_ACTUAL_DEPTH = 50;
+const DEPTH_SLIDER_POWER = 2;
+const SLIDER_DISPLAY_MIN = 0;
+const SLIDER_DISPLAY_MAX = 100;
+const SLIDER_DISPLAY_STEP = 1;
+
 export function GeometryControls() {
   const {
     depth,
@@ -23,6 +30,34 @@ export function GeometryControls() {
     autoRotateSpeed,
     setAutoRotateSpeed,
   } = useEditorStore();
+
+  const displayToActualDepth = (displayValue: number): number => {
+    const normalizedValue = Math.max(
+      0,
+      Math.min(1, displayValue / SLIDER_DISPLAY_MAX),
+    );
+    const actual =
+      MIN_ACTUAL_DEPTH +
+      (MAX_ACTUAL_DEPTH - MIN_ACTUAL_DEPTH) *
+        Math.pow(normalizedValue, DEPTH_SLIDER_POWER);
+    return Math.max(MIN_ACTUAL_DEPTH, Math.min(MAX_ACTUAL_DEPTH, actual));
+  };
+
+  const actualToDisplayDepth = (actualValue: number): number => {
+    const clampedActual = Math.max(
+      MIN_ACTUAL_DEPTH,
+      Math.min(MAX_ACTUAL_DEPTH, actualValue),
+    );
+    if (MAX_ACTUAL_DEPTH - MIN_ACTUAL_DEPTH === 0) {
+      return SLIDER_DISPLAY_MIN;
+    }
+    const normalizedValue =
+      (clampedActual - MIN_ACTUAL_DEPTH) /
+      (MAX_ACTUAL_DEPTH - MIN_ACTUAL_DEPTH);
+    const display =
+      SLIDER_DISPLAY_MAX * Math.pow(normalizedValue, 1 / DEPTH_SLIDER_POWER);
+    return Math.max(SLIDER_DISPLAY_MIN, Math.min(SLIDER_DISPLAY_MAX, display));
+  };
 
   const displayToActualRotation = (displayValue: number) => {
     return displayValue + 1.5;
@@ -48,15 +83,15 @@ export function GeometryControls() {
       <div className="space-y-4">
         <Label htmlFor="depth">
           <span>Adjust Thickness</span>
-          <span className="text-primary font-mono">{depth.toFixed(1)}</span>
+          <span className="text-primary font-mono">{depth.toFixed(2)}</span>
         </Label>
         <Slider
           id="depth"
-          min={0.1}
-          max={50}
-          step={0.1}
-          value={[depth]}
-          onValueChange={(value) => setDepth(value[0])}
+          min={SLIDER_DISPLAY_MIN}
+          max={SLIDER_DISPLAY_MAX}
+          step={SLIDER_DISPLAY_STEP}
+          value={[actualToDisplayDepth(depth)]}
+          onValueChange={(value) => setDepth(displayToActualDepth(value[0]))}
         />
       </div>
 

@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Nav() {
-  const [stars, setStars] = useState(1001);
+  const [stars, setStars] = useState(1000);
 
   useEffect(() => {
     fetch("https://api.github.com/repos/lakshaybhushan/vecto3d")
@@ -40,7 +40,7 @@ export default function Nav() {
               className="inline-flex min-w-6 justify-end"
               springOptions={{
                 bounce: 0,
-                duration: 800,
+                duration: 1000,
               }}
               value={stars}
             />

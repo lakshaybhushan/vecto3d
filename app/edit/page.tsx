@@ -1,8 +1,6 @@
 "use client";
 
-import { useRef, Suspense, useEffect, useMemo } from "react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Environment, useTexture } from "@react-three/drei";
+import { useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,20 +9,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { SVGModel } from "@/components/svg-model";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { Maximize2, Minimize2, ChevronLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as THREE from "three";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
-import {
-  EffectComposer,
-  Bloom,
-  BrightnessContrast,
-  SMAA,
-} from "@react-three/postprocessing";
-import { BlendFunction } from "postprocessing";
 import React from "react";
 import { ModeToggle } from "@/components/ui/theme-toggle";
 
@@ -47,8 +37,9 @@ import { useMobileDetection } from "@/hooks/use-mobile-detection";
 import { NotAScam } from "@/components/not-a-scam";
 import { useEditorStore } from "@/lib/store";
 import { DARK_MODE_COLOR, LIGHT_MODE_COLOR } from "@/lib/constants";
-import { BackIcon } from "@/components/ui/ui-icons";
+// import { BackIcon } from "@/components/ui/ui-icons";
 import AnimatedLogo from "@/components/ui/animated-logo";
+import { ModelPreview } from "@/components/model-preview";
 
 function useThemeBackgroundColor() {
   const { resolvedTheme } = useTheme();
@@ -58,284 +49,6 @@ function useThemeBackgroundColor() {
     return LIGHT_MODE_COLOR;
   }, [resolvedTheme]);
 }
-
-function CustomEnvironment({ imageUrl }: { imageUrl: string }) {
-  const texture = useTexture(imageUrl);
-
-  useEffect(() => {
-    if (texture) {
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-    }
-  }, [texture]);
-
-  return <Environment map={texture} background={false} />;
-}
-
-function SimpleEnvironment({
-  environmentPreset,
-  customHdriUrl,
-}: {
-  environmentPreset:
-    | "apartment"
-    | "city"
-    | "dawn"
-    | "forest"
-    | "lobby"
-    | "night"
-    | "park"
-    | "studio"
-    | "sunset"
-    | "warehouse"
-    | "custom";
-  customHdriUrl: string | null;
-}) {
-  return (
-    <>
-      {environmentPreset === "custom" && customHdriUrl ? (
-        <CustomEnvironment imageUrl={customHdriUrl} />
-      ) : (
-        <Environment
-          preset={
-            environmentPreset === "custom" ? undefined : environmentPreset
-          }
-          background={false}
-        />
-      )}
-    </>
-  );
-}
-
-interface ModelPreviewProps {
-  svgData: string;
-  depth: number;
-  modelRotationY: number;
-  modelGroupRef: React.RefObject<THREE.Group | null>;
-  modelRef: React.RefObject<THREE.Group | null>;
-  // Geometry settings
-  bevelEnabled: boolean;
-  bevelThickness: number;
-  bevelSize: number;
-  bevelSegments: number;
-  isHollowSvg: boolean;
-  spread: number;
-  // Material settings
-  useCustomColor: boolean;
-  customColor: string;
-  roughness: number;
-  metalness: number;
-  clearcoat: number;
-  transmission: number;
-  envMapIntensity: number;
-  // Environment settings
-  backgroundColor: string;
-  useEnvironment: boolean;
-  environmentPreset: string;
-  customHdriUrl: string | null;
-  // Rendering options
-  autoRotate: boolean;
-  autoRotateSpeed: number;
-  useBloom: boolean;
-  bloomIntensity: number;
-  bloomMipmapBlur: boolean;
-  isMobile: boolean;
-  onLoadStart: () => void;
-  onLoadComplete: () => void;
-  onError: (error: Error) => void;
-}
-
-const ModelPreview = React.memo<ModelPreviewProps>(
-  ({
-    svgData,
-    depth,
-    modelRotationY,
-    modelGroupRef,
-    modelRef,
-    // Geometry settings
-    bevelEnabled,
-    bevelThickness,
-    bevelSize,
-    bevelSegments,
-    isHollowSvg,
-    spread,
-    // Material settings
-    useCustomColor,
-    customColor,
-    roughness,
-    metalness,
-    clearcoat,
-    transmission,
-    envMapIntensity,
-    // Environment settings
-    backgroundColor,
-    useEnvironment,
-    environmentPreset,
-    customHdriUrl,
-    // Rendering options
-    autoRotate,
-    autoRotateSpeed,
-    useBloom,
-    bloomIntensity,
-    bloomMipmapBlur,
-    isMobile,
-  }) => {
-    const cameraRef = useRef(
-      new THREE.PerspectiveCamera(
-        50,
-        window.innerWidth / window.innerHeight,
-        1,
-        1000,
-      ),
-    );
-
-    useEffect(() => {
-      const handleResize = () => {
-        if (cameraRef.current) {
-          cameraRef.current.aspect = window.innerWidth / window.innerHeight;
-          cameraRef.current.updateProjectionMatrix();
-        }
-      };
-
-      window.addEventListener("resize", handleResize);
-      return () => {
-        window.removeEventListener("resize", handleResize);
-      };
-    }, []);
-
-    const effects = useMemo(() => {
-      if (useBloom) {
-        return (
-          <EffectComposer multisampling={isMobile ? 0 : 4}>
-            <Bloom
-              intensity={bloomIntensity * 0.7}
-              luminanceThreshold={0.4}
-              luminanceSmoothing={0.95}
-              mipmapBlur={bloomMipmapBlur}
-              radius={0.9}
-            />
-            <BrightnessContrast
-              brightness={0.07}
-              contrast={0.05}
-              blendFunction={BlendFunction.NORMAL}
-            />
-          </EffectComposer>
-        );
-      } else if (!isMobile) {
-        return (
-          <EffectComposer multisampling={0}>
-            <SMAA preserveEdges />
-          </EffectComposer>
-        );
-      }
-      return null;
-    }, [useBloom, bloomIntensity, bloomMipmapBlur, isMobile]);
-
-    const environment = useMemo(() => {
-      if (!useEnvironment) return null;
-
-      return (
-        <SimpleEnvironment
-          environmentPreset={
-            environmentPreset as
-              | "apartment"
-              | "city"
-              | "dawn"
-              | "forest"
-              | "lobby"
-              | "night"
-              | "park"
-              | "studio"
-              | "sunset"
-              | "warehouse"
-              | "custom"
-          }
-          customHdriUrl={customHdriUrl}
-        />
-      );
-    }, [useEnvironment, environmentPreset, customHdriUrl]);
-
-    if (!svgData) return null;
-
-    return (
-      <Canvas
-        shadows
-        camera={{ position: [0, 0, 150], fov: 50 }}
-        dpr={window?.devicePixelRatio || 1.5}
-        frameloop="demand"
-        performance={{ min: 0.5 }}
-        gl={{
-          outputColorSpace: "srgb",
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.2,
-          preserveDrawingBuffer: true,
-          powerPreference: "high-performance",
-          alpha: true,
-          logarithmicDepthBuffer: false,
-          precision: isMobile ? "mediump" : "highp",
-          stencil: false,
-        }}
-        style={{
-          width: "100%",
-          height: "100%",
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }}>
-        <Suspense fallback={null}>
-          <color attach="background" args={[backgroundColor]} />
-
-          <ambientLight intensity={0.6 * Math.PI} />
-
-          <directionalLight
-            position={[50, 50, 100]}
-            intensity={0.8 * Math.PI}
-            castShadow={false}
-          />
-
-          {environment}
-
-          <group ref={modelGroupRef} rotation={[0, modelRotationY, 0]}>
-            <SVGModel
-              svgData={svgData}
-              depth={depth * 5}
-              bevelEnabled={bevelEnabled}
-              bevelThickness={bevelThickness}
-              bevelSize={bevelSize}
-              bevelSegments={isMobile ? 3 : bevelSegments}
-              customColor={useCustomColor ? customColor : undefined}
-              roughness={roughness}
-              metalness={metalness}
-              clearcoat={clearcoat}
-              transmission={transmission}
-              envMapIntensity={useEnvironment ? envMapIntensity : 0.2}
-              receiveShadow={false}
-              castShadow={false}
-              isHollowSvg={isHollowSvg}
-              spread={spread}
-              ref={modelRef}
-            />
-          </group>
-        </Suspense>
-
-        {effects}
-
-        <OrbitControls
-          autoRotate={autoRotate}
-          autoRotateSpeed={autoRotateSpeed}
-          minDistance={50}
-          maxDistance={400}
-          enablePan={true}
-          enableZoom={true}
-          enableRotate={true}
-          target={[0, 0, 0]}
-        />
-      </Canvas>
-    );
-  },
-);
-
-ModelPreview.displayName = "ModelPreview";
 
 const ModelLoadingState = ({ message }: { message: string }) => (
   <div className="bg-card flex h-full w-full flex-col items-center justify-center">
@@ -623,8 +336,8 @@ export default function EditPage() {
               size="sm"
               onClick={handleBackToHome}
               aria-label="Back to home">
-              <BackIcon />
-              <span className="hidden sm:inline">Back</span>
+              <ChevronLeft className="h-4 w-4 -ml-1" />
+              <span className="hidden sm:inline -ml-0.5">Home</span>
             </Button>
           </div>
           <div className="flex items-center gap-2">
