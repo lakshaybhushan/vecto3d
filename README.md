@@ -11,7 +11,6 @@
 
 </p>
 
-
 ![GithubBanner](./app/opengraph-image.png)
 
 <a href="https://vercel.com/oss">

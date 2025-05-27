@@ -336,8 +336,8 @@ export default function EditPage() {
               size="sm"
               onClick={handleBackToHome}
               aria-label="Back to home">
-              <ChevronLeft className="h-4 w-4 -ml-1" />
-              <span className="hidden sm:inline -ml-0.5">Home</span>
+              <ChevronLeft className="-ml-1 h-4 w-4" />
+              <span className="-ml-0.5 hidden sm:inline">Home</span>
             </Button>
           </div>
           <div className="flex items-center gap-2">

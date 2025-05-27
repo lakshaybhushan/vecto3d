@@ -6,11 +6,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PlusIcon } from "lucide-react";
 import { ENVIRONMENT_PRESETS } from "@/lib/constants";
 import { toast } from "sonner";
-import { RainbowButton } from "@/components/ui/rainbow-button";
+// import { RainbowButton } from "@/components/ui/rainbow-button";
 import { motion } from "framer-motion";
 import { useEditorStore } from "@/lib/store";
 import { Switch } from "@/components/ui/switch";
-import { VibeModeIcon } from "@/components/ui/ui-icons";
+// import { VibeModeIcon } from "@/components/ui/ui-icons";
 
 export function EnvironmentControls() {
   const {
@@ -234,7 +234,6 @@ export function EnvironmentControls() {
                   const newValue = !useBloom;
                   toggleVibeMode(newValue);
                 }}>
-
                 <span className="ml-1">
                   {useBloom ? "Disable Vibe Mode" : "Enable Vibe Mode"}
                 </span>
