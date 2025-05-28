@@ -4,6 +4,11 @@ import { useRef, useEffect, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Plane } from "@react-three/drei";
 import { useTheme } from "next-themes";
+import { motion } from "framer-motion";
+import {
+  backgroundVariants,
+  backgroundCanvasVariants,
+} from "@/lib/motion-variants";
 import * as THREE from "three";
 
 const vertexShader = `
@@ -147,28 +152,46 @@ export default function BackgroundEffect() {
     setMounted(true);
   }, []);
 
-  // Determine if we're in dark mode
   const isDark = resolvedTheme === "dark";
 
   if (!mounted) {
     return (
-      <div className="bg-background pointer-events-none fixed inset-0 -z-10" />
+      <motion.div
+        className="bg-background pointer-events-none fixed inset-0 -z-10"
+        initial={{ opacity: 0 }}
+        animate={{
+          opacity: 1,
+          transition: {
+            duration: 0.5,
+          },
+        }}
+      />
     );
   }
 
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10">
-      <Canvas
-        camera={{ position: [0, 0, 1], fov: 75, near: 0.1, far: 1000 }}
-        gl={{
-          alpha: false,
-          antialias: true,
-          powerPreference: "high-performance",
-        }}
-        style={{ background: isDark ? "#000000" : "#ffffff" }}
-        dpr={[1, 2]}>
-        <BackgroundShader isDark={isDark} />
-      </Canvas>
-    </div>
+    <motion.div
+      className="pointer-events-none fixed inset-0 -z-10"
+      variants={backgroundVariants}
+      initial="initial"
+      animate="animate">
+      <motion.div
+        variants={backgroundCanvasVariants}
+        initial="initial"
+        animate="animate"
+        className="h-full w-full">
+        <Canvas
+          camera={{ position: [0, 0, 1], fov: 75, near: 0.1, far: 1000 }}
+          gl={{
+            alpha: false,
+            antialias: true,
+            powerPreference: "high-performance",
+          }}
+          style={{ background: isDark ? "#000000" : "#ffffff" }}
+          dpr={[1, 2]}>
+          <BackgroundShader isDark={isDark} />
+        </Canvas>
+      </motion.div>
+    </motion.div>
   );
 }
