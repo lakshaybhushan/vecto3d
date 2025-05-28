@@ -16,6 +16,7 @@ export interface EnvironmentPreset {
   name: string;
   label: string;
   color: string;
+  exrFile?: string; // EXR file path for @pmndrs/assets
 }
 
 // Color preset interface
@@ -39,6 +40,25 @@ export interface BevelPreset {
   size: number;
   segments: number;
 }
+
+// Environment preset names type
+export type EnvironmentPresetName =
+  | "apartment"
+  | "city"
+  | "dawn"
+  | "forest"
+  | "lobby"
+  | "park"
+  | "studio"
+  | "sunset"
+  | "warehouse"
+  | "custom";
+
+// Drei environment preset names (excludes custom)
+export type DreiEnvironmentPresetName = Exclude<
+  EnvironmentPresetName,
+  "custom"
+>;
 
 // Props for the SVG model component
 export interface SVGModelProps {

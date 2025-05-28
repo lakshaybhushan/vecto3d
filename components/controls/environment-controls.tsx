@@ -49,9 +49,13 @@ export function EnvironmentControls() {
     const fileType = file.type.toLowerCase();
     const isJpg = fileType === "image/jpeg" || fileType === "image/jpg";
     const isPng = fileType === "image/png";
+    const isHdr =
+      fileType === "image/hdr" || fileType === "application/octet-stream";
 
-    if (!isJpg && !isPng) {
-      toast.error("Unsupported file format: Only JPG and PNG are supported");
+    if (!isJpg && !isPng && !isHdr) {
+      toast.error(
+        "Unsupported file format: Only JPG, PNG, and HDR are supported",
+      );
       return;
     }
 
@@ -60,31 +64,25 @@ export function EnvironmentControls() {
       return;
     }
 
-    const reader = new FileReader();
+    if (customHdriUrl && customHdriUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(customHdriUrl);
+    }
 
     try {
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setCustomHdriUrl(event.target.result as string);
-          setEnvironmentPreset("custom");
-          toast.success("Image uploaded successfully");
-        } else {
-          toast.error("Failed to process image");
-        }
-      };
-
-      reader.onerror = (error) => {
-        console.error("FileReader error:", error);
-        toast.error("Failed to read the image file");
-      };
-
-      reader.readAsDataURL(file);
+      const objectURL = URL.createObjectURL(file);
+      setCustomHdriUrl(objectURL);
+      setEnvironmentPreset("custom");
+      toast.success("Image uploaded successfully");
     } catch (error) {
-      console.error("File reading error:", error);
-      toast.error("Failed to read the image file");
+      console.error("Error creating object URL:", error);
+      toast.error("Failed to process the image file");
     }
 
     e.target.value = "";
+  };
+
+  const handlePresetChange = (preset: string) => {
+    setEnvironmentPreset(preset);
   };
 
   return (
@@ -119,7 +117,7 @@ export function EnvironmentControls() {
                     ? "bg-primary/10 ring-input ring-1"
                     : "hover:bg-muted"
                 }`}
-                onClick={() => setEnvironmentPreset(preset.name)}>
+                onClick={() => handlePresetChange(preset.name)}>
                 <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-md">
                   <div
                     className="absolute inset-0 h-full w-full"
@@ -197,7 +195,7 @@ export function EnvironmentControls() {
               <AlertDescription className="flex items-center text-xs">
                 <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
                 <div className="flex w-full items-center justify-between">
-                  <p className="text-muted-foreground text-xs">
+                  <p className="text-muted-foreground mt-0.5 text-xs">
                     Your image will be used for reflections in the 3D model.
                   </p>
                   <Button

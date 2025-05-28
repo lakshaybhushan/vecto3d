@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Environment, useTexture } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
+import { SimpleEnvironment } from "@/components/environment-presets";
+import { EnvironmentPresetName } from "@/lib/types";
 import {
   EffectComposer,
   Bloom,
@@ -14,52 +16,6 @@ const SVGModel = lazy(() =>
     default: module.SVGModel,
   })),
 );
-
-function CustomEnvironment({ imageUrl }: { imageUrl: string }) {
-  const texture = useTexture(imageUrl);
-
-  useEffect(() => {
-    if (texture) {
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-    }
-  }, [texture]);
-
-  return <Environment map={texture} background={false} />;
-}
-
-function SimpleEnvironment({
-  environmentPreset,
-  customHdriUrl,
-}: {
-  environmentPreset:
-    | "apartment"
-    | "city"
-    | "dawn"
-    | "forest"
-    | "lobby"
-    | "night"
-    | "park"
-    | "studio"
-    | "sunset"
-    | "warehouse"
-    | "custom";
-  customHdriUrl: string | null;
-}) {
-  return (
-    <>
-      {environmentPreset === "custom" && customHdriUrl ? (
-        <CustomEnvironment imageUrl={customHdriUrl} />
-      ) : (
-        <Environment
-          preset={
-            environmentPreset === "custom" ? undefined : environmentPreset
-          }
-          background={false}
-        />
-      )}
-    </>
-  );
-}
 
 export interface ModelPreviewProps {
   svgData: string;
@@ -199,20 +155,7 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
 
       return (
         <SimpleEnvironment
-          environmentPreset={
-            environmentPreset as
-              | "apartment"
-              | "city"
-              | "dawn"
-              | "forest"
-              | "lobby"
-              | "night"
-              | "park"
-              | "studio"
-              | "sunset"
-              | "warehouse"
-              | "custom"
-          }
+          environmentPreset={environmentPreset as EnvironmentPresetName}
           customHdriUrl={customHdriUrl}
         />
       );

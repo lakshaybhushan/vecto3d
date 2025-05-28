@@ -6,17 +6,42 @@ import {
   ResolutionPreset,
 } from "./types";
 
-// Environment presets
+// Environment presets with EXR files from @pmndrs/assets
 export const ENVIRONMENT_PRESETS: EnvironmentPreset[] = [
-  { name: "apartment", label: "Apartment", color: "#e0ccae" },
-  { name: "city", label: "City", color: "#b4bdc6" },
-  { name: "dawn", label: "Dawn", color: "#ffd0b0" },
-  { name: "forest", label: "Forest", color: "#a8c0a0" },
-  { name: "lobby", label: "Lobby", color: "#d8c8b8" },
-  { name: "park", label: "Park", color: "#b3d9ff" },
-  { name: "studio", label: "Studio", color: "#d9d9d9" },
-  { name: "sunset", label: "Sunset", color: "#ffb98c" },
-  { name: "warehouse", label: "Warehouse", color: "#9ba3ad" },
+  {
+    name: "apartment",
+    label: "Apartment",
+    color: "#e0ccae",
+    exrFile: "apartment.exr.js",
+  },
+  { name: "city", label: "City", color: "#b4bdc6", exrFile: "city.exr.js" },
+  { name: "dawn", label: "Dawn", color: "#ffd0b0", exrFile: "bridge.exr.js" },
+  {
+    name: "forest",
+    label: "Forest",
+    color: "#a8c0a0",
+    exrFile: "forest.exr.js",
+  },
+  { name: "lobby", label: "Lobby", color: "#d8c8b8", exrFile: "lobby.exr.js" },
+  { name: "park", label: "Park", color: "#b3d9ff", exrFile: "park.exr.js" },
+  {
+    name: "studio",
+    label: "Studio",
+    color: "#d9d9d9",
+    exrFile: "studio.exr.js",
+  },
+  {
+    name: "sunset",
+    label: "Sunset",
+    color: "#ffb98c",
+    exrFile: "sunset.exr.js",
+  },
+  {
+    name: "warehouse",
+    label: "Warehouse",
+    color: "#9ba3ad",
+    exrFile: "warehouse.exr.js",
+  },
 ];
 
 // Theme-aware background color presets

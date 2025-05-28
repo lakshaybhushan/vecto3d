@@ -15,7 +15,6 @@ export async function checkIsUSLocation(): Promise<boolean> {
     return data.countryCode === "US";
   } catch (error) {
     console.error("Error checking location:", error);
-    // If we can't determine location, default to false for safety
     return false;
   }
 }

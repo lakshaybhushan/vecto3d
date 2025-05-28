@@ -34,26 +34,6 @@ interface SVGModelProps {
   onError?: (error: Error) => void;
 }
 
-// const getPathBoundingArea = (path: THREE.ShapePath) => {
-//   if (path.subPaths.length === 0) return 0;
-
-//   let minX = Infinity,
-//     minY = Infinity;
-//   let maxX = -Infinity,
-//     maxY = -Infinity;
-
-//   path.subPaths.forEach((subPath) => {
-//     subPath.getPoints().forEach((point) => {
-//       minX = Math.min(minX, point.x);
-//       minY = Math.min(minY, point.y);
-//       maxX = Math.max(maxX, point.x);
-//       maxY = Math.max(maxY, point.y);
-//     });
-//   });
-
-//   return (maxX - minX) * (maxY - minY);
-// };
-
 const applySpread = (
   shape: THREE.Shape,
   isHole: boolean,
@@ -102,44 +82,6 @@ const applySpread = (
 
   return newShape;
 };
-
-// const isPathInsideAnother = (
-//   innerPath: THREE.ShapePath,
-//   outerPath: THREE.ShapePath,
-// ) => {
-//   const innerPoints = innerPath.subPaths.flatMap((sp) => sp.getPoints());
-//   if (innerPoints.length === 0) return false;
-
-//   let outerMinX = Infinity,
-//     outerMinY = Infinity;
-//   let outerMaxX = -Infinity,
-//     outerMaxY = -Infinity;
-
-//   outerPath.subPaths.forEach((subPath) => {
-//     subPath.getPoints().forEach((point) => {
-//       outerMinX = Math.min(outerMinX, point.x);
-//       outerMinY = Math.min(outerMinY, point.y);
-//       outerMaxX = Math.max(outerMaxX, point.x);
-//       outerMaxY = Math.max(outerMaxY, point.y);
-//     });
-//   });
-
-//   return innerPoints.every(
-//     (p) =>
-//       p.x > outerMinX && p.x < outerMaxX && p.y > outerMinY && p.y < outerMaxY,
-//   );
-// };
-
-// const isClosedPath = (path: THREE.ShapePath) => {
-//   return path.subPaths.some((subPath) => {
-//     const points = subPath.getPoints();
-//     return (
-//       points.length > 2 &&
-//       Math.abs(points[0].x - points[points.length - 1].x) < 0.001 &&
-//       Math.abs(points[0].y - points[points.length - 1].y) < 0.001
-//     );
-//   });
-// };
 
 export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
   (
@@ -305,7 +247,8 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
 
       const threeColor =
         color instanceof THREE.Color ? color : new THREE.Color(color);
-      const material = new THREE.MeshPhysicalMaterial({
+
+      const materialProps: THREE.MeshPhysicalMaterialParameters = {
         color: threeColor,
         roughness: Math.max(0.05, roughness),
         metalness,
@@ -320,7 +263,9 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         polygonOffsetUnits: isHole ? -1 : 1,
         flatShading: false,
         wireframe: false,
-      });
+      };
+
+      const material = new THREE.MeshPhysicalMaterial(materialProps);
 
       materialsCache.current.set(cacheKey, material);
       return material;

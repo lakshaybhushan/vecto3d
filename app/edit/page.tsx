@@ -152,9 +152,11 @@ export default function EditPage() {
 
   // cleanup
   useEffect(() => {
+    // Store the URL in a variable to ensure the cleanup function uses the correct value
+    const urlToRevoke = customHdriUrl;
     return () => {
-      if (customHdriUrl && customHdriUrl.startsWith("data:")) {
-        URL.revokeObjectURL(customHdriUrl);
+      if (urlToRevoke && urlToRevoke.startsWith("blob:")) {
+        URL.revokeObjectURL(urlToRevoke);
       }
     };
   }, [customHdriUrl]);
