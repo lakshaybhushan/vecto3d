@@ -34,10 +34,8 @@ import { EditorMobileWarning } from "@/components/mobile-warning";
 
 import { useDebounce } from "@/hooks/use-debounce";
 import { useMobileDetection } from "@/hooks/use-mobile-detection";
-import { NotAScam } from "@/components/not-a-scam";
 import { useEditorStore } from "@/lib/store";
 import { DARK_MODE_COLOR, LIGHT_MODE_COLOR } from "@/lib/constants";
-// import { BackIcon } from "@/components/ui/ui-icons";
 import AnimatedLogo from "@/components/ui/animated-logo";
 import { ModelPreview } from "@/components/model-preview";
 
@@ -329,8 +327,8 @@ export default function EditPage() {
   };
 
   return (
-    <main className="bg-background relative flex h-screen w-full flex-col md:overflow-hidden">
-      <header className="bg-background/80 sticky top-0 z-10 w-full border-b border-dashed backdrop-blur-xs">
+    <main className="bg-background relative flex h-screen w-full flex-col lg:overflow-hidden">
+      <header className="bg-background/80 sticky top-0 z-20 w-full border-b border-dashed backdrop-blur-xs">
         <div className="flex items-center justify-between px-8 py-4">
           <div className="flex items-center gap-2">
             <Button
@@ -343,7 +341,7 @@ export default function EditPage() {
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            <NotAScam />
+            {/* <NotAScam /> */}
             <ModeToggle />
             {svgData && (
               <ExportButtons
@@ -489,7 +487,7 @@ export default function EditPage() {
                       Customize
                     </CardTitle>
                     <CardDescription className="mt-1 truncate text-xs">
-                      {fileName}
+                      {fileName || "Loading..."}
                     </CardDescription>
                   </div>
                 </CardHeader>

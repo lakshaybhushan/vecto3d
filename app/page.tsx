@@ -9,6 +9,7 @@ import { RainbowButton } from "@/components/ui/rainbow-button";
 import Footer from "@/components/footer";
 import Nav from "@/components/nav";
 import AnimatedLogo from "@/components/ui/animated-logo";
+import BackgroundEffect from "@/components/ui/background-effect";
 
 export default function Home() {
   const router = useRouter();
@@ -77,6 +78,7 @@ export default function Home() {
 
   return (
     <main className="relative flex min-h-screen w-full flex-col">
+      <BackgroundEffect />
       <Nav />
 
       {isLoading && (

@@ -1,0 +1,174 @@
+"use client";
+
+import { useRef, useEffect, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Plane } from "@react-three/drei";
+import { useTheme } from "next-themes";
+import * as THREE from "three";
+
+const vertexShader = `
+  varying vec2 vUv;
+  
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const fragmentShader = `
+  uniform float iTime;
+  uniform vec2 iResolution;
+  uniform float isDark;
+  varying vec2 vUv;
+  
+  float rand(vec2 n) { 
+    return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+  }
+
+  float noise(vec2 p){
+    vec2 ip = floor(p);
+    vec2 u = fract(p);
+    u = u*u*(3.0-2.0*u);
+
+    float res = mix(
+        mix(rand(ip),rand(ip+vec2(1.0,0.0)),u.x),
+        mix(rand(ip+vec2(0.0,1.0)),rand(ip+vec2(1.0,1.0)),u.x),u.y);
+    return res*res;
+  }
+
+  const mat2 mtx = mat2( 0.80,  0.60, -0.60,  0.80 );
+
+  float fbm( vec2 p )
+  {
+    float f = 0.0;
+
+    f += 0.500000*noise( p + iTime * 0.25 ); p = mtx*p*2.02;
+    f += 0.031250*noise( p ); p = mtx*p*2.01;
+    f += 0.250000*noise( p ); p = mtx*p*2.03;
+    f += 0.125000*noise( p ); p = mtx*p*2.01;
+    f += 0.062500*noise( p ); p = mtx*p*2.04;
+    f += 0.015625*noise( p + sin(iTime * 0.4) );
+
+    return f/0.96875;
+  }
+
+  float pattern( in vec2 p )
+  {
+    return fbm( p + fbm( p + fbm( p ) ) );
+  }
+
+  void main() {
+    vec2 uv = vUv * 3.5;
+    float shade = pattern(uv);
+    
+    if (isDark > 0.5) {
+      // Dark mode: more black
+      shade = 1.0 - shade;
+      shade = pow(shade, 2.2);
+      shade = shade * 0.25;
+      
+      float variation = noise(vUv * 12.0) * 0.05;
+      shade = max(0.0, shade + variation);
+      shade = min(shade, 0.35);
+    } else {
+      // Light mode: very white with subtle but visible patterns
+      shade = pow(shade, 1.2);
+      shade = shade * 0.2 + 0.8; // Much whiter: 80% base + 20% variation
+      
+      // Add visible but subtle texture variation
+      float variation = noise(vUv * 8.0) * 0.08;
+      shade = shade + variation;
+      shade = max(0.75, min(shade, 1.0)); // Keep it very bright (75-100%)
+    }
+    
+    gl_FragColor = vec4(shade, shade, shade, 1.0);
+  }
+`;
+
+function BackgroundShader({ isDark }: { isDark: boolean }) {
+  const meshRef = useRef<THREE.Mesh>(null!);
+  const { viewport } = useThree();
+  const [dimensions, setDimensions] = useState({ width: 1920, height: 1080 });
+
+  const uniforms = useRef({
+    iTime: { value: 0 },
+    iResolution: {
+      value: new THREE.Vector2(dimensions.width, dimensions.height),
+    },
+    isDark: { value: isDark ? 1.0 : 0.0 },
+  });
+
+  // Update isDark uniform when theme changes
+  useEffect(() => {
+    uniforms.current.isDark.value = isDark ? 1.0 : 0.0;
+  }, [isDark]);
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      setDimensions({ width, height });
+      uniforms.current.iResolution.value.set(width, height);
+    };
+
+    if (typeof window !== "undefined") {
+      updateDimensions();
+      window.addEventListener("resize", updateDimensions);
+      return () => window.removeEventListener("resize", updateDimensions);
+    }
+  }, []);
+
+  useFrame((state) => {
+    if (meshRef.current) {
+      uniforms.current.iTime.value = state.clock.elapsedTime;
+    }
+  });
+
+  const planeWidth = viewport.width;
+  const planeHeight = viewport.height;
+
+  return (
+    <Plane ref={meshRef} args={[planeWidth, planeHeight]}>
+      <shaderMaterial
+        uniforms={uniforms.current}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
+        transparent={false}
+      />
+    </Plane>
+  );
+}
+
+export default function BackgroundEffect() {
+  const [mounted, setMounted] = useState(false);
+  const { resolvedTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Determine if we're in dark mode
+  const isDark = resolvedTheme === "dark";
+
+  if (!mounted) {
+    return (
+      <div className="bg-background pointer-events-none fixed inset-0 -z-10" />
+    );
+  }
+
+  return (
+    <div className="pointer-events-none fixed inset-0 -z-10">
+      <Canvas
+        camera={{ position: [0, 0, 1], fov: 75, near: 0.1, far: 1000 }}
+        gl={{
+          alpha: false,
+          antialias: true,
+          powerPreference: "high-performance",
+        }}
+        style={{ background: isDark ? "#000000" : "#ffffff" }}
+        dpr={[1, 2]}>
+        <BackgroundShader isDark={isDark} />
+      </Canvas>
+    </div>
+  );
+}

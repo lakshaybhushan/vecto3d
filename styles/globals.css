@@ -158,17 +158,6 @@
   --color-4: oklch(80.2% 0.134 225);
   --color-5: oklch(90.7% 0.231 133);
 }
-/* 
-@utility container {
-  margin-inline: auto;
-  padding-inline: 2rem;
-  @media (width >= 768px) {
-    max-width: none;
-  }
-  @media (width >= 1400px) {
-    max-width: 1400px;
-  }
-} */
 
 @layer base {
   * {
@@ -179,7 +168,14 @@
   }
 }
 
+/* selection */
+
 ::selection {
-  background-color: #003cff;
-  color: #f7f7f7;
+  color: #fff;
+  background-color: #000;
+}
+
+.dark ::selection {
+  color: #000;
+  background-color: #fff;
 }
