@@ -172,6 +172,12 @@ export default function BackgroundEffect() {
   return (
     <motion.div
       className="pointer-events-none fixed inset-0 -z-10"
+      style={{
+        height: "100vh",
+        width: "100vw",
+        top: 0,
+        left: 0,
+      }}
       variants={backgroundVariants}
       initial="initial"
       animate="animate">

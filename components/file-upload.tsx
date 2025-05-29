@@ -149,10 +149,10 @@ export function FileUpload({
       )?.component;
       if (IconComponent) {
         return (
-          <div className="relative z-10 flex h-32 w-32 items-center justify-center">
+          <div className="relative z-10 flex h-16 w-16 items-center justify-center sm:h-18 sm:w-18 md:h-20 md:w-20 lg:h-24 lg:w-24">
             <div className="bg-primary/10 absolute inset-0 transform rounded-full blur-xl" />
-            <div className="bg-background/80 border-primary/30 shadow-primary/20 relative z-10 flex h-22 w-22 items-center justify-center overflow-hidden rounded-xl border-2 p-1 shadow-xl backdrop-blur-xs">
-              <IconComponent size={58} />
+            <div className="bg-background/80 border-primary/30 shadow-primary/20 relative z-10 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border-2 p-1 shadow-xl backdrop-blur-xs sm:h-16 sm:w-16 md:h-18 md:w-18">
+              <IconComponent size={32} />
             </div>
           </div>
         );
@@ -163,11 +163,11 @@ export function FileUpload({
 
   return (
     <div className="opacity-100">
-      <Card className="w-full border-2 p-2 shadow-lg">
+      <Card className="w-full border-2 p-1.5 shadow-lg sm:p-2">
         <CardContent className="p-0">
           <div
             ref={dropZoneRef}
-            className={`relative flex min-h-[340px] min-w-[200px] cursor-pointer flex-col items-center justify-center rounded-lg px-10 py-6 transition-all duration-500 ${
+            className={`relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg px-4 py-3 transition-all duration-500 sm:min-h-[220px] sm:px-6 sm:py-4 md:min-h-[260px] md:px-8 md:py-5 lg:min-h-[300px] lg:px-10 ${
               isDragging
                 ? "border-primary bg-primary/10 border-2 border-dashed"
                 : "border-border hover:bg-muted/30 border-2 border-dashed"
@@ -189,11 +189,11 @@ export function FileUpload({
             />
 
             <div className="flex h-full flex-col items-center justify-center">
-              <div className="relative mb-4 flex h-fit items-center justify-center">
+              <div className="relative mb-2 flex h-fit items-center justify-center sm:mb-3">
                 {svgContent ? (
                   <div className="relative z-10 flex items-center justify-center">
                     <div
-                      className="bg-muted relative z-10 flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border-2 p-3.5 shadow-lg"
+                      className="bg-muted relative z-10 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border-2 p-2.5 shadow-lg sm:h-16 sm:w-16 sm:p-3 md:h-18 md:w-18"
                       dangerouslySetInnerHTML={{
                         __html: svgContent
                           .replace(/width="[^"]*"/, 'width="100%"')
@@ -208,12 +208,12 @@ export function FileUpload({
                 ) : (
                   <div>
                     <div
-                      className={`relative z-10 rounded-xl border-2 p-3.5 shadow-lg ${
+                      className={`relative z-10 rounded-xl border-2 p-2.5 shadow-lg sm:p-3 ${
                         isDragging
                           ? "border-primary bg-primary-foreground"
                           : "border-border bg-muted"
                       }`}>
-                      <AsteriskIcon size={48} />
+                      <AsteriskIcon size={36} />
                     </div>
                   </div>
                 )}
@@ -221,24 +221,28 @@ export function FileUpload({
 
               <div className="w-full text-center">
                 <div className={isDragging ? "hidden" : "block"}>
-                  <p className="text-lg font-medium">
+                  <p className="text-sm font-medium sm:text-base">
                     {fileName
                       ? fileName
                       : "Click this space / Drop Your SVG File Here"}
                   </p>
-                  <p className="text-muted-foreground mt-1 text-sm">
+                  <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
                     {svgContent || selectedIcon
                       ? "Let's make it 3D!"
                       : "And see the magic happen!"}
                   </p>
-                  <div className="my-3 flex w-full items-center justify-center gap-2">
+                  <div className="my-2 flex w-full items-center justify-center gap-2 sm:my-2.5">
                     <div className="h-px w-full border border-dashed"></div>
-                    <span className="text-muted-foreground text-sm">or</span>
+                    <span className="text-muted-foreground text-xs sm:text-sm">
+                      or
+                    </span>
                     <div className="h-px w-full border border-dashed"></div>
                   </div>
-                  <div className="w-full space-y-4">
-                    <p className="text-sm">Select any of the below</p>
-                    <div className="flex flex-wrap justify-center gap-4">
+                  <div className="w-full space-y-2 sm:space-y-3">
+                    <p className="text-xs sm:text-sm">
+                      Select any of the below
+                    </p>
+                    <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:flex md:flex-wrap md:justify-center md:gap-3">
                       {exampleIcons.map((icon) => (
                         <div key={icon.name}>
                           <Button
@@ -246,7 +250,7 @@ export function FileUpload({
                               selectedIcon === icon.name ? "default" : "outline"
                             }
                             size="lg"
-                            className={`flex h-auto w-[81px] flex-col items-center justify-center gap-1.5 rounded-lg p-3.5 transition-transform duration-300 ease-out ${
+                            className={`flex h-auto w-full flex-col items-center justify-center gap-1 rounded-lg p-2 transition-transform duration-300 ease-out sm:gap-1.5 sm:p-2.5 md:w-[72px] md:p-3 ${
                               selectedIcon === icon.name
                                 ? "bg-primary text-primary-foreground shadow-lg"
                                 : "bg-background text-foreground hover:bg-muted/60 border-primary/10"
@@ -255,8 +259,8 @@ export function FileUpload({
                               e.stopPropagation();
                               handleIconSelect(icon.name);
                             }}>
-                            <icon.component size={34} />
-                            <span className="text-xs font-medium whitespace-nowrap">
+                            <icon.component size={24} />
+                            <span className="text-[9px] font-medium whitespace-nowrap sm:text-[10px]">
                               {icon.name}
                             </span>
                           </Button>
@@ -268,7 +272,7 @@ export function FileUpload({
 
                 {isDragging && (
                   <div>
-                    <p className="text-primary text-lg font-medium">
+                    <p className="text-primary text-sm font-medium sm:text-base">
                       Drop your SVG file here
                     </p>
                   </div>
@@ -279,11 +283,11 @@ export function FileUpload({
             {isDragging && (
               <>
                 <div
-                  className="bg-primary/20 absolute h-18 w-18 rounded-full blur-xl"
+                  className="bg-primary/20 absolute h-12 w-12 rounded-full blur-xl sm:h-14 sm:w-14 md:h-16 md:w-16"
                   style={{ top: "20%", left: "20%" }}
                 />
                 <div
-                  className="bg-primary/20 absolute h-14 w-14 rounded-full blur-xl"
+                  className="bg-primary/20 absolute h-8 w-8 rounded-full blur-xl sm:h-10 sm:w-10 md:h-12 md:w-12"
                   style={{ bottom: "20%", right: "20%" }}
                 />
               </>

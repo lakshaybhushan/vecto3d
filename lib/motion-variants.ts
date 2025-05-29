@@ -1,19 +1,16 @@
-import { easingCurves } from "./animation-values";
+import { springConfigs } from "./animation-values";
 
 export const pageVariants = {
   hero: {
     initial: {
       opacity: 0,
       y: 30,
-      filter: "blur(8px)",
     },
     animate: {
       opacity: 1,
       y: 0,
-      filter: "blur(0px)",
       transition: {
-        duration: 0.6,
-        ease: easingCurves.easeOutQuart,
+        ...springConfigs.smooth,
         delay: 0.1,
       },
     },
@@ -22,16 +19,11 @@ export const pageVariants = {
   title: {
     initial: {
       opacity: 0,
-      y: 20,
-      filter: "blur(4px)",
     },
     animate: {
       opacity: 1,
-      y: 0,
-      filter: "blur(0px)",
       transition: {
-        duration: 0.5,
-        ease: easingCurves.easeOutCubic,
+        duration: 0.1,
         delay: 0.2,
       },
     },
@@ -44,7 +36,7 @@ export const pageVariants = {
     animate: {
       opacity: 1,
       transition: {
-        duration: 0.3,
+        ...springConfigs.smooth,
         delay: 0.3,
         staggerChildren: 0.08,
         delayChildren: 0.4,
@@ -57,15 +49,12 @@ export const navigationVariants = {
   initial: {
     opacity: 0,
     y: -15,
-    filter: "blur(4px)",
   },
   animate: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: {
-      duration: 0.4,
-      ease: easingCurves.easeOutCubic,
+      ...springConfigs.snappy,
     },
   },
 } as const;
@@ -74,15 +63,12 @@ export const footerVariants = {
   initial: {
     opacity: 0,
     y: 15,
-    filter: "blur(4px)",
   },
   animate: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: {
-      duration: 0.4,
-      ease: easingCurves.easeOutCubic,
+      ...springConfigs.gentle,
       delay: 0.8,
     },
   },
@@ -97,16 +83,14 @@ export const loadingOverlayVariants = {
     opacity: 1,
     backdropFilter: "blur(16px)",
     transition: {
-      duration: 0.3,
-      ease: easingCurves.easeOutCubic,
+      ...springConfigs.smooth,
     },
   },
   exit: {
     opacity: 0,
     backdropFilter: "blur(0px)",
     transition: {
-      duration: 0.2,
-      ease: easingCurves.easeInCubic,
+      ...springConfigs.snappy,
     },
   },
 } as const;
@@ -115,66 +99,51 @@ export const loadingLogoVariants = {
   initial: {
     scale: 0.8,
     opacity: 0,
-    filter: "blur(4px)",
   },
   animate: {
     scale: 1,
     opacity: 1,
-    filter: "blur(0px)",
     transition: {
-      duration: 0.4,
-      ease: easingCurves.easeOutCubic,
+      ...springConfigs.bouncy,
       delay: 0.1,
     },
   },
   exit: {
     scale: 0.8,
     opacity: 0,
-    filter: "blur(4px)",
     transition: {
-      duration: 0.2,
-      ease: easingCurves.easeInCubic,
+      ...springConfigs.snappy,
+    },
+  },
+} as const;
+
+export const titleContainerVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      ...springConfigs.gentle,
+      delay: 0.2,
+      staggerChildren: 0.1,
+      delayChildren: 0.3,
     },
   },
 } as const;
 
 export const titleSpanVariants = {
-  first: {
-    initial: {
-      opacity: 0,
-      y: 15,
-      filter: "blur(4px)",
-      transform: "translate3d(0, 0, 0)",
-    },
-    animate: {
-      opacity: 1,
-      y: 0,
-      filter: "blur(0px)",
-      transform: "translate3d(0, 0, 0)",
-      transition: {
-        duration: 0.4,
-        ease: easingCurves.easeOutQuart,
-        delay: 0.3,
-      },
-    },
+  initial: {
+    opacity: 0,
+    y: 15,
   },
-  second: {
-    initial: {
-      opacity: 0,
-      y: 15,
-      filter: "blur(4px)",
-      transform: "translate3d(0, 0, 0)",
-    },
-    animate: {
-      opacity: 1,
-      y: 0,
-      filter: "blur(0px)",
-      transform: "translate3d(0, 0, 0)",
-      transition: {
-        duration: 0.4,
-        ease: easingCurves.easeOutQuart,
-        delay: 0.4,
-      },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      ...springConfigs.smooth,
     },
   },
 } as const;
@@ -183,17 +152,14 @@ export const fileUploadVariants = {
   initial: {
     opacity: 0,
     y: 20,
-    filter: "blur(6px)",
     transform: "translate3d(0, 0, 0)",
   },
   animate: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transform: "translate3d(0, 0, 0)",
     transition: {
-      duration: 0.5,
-      ease: easingCurves.easeOutQuart,
+      ...springConfigs.gentle,
       delay: 0.5,
     },
   },
@@ -202,14 +168,47 @@ export const fileUploadVariants = {
 export const helpTextVariants = {
   initial: {
     opacity: 0,
-    filter: "blur(3px)",
   },
   animate: {
     opacity: 1,
-    filter: "blur(0px)",
     transition: {
-      duration: 0.3,
+      ...springConfigs.smooth,
       delay: 0.6,
+    },
+  },
+} as const;
+
+export const continueButtonContainerVariants = {
+  initial: {
+    height: 0,
+    opacity: 0,
+  },
+  animate: {
+    height: "auto",
+    opacity: 1,
+    transition: {
+      height: {
+        ...springConfigs.snappy,
+        duration: 0.25,
+      },
+      opacity: {
+        ...springConfigs.snappy,
+        delay: 0.02,
+      },
+    },
+  },
+  exit: {
+    height: 0,
+    opacity: 0,
+    transition: {
+      height: {
+        ...springConfigs.snappy,
+        duration: 0.2,
+      },
+      opacity: {
+        ...springConfigs.snappy,
+        duration: 0.1,
+      },
     },
   },
 } as const;
@@ -217,48 +216,27 @@ export const helpTextVariants = {
 export const continueButtonVariants = {
   initial: {
     opacity: 0,
-    y: 15,
     scale: 0.95,
-    filter: "blur(4px)",
+    y: 8,
     transform: "translate3d(0, 0, 0)",
   },
   animate: {
     opacity: 1,
-    y: 0,
     scale: 1,
-    filter: "blur(0px)",
+    y: 0,
     transform: "translate3d(0, 0, 0)",
     transition: {
-      duration: 0.4,
-      ease: easingCurves.easeOutCubic,
-      delay: 0.1,
+      ...springConfigs.snappy,
+      delay: 0.05,
     },
   },
   exit: {
     opacity: 0,
-    y: -8,
     scale: 0.95,
-    filter: "blur(4px)",
+    y: -3,
     transition: {
-      duration: 0.2,
-      ease: easingCurves.easeInCubic,
-    },
-  },
-} as const;
-
-export const buttonInteractionVariants = {
-  whileHover: {
-    scale: 1.02,
-    transition: {
-      duration: 0.2,
-      ease: easingCurves.easeOutCubic,
-    },
-  },
-  whileTap: {
-    scale: 0.98,
-    transition: {
-      duration: 0.1,
-      ease: easingCurves.easeInOutQuart,
+      ...springConfigs.snappy,
+      duration: 0.15,
     },
   },
 } as const;
@@ -272,8 +250,8 @@ export const backgroundVariants = {
     opacity: 1,
     scale: 1,
     transition: {
+      ...springConfigs.gentle,
       duration: 1.2,
-      ease: easingCurves.easeOutQuart,
     },
   },
 } as const;
@@ -285,8 +263,7 @@ export const backgroundCanvasVariants = {
   animate: {
     opacity: 1,
     transition: {
-      duration: 0.8,
-      ease: easingCurves.easeOutCubic,
+      ...springConfigs.smooth,
       delay: 0.2,
     },
   },
@@ -299,7 +276,7 @@ export const staggeredContainerVariants = {
   animate: {
     opacity: 1,
     transition: {
-      duration: 0.2,
+      ...springConfigs.smooth,
       staggerChildren: 0.06,
       delayChildren: 0.1,
     },
@@ -310,17 +287,35 @@ export const staggeredItemVariants = {
   initial: {
     opacity: 0,
     y: 12,
-    filter: "blur(3px)",
     transform: "translate3d(0, 0, 0)",
   },
   animate: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transform: "translate3d(0, 0, 0)",
     transition: {
-      duration: 0.4,
-      ease: easingCurves.easeOutCubic,
+      ...springConfigs.smooth,
+    },
+  },
+} as const;
+
+export const pageTransitionVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      ...springConfigs.smooth,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -20,
+    transition: {
+      ...springConfigs.snappy,
     },
   },
 } as const;

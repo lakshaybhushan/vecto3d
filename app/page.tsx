@@ -12,15 +12,17 @@ import Nav from "@/components/nav";
 import AnimatedLogo from "@/components/ui/animated-logo";
 import BackgroundEffect from "@/components/ui/background-effect";
 import {
-  pageVariants,
   loadingOverlayVariants,
   loadingLogoVariants,
   titleSpanVariants,
   fileUploadVariants,
   helpTextVariants,
   continueButtonVariants,
+  continueButtonContainerVariants,
   staggeredContainerVariants,
   staggeredItemVariants,
+  pageTransitionVariants,
+  titleContainerVariants,
 } from "@/lib/motion-variants";
 
 export default function Home() {
@@ -49,7 +51,7 @@ export default function Home() {
           behavior: "smooth",
         });
       }
-    }, 200);
+    }, 150);
   };
 
   const handleIconSelect = (iconName: string) => {
@@ -63,7 +65,7 @@ export default function Home() {
           behavior: "smooth",
         });
       }
-    }, 200);
+    }, 150);
   };
 
   const handleContinue = async () => {
@@ -99,14 +101,16 @@ export default function Home() {
 
   return (
     <motion.main
-      className="relative flex min-h-screen w-full flex-col"
+      className="relative flex h-screen w-full flex-col overflow-hidden"
+      variants={pageTransitionVariants}
       initial="initial"
       animate="animate"
-      variants={staggeredContainerVariants}
+      exit="exit"
       style={{ willChange: "transform" }}>
       <BackgroundEffect />
 
       <motion.div
+        className="flex-shrink-0"
         variants={staggeredItemVariants}
         style={{ willChange: "transform" }}>
         <Nav />
@@ -137,46 +141,49 @@ export default function Home() {
       </AnimatePresence>
 
       <motion.div
-        className="flex flex-1 flex-col items-center justify-center px-6 md:px-12"
-        variants={pageVariants.content}
-        style={{ willChange: "transform" }}>
+        className="flex flex-1 flex-col items-center justify-center px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 lg:px-12"
+        variants={staggeredContainerVariants}
+        initial="initial"
+        animate="animate"
+        style={{ willChange: "transform", minHeight: 0 }}>
         <motion.div
-          className="mb-8 text-center"
-          variants={staggeredItemVariants}
+          className="mb-2 text-center sm:mb-3 md:mb-4"
+          variants={titleContainerVariants}
+          initial="initial"
+          animate="animate"
           style={{ willChange: "transform" }}>
-          <motion.h1
-            className="leading-tighter text-primary font-serif text-4xl tracking-tight md:text-5xl lg:text-7xl"
-            variants={pageVariants.title}
-            style={{ willChange: "transform" }}>
+          <h1 className="text-primary font-serif text-2xl leading-tight tracking-tight sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl">
             <motion.span
-              variants={titleSpanVariants.first}
-              initial="initial"
-              animate="animate"
-              style={{ willChange: "transform" }}>
+              variants={titleSpanVariants}
+              style={{
+                display: "inline-block",
+                willChange: "transform",
+              }}>
               Transform Your Vectors{" "}
             </motion.span>
             <br className="hidden sm:block" />
             <motion.span
               className="text-primary"
-              variants={titleSpanVariants.second}
-              initial="initial"
-              animate="animate"
-              style={{ willChange: "transform" }}>
+              variants={titleSpanVariants}
+              style={{
+                display: "inline-block",
+                willChange: "transform",
+              }}>
               in a New Dimension
             </motion.span>
-          </motion.h1>
+          </h1>
         </motion.div>
 
         {isMobile && !continueOnMobile ? (
           <motion.div
-            className="w-full"
+            className="w-full max-w-md flex-shrink-0"
             variants={staggeredItemVariants}
             style={{ willChange: "transform" }}>
             <MobileWarning onContinue={handleContinueOnMobile} />
           </motion.div>
         ) : (
           <motion.div
-            className="mx-auto w-fit"
+            className="mx-auto w-full max-w-md flex-shrink-0 sm:max-w-lg md:max-w-xl lg:max-w-2xl"
             variants={staggeredItemVariants}
             style={{ willChange: "transform" }}>
             <motion.div
@@ -192,7 +199,7 @@ export default function Home() {
                 onIconSelect={handleIconSelect}
               />
               <motion.p
-                className="text-muted-foreground mt-4 mb-4 text-center text-base"
+                className="text-muted-foreground mt-1 mb-2 text-center text-xs sm:mt-2 sm:mb-3 sm:text-sm md:text-base"
                 variants={helpTextVariants}
                 initial="initial"
                 animate="animate"
@@ -204,26 +211,34 @@ export default function Home() {
 
             <motion.div
               id="continue-button-section"
-              className="flex items-center justify-center">
+              className="mt-2 flex items-center justify-center sm:mt-3 md:mt-4">
               <AnimatePresence mode="wait">
                 {svgData && (
                   <motion.div
-                    className="flex w-full justify-center"
-                    variants={continueButtonVariants}
+                    className="flex w-full justify-center overflow-hidden"
+                    variants={continueButtonContainerVariants}
                     initial="initial"
                     animate="animate"
                     exit="exit"
+                    layout
                     style={{ willChange: "transform" }}>
-                    <div className="flex w-full max-w-lg">
+                    <motion.div
+                      className="flex w-full max-w-sm"
+                      variants={continueButtonVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      layout
+                      style={{ willChange: "transform" }}>
                       <RainbowButton
-                        className="text-md mx-auto w-full py-6 md:w-1/2"
+                        className="mx-auto w-full py-3 text-sm sm:py-4 sm:text-base md:py-5"
                         onClick={handleContinue}
                         disabled={isLoading}>
                         <span className="flex items-center gap-2">
                           {isLoading ? "Processing..." : "Continue to Editor"}
                         </span>
                       </RainbowButton>
-                    </div>
+                    </motion.div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -233,6 +248,7 @@ export default function Home() {
       </motion.div>
 
       <motion.div
+        className="flex-shrink-0"
         variants={staggeredItemVariants}
         style={{ willChange: "transform" }}>
         <Footer />

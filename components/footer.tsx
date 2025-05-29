@@ -1,11 +1,32 @@
+"use client";
+
 import Link from "next/link";
 import { VercelIcon, V0Icon } from "@/components/ui/example-icons";
+import { motion } from "framer-motion";
+import {
+  footerVariants,
+  staggeredContainerVariants,
+  staggeredItemVariants,
+} from "@/lib/motion-variants";
 
 export default function Footer() {
   return (
-    <footer className="w-full px-8 py-4">
-      <div className="text-muted-foreground flex flex-col items-center justify-between text-sm md:flex-row">
-        <div className="flex items-center gap-1">
+    <motion.footer
+      className="w-full px-8 py-4"
+      variants={footerVariants}
+      initial="initial"
+      animate="animate"
+      style={{ willChange: "transform" }}>
+      <motion.div
+        className="text-muted-foreground flex flex-col items-center justify-between text-sm md:flex-row"
+        variants={staggeredContainerVariants}
+        initial="initial"
+        animate="animate"
+        style={{ willChange: "transform" }}>
+        <motion.div
+          className="flex items-center gap-1"
+          variants={staggeredItemVariants}
+          style={{ willChange: "transform" }}>
           Hosted on{" "}
           <Link
             href="https://vercel.com"
@@ -17,8 +38,12 @@ export default function Footer() {
             </span>
             <span className="hidden sm:inline">Vercel</span>
           </Link>
-        </div>
-        <div className="mt-2 flex items-center gap-1 md:mt-0">
+        </motion.div>
+
+        <motion.div
+          className="mt-2 flex items-center gap-1 md:mt-0"
+          variants={staggeredItemVariants}
+          style={{ willChange: "transform" }}>
           Ideated with{" "}
           <Link
             href="https://v0.dev/chat/three-js-logo-converter-JEQ692TQD4t"
@@ -37,8 +62,8 @@ export default function Footer() {
             rel="noopener noreferrer">
             lakshaybhushan
           </Link>
-        </div>
-      </div>
-    </footer>
+        </motion.div>
+      </motion.div>
+    </motion.footer>
   );
 }
