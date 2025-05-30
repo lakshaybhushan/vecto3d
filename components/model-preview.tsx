@@ -1,21 +1,16 @@
-import React, { useEffect, useMemo, useRef, lazy, Suspense } from "react";
+import React, { useEffect, useMemo, useRef, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { SimpleEnvironment } from "@/components/environment-presets";
-import { EnvironmentPresetName } from "@/lib/types";
+import type { EnvironmentPresetName } from "@/lib/types";
 import {
   EffectComposer,
   Bloom,
   BrightnessContrast,
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
-
-const SVGModel = lazy(() =>
-  import("@/components/svg-model").then((module) => ({
-    default: module.SVGModel,
-  })),
-);
+import { SVGModel } from "./svg-model";
 
 export interface ModelPreviewProps {
   svgData: string;
@@ -38,6 +33,11 @@ export interface ModelPreviewProps {
   clearcoat: number;
   transmission: number;
   envMapIntensity: number;
+  // Texture settings
+  textureEnabled: boolean;
+  texturePreset: string;
+  textureIntensity: number;
+  textureScale: { x: number; y: number };
   // Environment settings
   backgroundColor: string;
   useEnvironment: boolean;
@@ -77,6 +77,11 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
     clearcoat,
     transmission,
     envMapIntensity,
+    // Texture settings
+    textureEnabled,
+    texturePreset,
+    textureIntensity,
+    textureScale,
     // Environment settings
     backgroundColor,
     useEnvironment,
@@ -137,17 +142,9 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
             />
           </EffectComposer>
         );
-      } else {
-        // If not using bloom, use EffectComposer just for MSAA.
-        if (msaaSamples > 0) {
-          return (
-            <EffectComposer multisampling={msaaSamples}>
-              <>{/* Empty fragment to satisfy children prop */}</>
-            </EffectComposer>
-          );
-        }
       }
-      return null; // Fallback if msaaSamples is 0 (though current logic prevents this)
+
+      return null;
     }, [useBloom, bloomIntensity, bloomMipmapBlur, isMobile]);
 
     const environment = useMemo(() => {
@@ -225,6 +222,11 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
               isHollowSvg={isHollowSvg}
               spread={spread}
               ref={modelRef}
+              // Texture settings
+              textureEnabled={textureEnabled}
+              texturePreset={texturePreset}
+              textureIntensity={textureIntensity}
+              textureScale={textureScale}
             />
           </group>
         </Suspense>

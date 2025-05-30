@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Maximize2, Minimize2, ChevronLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import * as THREE from "three";
+import type * as THREE from "three";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
@@ -104,6 +104,11 @@ export default function EditPage() {
     clearcoat,
     transmission,
     envMapIntensity,
+    // Texture properties
+    textureEnabled,
+    texturePreset,
+    textureIntensity,
+    textureScale,
     useEnvironment,
     environmentPreset,
     customHdriUrl,
@@ -303,6 +308,11 @@ export default function EditPage() {
           clearcoat={clearcoat}
           transmission={transmission}
           envMapIntensity={envMapIntensity}
+          // Texture properties
+          textureEnabled={textureEnabled}
+          texturePreset={texturePreset}
+          textureIntensity={textureIntensity}
+          textureScale={textureScale}
           // Environment settings
           backgroundColor={backgroundColor}
           useEnvironment={useEnvironment}

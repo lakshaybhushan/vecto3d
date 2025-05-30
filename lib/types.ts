@@ -1,4 +1,29 @@
-import * as THREE from "three";
+import type * as THREE from "three";
+
+// Texture preset interface
+export interface TexturePreset {
+  name: string;
+  label: string;
+  category:
+    | "wood"
+    | "metal"
+    | "stone"
+    | "fabric"
+    | "concrete"
+    | "paper"
+    | "road"
+    | "weather"
+    | "miscellaneous";
+  diffuseMap: string;
+  normalMap?: string;
+  roughnessMap?: string;
+  aoMap?: string;
+  previewImage?: string;
+  repeat: { x: number; y: number };
+  roughnessAdjust?: number;
+  metalnessAdjust?: number;
+  bumpScale?: number;
+}
 
 // Material presets interface
 export interface MaterialPreset {
@@ -78,6 +103,11 @@ export interface SVGModelProps {
   castShadow?: boolean;
   isHollowSvg?: boolean;
   spread?: number;
+  // Texture properties
+  textureEnabled?: boolean;
+  texturePreset?: string;
+  textureIntensity?: number;
+  textureScale?: { x: number; y: number };
 }
 
 // Props for the model preview component
@@ -102,6 +132,11 @@ export interface ModelPreviewProps {
   clearcoat: number;
   transmission: number;
   envMapIntensity: number;
+  // Texture settings
+  textureEnabled: boolean;
+  texturePreset: string;
+  textureIntensity: number;
+  textureScale: { x: number; y: number };
   // Environment settings
   backgroundColor: string;
   useEnvironment: boolean;
