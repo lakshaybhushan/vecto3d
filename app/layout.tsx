@@ -28,7 +28,7 @@ const clashGrotesk = LocalFont({
 });
 
 export const metadata: Metadata = {
-  title: "Vecto3d | Transform Your Vectors in a New Dimension",
+  title: "Vecto3d - Convert SVGs to 3D",
   description: "A super simple tool to convert SVG logos to 3D models",
   icons: {
     icon: [

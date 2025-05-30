@@ -167,7 +167,7 @@ export function FileUpload({
         <CardContent className="p-0">
           <div
             ref={dropZoneRef}
-            className={`relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg px-4 py-3 transition-all duration-500 sm:min-h-[220px] sm:px-6 sm:py-4 md:min-h-[260px] md:px-8 md:py-5 lg:min-h-[300px] lg:px-10 ${
+            className={`relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg px-4 py-3 transition-all duration-500 sm:min-h-[220px] md:min-h-[260px] lg:min-h-[300px] ${
               isDragging
                 ? "border-primary bg-primary/10 border-2 border-dashed"
                 : "border-border hover:bg-muted/30 border-2 border-dashed"
@@ -246,14 +246,11 @@ export function FileUpload({
                       {exampleIcons.map((icon) => (
                         <div key={icon.name}>
                           <Button
-                            variant={
-                              selectedIcon === icon.name ? "default" : "outline"
-                            }
-                            size="lg"
-                            className={`flex h-auto w-full flex-col items-center justify-center gap-1 rounded-lg p-2 transition-transform duration-300 ease-out sm:gap-1.5 sm:p-2.5 md:w-[72px] md:p-3 ${
+                            variant="secondary"
+                            className={`flex h-auto w-full flex-col items-center justify-center gap-1 rounded-xl p-2 transition-transform duration-300 ease-out sm:gap-1.5 sm:p-2.5 md:w-[72px] md:p-3 ${
                               selectedIcon === icon.name
-                                ? "bg-primary text-primary-foreground shadow-lg"
-                                : "bg-background text-foreground hover:bg-muted/60 border-primary/10"
+                                ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground border-primary/20 border transition-all duration-100 ease-out"
+                                : "bg-secondary text-foreground hover:bg-secondary/60 hover:text-foreground border transition-all duration-100 ease-out"
                             }`}
                             onClick={(e) => {
                               e.stopPropagation();

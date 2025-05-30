@@ -94,7 +94,7 @@ export function BackgroundControls() {
                 setSolidColorPreset("light");
               }
             }}
-            className="h-11 w-full">
+            className="h-10 w-full">
             Reset to Theme Default
           </Button>
         </div>

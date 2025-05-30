@@ -147,12 +147,12 @@ export default function Home() {
         animate="animate"
         style={{ willChange: "transform", minHeight: 0 }}>
         <motion.div
-          className="mb-2 text-center sm:mb-3 md:mb-4"
+          className="mb-2 text-center sm:mb-3 md:mb-6"
           variants={titleContainerVariants}
           initial="initial"
           animate="animate"
           style={{ willChange: "transform" }}>
-          <h1 className="text-primary font-serif text-2xl leading-tight tracking-tight sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl">
+          <h1 className="text-primary leading-tighter font-serif text-5xl tracking-tight md:text-6xl">
             <motion.span
               variants={titleSpanVariants}
               style={{
@@ -183,7 +183,7 @@ export default function Home() {
           </motion.div>
         ) : (
           <motion.div
-            className="mx-auto w-full max-w-md flex-shrink-0 sm:max-w-lg md:max-w-xl lg:max-w-2xl"
+            className="mx-auto w-fit flex-shrink-0"
             variants={staggeredItemVariants}
             style={{ willChange: "transform" }}>
             <motion.div
@@ -231,12 +231,10 @@ export default function Home() {
                       layout
                       style={{ willChange: "transform" }}>
                       <RainbowButton
-                        className="mx-auto w-full py-3 text-sm sm:py-4 sm:text-base md:py-5"
+                        className="mx-auto w-full max-w-[16rem] rounded-lg py-3 text-sm sm:py-4 sm:text-base md:py-5"
                         onClick={handleContinue}
                         disabled={isLoading}>
-                        <span className="flex items-center gap-2">
-                          {isLoading ? "Processing..." : "Continue to Editor"}
-                        </span>
+                        {isLoading ? "Processing..." : "Continue to Editor"}
                       </RainbowButton>
                     </motion.div>
                   </motion.div>

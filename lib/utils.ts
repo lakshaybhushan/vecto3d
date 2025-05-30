@@ -1,9 +1,10 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
+
 
 export async function checkIsUSLocation(): Promise<boolean> {
   try {
@@ -15,6 +16,7 @@ export async function checkIsUSLocation(): Promise<boolean> {
     return data.countryCode === "US";
   } catch (error) {
     console.error("Error checking location:", error);
+    // If we can't determine location, default to false for safety
     return false;
   }
 }
