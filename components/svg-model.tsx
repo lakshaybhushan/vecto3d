@@ -10,7 +10,8 @@ import {
 } from "react";
 import * as THREE from "three";
 import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
-import { Center } from "@react-three/drei";
+import { Center, useTexture } from "@react-three/drei";
+import { TEXTURE_PRESETS } from "@/lib/constants";
 
 interface SVGModelProps {
   svgData: string;
@@ -29,6 +30,11 @@ interface SVGModelProps {
   castShadow?: boolean;
   isHollowSvg?: boolean;
   spread?: number;
+  // Texture properties
+  textureEnabled?: boolean;
+  texturePreset?: string;
+  textureIntensity?: number;
+  textureScale?: { x: number; y: number };
   onLoadStart?: () => void;
   onLoadComplete?: () => void;
   onError?: (error: Error) => void;
@@ -45,7 +51,9 @@ const applySpread = (
   if (pts.length < 3) return shape;
 
   const center = new THREE.Vector2();
-  pts.forEach((pt) => center.add(pt));
+  for (const pt of pts) {
+    center.add(pt);
+  }
   center.divideScalar(pts.length);
 
   const newShape = new THREE.Shape();
@@ -63,7 +71,9 @@ const applySpread = (
     newShape.holes = shape.holes.map((hole) => {
       const holePts = hole.getPoints();
       const holeCenter = new THREE.Vector2();
-      holePts.forEach((pt) => holeCenter.add(pt));
+      for (const pt of holePts) {
+        holeCenter.add(pt);
+      }
       holeCenter.divideScalar(holePts.length);
 
       const newHole = new THREE.Path();
@@ -102,6 +112,11 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       castShadow = true,
       // isHollowSvg = false,
       spread = 0,
+      // Texture properties
+      textureEnabled = false,
+      texturePreset = "oak",
+      textureIntensity = 1.0,
+      textureScale = { x: 1, y: 1 },
       onLoadStart,
       onLoadComplete,
       onError,
@@ -112,6 +127,48 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const groupRef = useRef<THREE.Group>(null);
     const materialsCache = useRef<Map<string, THREE.Material>>(new Map());
+
+    // Load textures based on preset
+    const currentTexturePreset = TEXTURE_PRESETS.find(
+      (preset) => preset.name === texturePreset,
+    );
+
+    // Load texture maps conditionally
+    const textureUrls = useMemo(() => {
+      if (!textureEnabled || !currentTexturePreset) return {};
+
+      return {
+        diffuse: currentTexturePreset.diffuseMap,
+        normal: currentTexturePreset.normalMap || null,
+        roughness: currentTexturePreset.roughnessMap || null,
+        ao: currentTexturePreset.aoMap || null,
+      };
+    }, [textureEnabled, currentTexturePreset]);
+
+    const loadedTextures = useTexture(
+      textureEnabled && currentTexturePreset
+        ? {
+            diffuse: textureUrls.diffuse,
+            ...(textureUrls.normal && { normal: textureUrls.normal }),
+            ...(textureUrls.roughness && { roughness: textureUrls.roughness }),
+            ...(textureUrls.ao && { ao: textureUrls.ao }),
+          }
+        : {},
+    ) as {
+      diffuse?: THREE.Texture;
+      normal?: THREE.Texture;
+      roughness?: THREE.Texture;
+      ao?: THREE.Texture;
+    };
+
+    const diffuseTexture = textureEnabled
+      ? loadedTextures.diffuse || null
+      : null;
+    const normalTexture = textureEnabled ? loadedTextures.normal || null : null;
+    const roughnessTexture = textureEnabled
+      ? loadedTextures.roughness || null
+      : null;
+    const aoTexture = textureEnabled ? loadedTextures.ao || null : null;
 
     useImperativeHandle(ref, () => groupRef.current!, []);
 
@@ -135,7 +192,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
 
         const parserError = svgDoc.querySelector("parsererror");
         if (parserError) {
-          throw new Error("SVG parse error: " + parserError.textContent);
+          throw new Error(`SVG parse error: ${parserError.textContent}`);
         }
 
         const svgElement = svgDoc.querySelector("svg");
@@ -239,7 +296,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     const getMaterial = (color: string | THREE.Color, isHole: boolean) => {
       const colorString =
         color instanceof THREE.Color ? `#${color.getHexString()}` : color;
-      const cacheKey = `${colorString}_${roughness}_${metalness}_${clearcoat}_${transmission}_${envMapIntensity}`;
+      const cacheKey = `${colorString}_${roughness}_${metalness}_${clearcoat}_${transmission}_${envMapIntensity}_${textureEnabled}_${texturePreset}_${textureIntensity}_${textureScale.x}_${textureScale.y}`;
 
       if (materialsCache.current.has(cacheKey)) {
         return materialsCache.current.get(cacheKey)!;
@@ -248,10 +305,85 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       const threeColor =
         color instanceof THREE.Color ? color : new THREE.Color(color);
 
+      // Configure textures if enabled
+      let configuredDiffuseTexture: THREE.Texture | null = null;
+      let configuredNormalTexture: THREE.Texture | null = null;
+      let configuredRoughnessTexture: THREE.Texture | null = null;
+      let configuredAoTexture: THREE.Texture | null = null;
+
+      if (textureEnabled && currentTexturePreset) {
+        // Configure diffuse texture
+        if (diffuseTexture && diffuseTexture instanceof THREE.Texture) {
+          configuredDiffuseTexture = diffuseTexture.clone();
+          configuredDiffuseTexture.wrapS = THREE.RepeatWrapping;
+          configuredDiffuseTexture.wrapT = THREE.RepeatWrapping;
+          configuredDiffuseTexture.repeat.set(
+            currentTexturePreset.repeat.x / textureScale.x,
+            currentTexturePreset.repeat.y / textureScale.y,
+          );
+          configuredDiffuseTexture.colorSpace = THREE.SRGBColorSpace;
+        }
+
+        // Configure normal texture
+        if (normalTexture && normalTexture instanceof THREE.Texture) {
+          configuredNormalTexture = normalTexture.clone();
+          configuredNormalTexture.wrapS = THREE.RepeatWrapping;
+          configuredNormalTexture.wrapT = THREE.RepeatWrapping;
+          configuredNormalTexture.repeat.set(
+            currentTexturePreset.repeat.x / textureScale.x,
+            currentTexturePreset.repeat.y / textureScale.y,
+          );
+        }
+
+        // Configure roughness texture
+        if (roughnessTexture && roughnessTexture instanceof THREE.Texture) {
+          configuredRoughnessTexture = roughnessTexture.clone();
+          configuredRoughnessTexture.wrapS = THREE.RepeatWrapping;
+          configuredRoughnessTexture.wrapT = THREE.RepeatWrapping;
+          configuredRoughnessTexture.repeat.set(
+            currentTexturePreset.repeat.x / textureScale.x,
+            currentTexturePreset.repeat.y / textureScale.y,
+          );
+        }
+
+        // Configure AO texture
+        if (aoTexture && aoTexture instanceof THREE.Texture) {
+          configuredAoTexture = aoTexture.clone();
+          configuredAoTexture.wrapS = THREE.RepeatWrapping;
+          configuredAoTexture.wrapT = THREE.RepeatWrapping;
+          configuredAoTexture.repeat.set(
+            currentTexturePreset.repeat.x / textureScale.x,
+            currentTexturePreset.repeat.y / textureScale.y,
+          );
+        }
+      }
+
       const materialProps: THREE.MeshPhysicalMaterialParameters = {
-        color: threeColor,
-        roughness: Math.max(0.05, roughness),
-        metalness,
+        color:
+          textureEnabled && configuredDiffuseTexture
+            ? new THREE.Color(1, 1, 1).lerp(threeColor, 1 - textureIntensity)
+            : threeColor,
+        map: configuredDiffuseTexture,
+        normalMap: configuredNormalTexture,
+        normalScale: configuredNormalTexture
+          ? new THREE.Vector2(
+              currentTexturePreset?.bumpScale || 0.02,
+              currentTexturePreset?.bumpScale || 0.02,
+            )
+          : undefined,
+        roughnessMap: configuredRoughnessTexture,
+        aoMap: configuredAoTexture,
+        aoMapIntensity: configuredAoTexture ? 1.0 : 1.0,
+        roughness: Math.max(
+          0.05,
+          textureEnabled && currentTexturePreset?.roughnessAdjust !== undefined
+            ? currentTexturePreset.roughnessAdjust
+            : roughness,
+        ),
+        metalness:
+          textureEnabled && currentTexturePreset?.metalnessAdjust !== undefined
+            ? currentTexturePreset.metalnessAdjust
+            : metalness,
         clearcoat: Math.max(clearcoat, 0.05),
         clearcoatRoughness: 0.05,
         reflectivity: 1,

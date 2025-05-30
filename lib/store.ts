@@ -32,6 +32,12 @@ interface EditorState {
   transmission: number;
   vibeModeOriginalMaterial: string | null;
 
+  // Texture Options
+  textureEnabled: boolean;
+  texturePreset: string;
+  textureIntensity: number;
+  textureScale: { x: number; y: number };
+
   // Environment Options
   useEnvironment: boolean;
   environmentPreset: string;
@@ -76,6 +82,11 @@ interface EditorState {
   setEnvMapIntensity: (intensity: number) => void;
   setTransmission: (transmission: number) => void;
   setVibeModeOriginalMaterial: (material: string | null) => void;
+
+  setTextureEnabled: (enabled: boolean) => void;
+  setTexturePreset: (preset: string) => void;
+  setTextureIntensity: (intensity: number) => void;
+  setTextureScale: (scale: { x: number; y: number }) => void;
 
   setUseEnvironment: (use: boolean) => void;
   setEnvironmentPreset: (preset: string) => void;
@@ -123,6 +134,11 @@ export const useEditorStore = create<EditorState>((set) => ({
   transmission: initialPreset.transmission,
   vibeModeOriginalMaterial: null,
 
+  textureEnabled: false,
+  texturePreset: "oak",
+  textureIntensity: 1.0,
+  textureScale: { x: 25, y: 25 },
+
   useEnvironment: true,
   environmentPreset: "apartment",
   customHdriUrl: null,
@@ -164,6 +180,11 @@ export const useEditorStore = create<EditorState>((set) => ({
   setTransmission: (transmission) => set({ transmission }),
   setVibeModeOriginalMaterial: (material) =>
     set({ vibeModeOriginalMaterial: material }),
+
+  setTextureEnabled: (enabled) => set({ textureEnabled: enabled }),
+  setTexturePreset: (preset) => set({ texturePreset: preset }),
+  setTextureIntensity: (intensity) => set({ textureIntensity: intensity }),
+  setTextureScale: (scale) => set({ textureScale: scale }),
 
   setUseEnvironment: (use) => set({ useEnvironment: use }),
   setEnvironmentPreset: (preset) => set({ environmentPreset: preset }),
