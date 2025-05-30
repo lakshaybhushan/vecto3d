@@ -39,6 +39,19 @@ export default function Home() {
     setIsMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (isLoading) {
+      try {
+        const audio = new Audio("/continue.mp3");
+        audio.play().catch((error) => {
+          console.log("Audio play failed:", error);
+        });
+      } catch (error) {
+        console.log("Audio initialization failed:", error);
+      }
+    }
+  }, [isLoading]);
+
   const handleFileUpload = (data: string, name: string) => {
     setSvgData(data);
     setFileName(name);
