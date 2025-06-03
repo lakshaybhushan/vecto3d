@@ -81,7 +81,7 @@ export function GeometryControls() {
   return (
     <div className="space-y-4">
       <div className="space-y-4">
-        <Label htmlFor="depth">
+        <Label htmlFor="depth" className="flex items-center justify-between">
           <span>Adjust Thickness</span>
           <span className="text-primary font-mono">{depth.toFixed(2)}</span>
         </Label>
@@ -211,12 +211,14 @@ export function GeometryControls() {
         </div>
 
         {bevelEnabled && bevelPreset === "custom" && (
-          <div className="space-y-4 pb-2">
+          <div className="space-y-4 py-2">
             <div className="space-y-4">
-              <Label htmlFor="bevelThickness">
+              <Label
+                htmlFor="bevelThickness"
+                className="flex items-center justify-between">
                 <span>Bevel Thickness</span>
                 <span className="text-primary font-mono">
-                  {bevelThickness.toFixed(1)}
+                  {bevelThickness.toFixed(2)}
                 </span>
               </Label>
               <Slider
@@ -232,10 +234,12 @@ export function GeometryControls() {
             </div>
 
             <div className="space-y-4">
-              <Label htmlFor="bevelSize">
+              <Label
+                htmlFor="bevelSize"
+                className="flex items-center justify-between">
                 <span>Bevel Size</span>
                 <span className="text-primary font-mono">
-                  {bevelSize.toFixed(1)}
+                  {bevelSize.toFixed(2)}
                 </span>
               </Label>
               <Slider
@@ -251,10 +255,12 @@ export function GeometryControls() {
             </div>
 
             <div className="space-y-4">
-              <Label htmlFor="bevelSegments">
+              <Label
+                htmlFor="bevelSegments"
+                className="flex items-center justify-between">
                 <span>Bevel Quality</span>
                 <span className="text-primary font-mono">
-                  {bevelSegments.toFixed(1)}
+                  {bevelSegments.toFixed(2)}
                 </span>
               </Label>
               <Slider
@@ -279,15 +285,19 @@ export function GeometryControls() {
             checked={autoRotate}
             onCheckedChange={(checked) => setAutoRotate(checked as boolean)}
           />
-          <Label htmlFor="autoRotate">Auto rotate model</Label>
+          <Label htmlFor="autoRotate" className="text-sm">
+            Auto rotate model
+          </Label>
         </div>
 
         {autoRotate && (
           <div className="mt-4 space-y-4 py-2">
-            <Label htmlFor="autoRotateSpeed">
+            <Label
+              htmlFor="autoRotateSpeed"
+              className="flex items-center justify-between">
               <span>Rotation Speed</span>
               <span className="text-primary font-mono">
-                {actualToDisplayRotation(autoRotateSpeed).toFixed(1)}
+                {actualToDisplayRotation(autoRotateSpeed).toFixed(2)}
               </span>
             </Label>
             <Slider

@@ -1,11 +1,10 @@
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MATERIAL_PRESETS, TEXTURE_PRESETS } from "@/lib/constants";
+import { MATERIAL_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
 import { Input } from "@/components/ui/input";
 import { PopoverPicker } from "@/components/ui/color-picker";
-import { Button } from "@/components/ui/button";
 import type { MaterialPreset } from "@/lib/types";
 
 export function MaterialControls() {
@@ -26,28 +25,7 @@ export function MaterialControls() {
     setUseCustomColor,
     customColor,
     setCustomColor,
-    // Texture properties
-    textureEnabled,
-    setTextureEnabled,
-    texturePreset,
-    setTexturePreset,
-    textureIntensity,
-    setTextureIntensity,
-    textureScale,
-    setTextureScale,
   } = useEditorStore();
-
-  // Group textures by category
-  const texturesByCategory = TEXTURE_PRESETS.reduce(
-    (acc, texture) => {
-      if (!acc[texture.category]) {
-        acc[texture.category] = [];
-      }
-      acc[texture.category].push(texture);
-      return acc;
-    },
-    {} as Record<string, typeof TEXTURE_PRESETS>,
-  );
 
   const loadPreset = (preset: MaterialPreset) => {
     setMaterialPreset(preset.name);
@@ -60,128 +38,7 @@ export function MaterialControls() {
 
   return (
     <div className="space-y-4">
-      {/* Texture Section */}
-      <div className="space-y-4">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="useTexture"
-            checked={textureEnabled}
-            onCheckedChange={(checked) => setTextureEnabled(checked as boolean)}
-          />
-          <Label htmlFor="useTexture">Use Textures</Label>
-        </div>
-
-        {textureEnabled && (
-          <div className="space-y-4">
-            <Label>Texture Presets</Label>
-            {Object.entries(texturesByCategory).map(([category, textures]) => (
-              <div key={category} className="space-y-2">
-                <Label className="text-muted-foreground text-sm font-medium capitalize">
-                  {category}
-                </Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {textures.map((texture) => (
-                    <Button
-                      key={texture.name}
-                      variant={
-                        texturePreset === texture.name ? "default" : "outline"
-                      }
-                      size="sm"
-                      className="h-auto gap-2 p-2"
-                      onClick={() => setTexturePreset(texture.name)}>
-                      {texture.previewImage ? (
-                        <img
-                          src={texture.previewImage}
-                          alt={texture.label}
-                          className="h-6 w-6 rounded object-cover"
-                        />
-                      ) : (
-                        <div className="h-6 w-6 rounded bg-gradient-to-br from-amber-200 to-amber-600" />
-                      )}
-                      <span className="text-xs">{texture.label}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            <div className="space-y-4">
-              <Label htmlFor="textureIntensity">
-                Texture Intensity: {textureIntensity.toFixed(2)}
-              </Label>
-              <Slider
-                id="textureIntensity"
-                min={0}
-                max={1}
-                step={0.01}
-                value={[textureIntensity]}
-                onValueChange={(value) => setTextureIntensity(value[0])}
-              />
-            </div>
-
-            <div className="space-y-4">
-              <Label>Texture Scale</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-2">
-                  <Label htmlFor="textureScaleX" className="text-xs">
-                    X: {textureScale.x.toFixed(0)}x
-                  </Label>
-                  <Slider
-                    id="textureScaleX"
-                    min={5}
-                    max={100}
-                    step={1}
-                    value={[textureScale.x]}
-                    onValueChange={(value) =>
-                      setTextureScale({ ...textureScale, x: value[0] })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="textureScaleY" className="text-xs">
-                    Y: {textureScale.y.toFixed(0)}x
-                  </Label>
-                  <Slider
-                    id="textureScaleY"
-                    min={5}
-                    max={100}
-                    step={1}
-                    value={[textureScale.y]}
-                    onValueChange={(value) =>
-                      setTextureScale({ ...textureScale, y: value[0] })
-                    }
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTextureScale({ x: 25, y: 25 })}
-                  className="flex-1">
-                  25x
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTextureScale({ x: 50, y: 50 })}
-                  className="flex-1">
-                  50x
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTextureScale({ x: 75, y: 75 })}
-                  className="flex-1">
-                  75x
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="border-t pt-4">
+      <div>
         <Label htmlFor="materialPreset">Material Type</Label>
       </div>
 
@@ -241,7 +98,6 @@ export function MaterialControls() {
                   />
                 )}
 
-                {/* Glass/transmission effect */}
                 {preset.transmission > 0 && (
                   <div
                     className="absolute inset-0 rounded-full"
@@ -262,9 +118,14 @@ export function MaterialControls() {
       </div>
 
       {materialPreset === "custom" && (
-        <div className="space-y-4">
+        <div className="space-y-4 py-2 ">
           <div className="space-y-4">
-            <Label htmlFor="roughness">Roughness: {roughness.toFixed(2)}</Label>
+            <Label htmlFor="roughness" className="flex items-center justify-between">
+              <span>Roughness</span>
+              <span className="text-primary font-mono">
+                {roughness.toFixed(2)}
+              </span>
+            </Label>
             <Slider
               id="roughness"
               min={0}
@@ -276,7 +137,12 @@ export function MaterialControls() {
           </div>
 
           <div className="space-y-4">
-            <Label htmlFor="metalness">Metalness: {metalness.toFixed(2)}</Label>
+            <Label htmlFor="metalness" className="flex items-center justify-between">
+              <span>Metalness</span>
+              <span className="text-primary font-mono">
+                {metalness.toFixed(2)}
+              </span>
+            </Label>
             <Slider
               id="metalness"
               min={0}
@@ -288,7 +154,12 @@ export function MaterialControls() {
           </div>
 
           <div className="space-y-4">
-            <Label htmlFor="clearcoat">Clearcoat: {clearcoat.toFixed(2)}</Label>
+            <Label htmlFor="clearcoat" className="flex items-center justify-between">
+              <span>Clearcoat</span>
+              <span className="text-primary font-mono">
+                {clearcoat.toFixed(2)}
+              </span>
+            </Label>
             <Slider
               id="clearcoat"
               min={0}
@@ -300,8 +171,11 @@ export function MaterialControls() {
           </div>
 
           <div className="space-y-4">
-            <Label htmlFor="transmission">
-              Transmission: {transmission.toFixed(2)}
+            <Label htmlFor="transmission" className="flex items-center justify-between">
+              <span>Transmission</span>
+              <span className="text-primary font-mono">
+                {transmission.toFixed(2)}
+              </span>
             </Label>
             <Slider
               id="transmission"
@@ -314,8 +188,11 @@ export function MaterialControls() {
           </div>
 
           <div className="space-y-4">
-            <Label htmlFor="envMapIntensity">
-              Environment Reflection: {envMapIntensity.toFixed(2)}
+            <Label htmlFor="envMapIntensity" className="flex items-center justify-between">
+              <span>Environment Reflection</span>
+              <span className="text-primary font-mono">
+                {envMapIntensity.toFixed(2)}
+              </span>
             </Label>
             <Slider
               id="envMapIntensity"

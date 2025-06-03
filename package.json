@@ -29,6 +29,7 @@
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4.1.7",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/functions": "^2.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "eslint": "^9.27.0",

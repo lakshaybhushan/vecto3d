@@ -17,6 +17,7 @@ import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import React from "react";
 import { ModeToggle } from "@/components/ui/theme-toggle";
+import dynamic from "next/dynamic";
 
 import {
   Tooltip,
@@ -27,6 +28,7 @@ import {
 
 import { GeometryControls } from "@/components/controls/geometry-controls";
 import { MaterialControls } from "@/components/controls/material-controls";
+import { TextureControls } from "@/components/controls/texture-controls";
 import { EnvironmentControls } from "@/components/controls/environment-controls";
 import { BackgroundControls } from "@/components/controls/background-controls";
 import { ExportButtons } from "@/components/export-buttons";
@@ -37,7 +39,28 @@ import { useMobileDetection } from "@/hooks/use-mobile-detection";
 import { useEditorStore } from "@/lib/store";
 import { DARK_MODE_COLOR, LIGHT_MODE_COLOR } from "@/lib/constants";
 import AnimatedLogo from "@/components/ui/animated-logo";
-import { ModelPreview } from "@/components/model-preview";
+
+// Dynamically import ModelPreview with SSR disabled to prevent ProgressEvent errors
+const ModelPreview = dynamic(() => import("@/components/model-preview"), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-card flex h-full w-full flex-col items-center justify-center">
+      <div className="flex max-w-xs flex-col items-center gap-4 px-4 text-center">
+        <div className="relative h-20 w-20">
+          <div className="bg-background/20 absolute inset-0 animate-pulse rounded-full"></div>
+          <div className="bg-background/40 absolute inset-4 animate-pulse rounded-full [animation-delay:200ms]"></div>
+          <AnimatedLogo className="absolute inset-0 h-full w-full" />
+        </div>
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Loading 3D preview...</p>
+          <p className="text-muted-foreground text-xs">
+            Initializing Three.js components
+          </p>
+        </div>
+      </div>
+    </div>
+  ),
+});
 
 function useThemeBackgroundColor() {
   const { resolvedTheme } = useTheme();
@@ -273,7 +296,7 @@ export default function EditPage() {
   }, [setIsFullscreen]);
 
   const renderModelPreview = () => {
-    if (!svgData) {
+    if (!hasMounted || !svgData) {
       return <ModelLoadingState message="Waiting for SVG data..." />;
     }
 
@@ -490,7 +513,7 @@ export default function EditPage() {
               </Card>
             </div>
             <div className="order-last space-y-6 lg:order-first lg:col-span-2">
-              <Card className="flex h-fit w-full flex-col overflow-hidden border">
+              <Card className="flex max-h-[60dvh] w-full flex-col overflow-hidden border lg:max-h-[calc(100vh-8rem)]">
                 <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 pb-4 backdrop-blur-xs [.border-b]:pb-4">
                   <div>
                     <CardTitle className="text-xl font-medium">
@@ -501,7 +524,7 @@ export default function EditPage() {
                     </CardDescription>
                   </div>
                 </CardHeader>
-                <CardContent className="p-4">
+                <CardContent className="flex-1 overflow-y-auto p-4">
                   <Tabs defaultValue="geometry">
                     <TabsList className="mb-4 flex w-full justify-between overflow-x-auto">
                       <TabsTrigger value="geometry" className="flex-1">
@@ -509,6 +532,9 @@ export default function EditPage() {
                       </TabsTrigger>
                       <TabsTrigger value="material" className="flex-1">
                         Material
+                      </TabsTrigger>
+                      <TabsTrigger value="textures" className="flex-1">
+                        Textures
                       </TabsTrigger>
                       <TabsTrigger value="environment" className="flex-1">
                         Environment
@@ -524,6 +550,10 @@ export default function EditPage() {
 
                     <TabsContent value="material" key="material">
                       <MaterialControls />
+                    </TabsContent>
+
+                    <TabsContent value="textures" key="textures">
+                      <TextureControls />
                     </TabsContent>
 
                     <TabsContent value="environment" key="environment">

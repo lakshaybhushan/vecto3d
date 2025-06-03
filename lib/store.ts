@@ -118,10 +118,10 @@ export const useEditorStore = create<EditorState>((set) => ({
   isHollowSvg: false,
   modelRotationY: 0,
 
-  bevelEnabled: true,
-  bevelThickness: 1.0,
-  bevelSize: 0.5,
-  bevelSegments: 4,
+  bevelEnabled: false,
+  bevelThickness: 0.0,
+  bevelSize: 0.0,
+  bevelSegments: 1,
   bevelPreset: "none",
 
   customColor: "#3498db",

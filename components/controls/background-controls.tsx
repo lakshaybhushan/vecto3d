@@ -34,7 +34,7 @@ export function BackgroundControls() {
       <Alert className="bg-muted/50 mb-4">
         <AlertDescription className="flex items-center text-xs">
           <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
-          <p className="text-muted-foreground mt-0.5 text-xs">
+          <p className="text-muted-foreground mt-0.5 text-sm">
             Background settings are for preview only and will not affect the
             exported 3D model.
           </p>

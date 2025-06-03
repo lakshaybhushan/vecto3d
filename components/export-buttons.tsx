@@ -11,7 +11,6 @@ import { PNG_RESOLUTIONS } from "@/lib/constants";
 import { handleExport, handlePrint } from "@/lib/exporters";
 import * as THREE from "three";
 import { useEffect, useState } from "react";
-import { checkIsUSLocation } from "@/lib/utils";
 import {
   ImageDownloadIcon,
   ThreeDExportIcon,
@@ -30,9 +29,9 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
   useEffect(() => {
     const checkLocation = async () => {
       try {
-        const isUSLocation = await checkIsUSLocation();
-        // console.log("Location check result:", isUSLocation);
-        setIsUS(isUSLocation);
+        const response = await fetch("/api/geo");
+        const data = await response.json();
+        setIsUS(data.isUS);
       } catch (error) {
         console.error("Error in location check:", error);
         setIsUS(false);
