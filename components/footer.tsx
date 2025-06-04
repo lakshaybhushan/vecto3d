@@ -44,20 +44,10 @@ export default function Footer() {
           className="mt-2 flex items-center gap-1 md:mt-0"
           variants={staggeredItemVariants}
           style={{ willChange: "transform" }}>
-          Ideated with{" "}
-          <Link
-            href="https://v0.dev/chat/three-js-logo-converter-JEQ692TQD4t"
-            className="text-primary flex items-center gap-2 font-medium transition-colors duration-200 hover:underline"
-            target="_blank"
-            rel="noopener noreferrer">
-            <span className="sm:inline">
-              <V0Icon size={20} />
-            </span>
-          </Link>
-          —
+          Made for vibes by{" "}
           <Link
             href="https://lakshb.dev"
-            className="hover:text-primary font-medium transition-colors duration-200 hover:underline"
+            className="text-primary font-medium transition-colors duration-200 hover:underline"
             target="_blank"
             rel="noopener noreferrer">
             lakshaybhushan
