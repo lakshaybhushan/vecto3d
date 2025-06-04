@@ -78,7 +78,7 @@ export function BackgroundControls() {
               type="text"
               value={backgroundColor}
               onChange={(e) => handleBackgroundChange(e.target.value, "custom")}
-              className="w-22 font-mono uppercase"
+              className="w-26 font-mono uppercase"
             />
           </div>
         </div>
