@@ -11,44 +11,12 @@ import {
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import { SVGModel } from "./svg-model";
+import { useEditorStore } from "@/lib/store";
 
 export interface ModelPreviewProps {
   svgData: string;
-  depth: number;
-  modelRotationY: number;
   modelGroupRef: React.RefObject<THREE.Group | null>;
   modelRef: React.RefObject<THREE.Group | null>;
-  // Geometry settings
-  bevelEnabled: boolean;
-  bevelThickness: number;
-  bevelSize: number;
-  bevelSegments: number;
-  isHollowSvg: boolean;
-  spread: number;
-  // Material settings
-  useCustomColor: boolean;
-  customColor: string;
-  roughness: number;
-  metalness: number;
-  clearcoat: number;
-  transmission: number;
-  envMapIntensity: number;
-  // Texture settings
-  textureEnabled: boolean;
-  texturePreset: string;
-  textureIntensity: number;
-  textureScale: { x: number; y: number };
-  // Environment settings
-  backgroundColor: string;
-  useEnvironment: boolean;
-  environmentPreset: string;
-  customHdriUrl: string | null;
-  // Rendering options
-  autoRotate: boolean;
-  autoRotateSpeed: number;
-  useBloom: boolean;
-  bloomIntensity: number;
-  bloomMipmapBlur: boolean;
   isMobile: boolean;
   onLoadStart?: () => void;
   onLoadComplete?: () => void;
@@ -56,45 +24,38 @@ export interface ModelPreviewProps {
 }
 
 export const ModelPreview = React.memo<ModelPreviewProps>(
-  ({
-    svgData,
-    depth,
-    modelRotationY,
-    modelGroupRef,
-    modelRef,
-    // Geometry settings
-    bevelEnabled,
-    bevelThickness,
-    bevelSize,
-    bevelSegments,
-    isHollowSvg,
-    spread,
-    // Material settings
-    useCustomColor,
-    customColor,
-    roughness,
-    metalness,
-    clearcoat,
-    transmission,
-    envMapIntensity,
-    // Texture settings
-    textureEnabled,
-    texturePreset,
-    textureIntensity,
-    textureScale,
-    // Environment settings
-    backgroundColor,
-    useEnvironment,
-    environmentPreset,
-    customHdriUrl,
-    // Rendering options
-    autoRotate,
-    autoRotateSpeed,
-    useBloom,
-    bloomIntensity,
-    bloomMipmapBlur,
-    isMobile,
-  }) => {
+  ({ svgData, modelGroupRef, modelRef, isMobile }) => {
+    // Use fine-grained selectors for all state
+    const depth = useEditorStore((state) => state.depth);
+    const modelRotationY = useEditorStore((state) => state.modelRotationY);
+    const bevelEnabled = useEditorStore((state) => state.bevelEnabled);
+    const bevelThickness = useEditorStore((state) => state.bevelThickness);
+    const bevelSize = useEditorStore((state) => state.bevelSize);
+    const bevelSegments = useEditorStore((state) => state.bevelSegments);
+    const isHollowSvg = useEditorStore((state) => state.isHollowSvg);
+    const useCustomColor = useEditorStore((state) => state.useCustomColor);
+    const customColor = useEditorStore((state) => state.customColor);
+    const roughness = useEditorStore((state) => state.roughness);
+    const metalness = useEditorStore((state) => state.metalness);
+    const clearcoat = useEditorStore((state) => state.clearcoat);
+    const transmission = useEditorStore((state) => state.transmission);
+    const envMapIntensity = useEditorStore((state) => state.envMapIntensity);
+    const textureEnabled = useEditorStore((state) => state.textureEnabled);
+    const texturePreset = useEditorStore((state) => state.texturePreset);
+    const textureIntensity = useEditorStore((state) => state.textureIntensity);
+    const textureScale = useEditorStore((state) => state.textureScale);
+    const backgroundColor = useEditorStore((state) => state.backgroundColor);
+    const useEnvironment = useEditorStore((state) => state.useEnvironment);
+    const environmentPreset = useEditorStore(
+      (state) => state.environmentPreset,
+    );
+    const customHdriUrl = useEditorStore((state) => state.customHdriUrl);
+    const autoRotate = useEditorStore((state) => state.autoRotate);
+    const autoRotateSpeed = useEditorStore((state) => state.autoRotateSpeed);
+    const useBloom = useEditorStore((state) => state.useBloom);
+    const bloomIntensity = useEditorStore((state) => state.bloomIntensity);
+    const bloomMipmapBlur = useEditorStore((state) => state.bloomMipmapBlur);
+
     const cameraRef = useRef(
       new THREE.PerspectiveCamera(
         50,
@@ -228,7 +189,7 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
               receiveShadow={false}
               castShadow={false}
               isHollowSvg={isHollowSvg}
-              spread={spread}
+              spread={0}
               ref={modelRef}
               // Texture settings
               textureEnabled={textureEnabled}

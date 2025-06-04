@@ -12,24 +12,24 @@ const SLIDER_DISPLAY_MAX = 100;
 const SLIDER_DISPLAY_STEP = 1;
 
 export function GeometryControls() {
-  const {
-    depth,
-    setDepth,
-    bevelEnabled,
-    setBevelEnabled,
-    bevelThickness,
-    setBevelThickness,
-    bevelSize,
-    setBevelSize,
-    bevelSegments,
-    setBevelSegments,
-    bevelPreset,
-    setBevelPreset,
-    autoRotate,
-    setAutoRotate,
-    autoRotateSpeed,
-    setAutoRotateSpeed,
-  } = useEditorStore();
+  const depth = useEditorStore((state) => state.depth);
+  const setDepth = useEditorStore((state) => state.setDepth);
+  const bevelEnabled = useEditorStore((state) => state.bevelEnabled);
+  const setBevelEnabled = useEditorStore((state) => state.setBevelEnabled);
+  const bevelThickness = useEditorStore((state) => state.bevelThickness);
+  const setBevelThickness = useEditorStore((state) => state.setBevelThickness);
+  const bevelSize = useEditorStore((state) => state.bevelSize);
+  const setBevelSize = useEditorStore((state) => state.setBevelSize);
+  const bevelSegments = useEditorStore((state) => state.bevelSegments);
+  const setBevelSegments = useEditorStore((state) => state.setBevelSegments);
+  const bevelPreset = useEditorStore((state) => state.bevelPreset);
+  const setBevelPreset = useEditorStore((state) => state.setBevelPreset);
+  const autoRotate = useEditorStore((state) => state.autoRotate);
+  const setAutoRotate = useEditorStore((state) => state.setAutoRotate);
+  const autoRotateSpeed = useEditorStore((state) => state.autoRotateSpeed);
+  const setAutoRotateSpeed = useEditorStore(
+    (state) => state.setAutoRotateSpeed,
+  );
 
   const displayToActualDepth = (displayValue: number): number => {
     const normalizedValue = Math.max(

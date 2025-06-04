@@ -24,6 +24,7 @@ import {
   pageTransitionVariants,
   titleContainerVariants,
 } from "@/lib/motion-variants";
+import { useEditorStore } from "@/lib/store";
 
 export default function Home() {
   const router = useRouter();
@@ -86,9 +87,9 @@ export default function Home() {
       setIsLoading(true);
 
       try {
-        localStorage.setItem("svgData", svgData);
-        localStorage.setItem("fileName", fileName);
-        localStorage.setItem("selectedIcon", selectedIcon);
+        const { setSvgData, setFileName } = useEditorStore.getState();
+        setSvgData(svgData);
+        setFileName(fileName);
 
         if (isMobile) {
           localStorage.setItem("continueOnMobile", "true");

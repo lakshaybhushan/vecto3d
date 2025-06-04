@@ -8,24 +8,24 @@ import { PopoverPicker } from "@/components/ui/color-picker";
 import type { MaterialPreset } from "@/lib/types";
 
 export function MaterialControls() {
-  const {
-    materialPreset,
-    setMaterialPreset,
-    roughness,
-    setRoughness,
-    metalness,
-    setMetalness,
-    clearcoat,
-    setClearcoat,
-    transmission,
-    setTransmission,
-    envMapIntensity,
-    setEnvMapIntensity,
-    useCustomColor,
-    setUseCustomColor,
-    customColor,
-    setCustomColor,
-  } = useEditorStore();
+  const materialPreset = useEditorStore((state) => state.materialPreset);
+  const setMaterialPreset = useEditorStore((state) => state.setMaterialPreset);
+  const roughness = useEditorStore((state) => state.roughness);
+  const setRoughness = useEditorStore((state) => state.setRoughness);
+  const metalness = useEditorStore((state) => state.metalness);
+  const setMetalness = useEditorStore((state) => state.setMetalness);
+  const clearcoat = useEditorStore((state) => state.clearcoat);
+  const setClearcoat = useEditorStore((state) => state.setClearcoat);
+  const transmission = useEditorStore((state) => state.transmission);
+  const setTransmission = useEditorStore((state) => state.setTransmission);
+  const envMapIntensity = useEditorStore((state) => state.envMapIntensity);
+  const setEnvMapIntensity = useEditorStore(
+    (state) => state.setEnvMapIntensity,
+  );
+  const useCustomColor = useEditorStore((state) => state.useCustomColor);
+  const setUseCustomColor = useEditorStore((state) => state.setUseCustomColor);
+  const customColor = useEditorStore((state) => state.customColor);
+  const setCustomColor = useEditorStore((state) => state.setCustomColor);
 
   const loadPreset = (preset: MaterialPreset) => {
     setMaterialPreset(preset.name);

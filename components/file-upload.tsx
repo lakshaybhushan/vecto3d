@@ -20,6 +20,7 @@ import {
   CHAT_APP_SVG,
   VECTO3D_SVG,
 } from "@/components/raw-svgs";
+import { sanitizeSvgForPreview, isValidSvg } from "@/lib/svg-sanitizer";
 
 const exampleIcons = [
   { name: "GitHub", component: GitHubIcon },
@@ -29,6 +30,15 @@ const exampleIcons = [
   { name: "AI Chat", component: ChatAppIcon },
   { name: "Vecto3d", component: Vecto3dIcon },
 ];
+
+const iconSvgMap: Record<string, string> = {
+  GitHub: GITHUB_SVG,
+  v0: V0_SVG,
+  Vercel: VERCEL_SVG,
+  "X/Twitter": X_SVG,
+  "AI Chat": CHAT_APP_SVG,
+  Vecto3d: VECTO3D_SVG,
+};
 
 export function FileUpload({
   onFileUpload,
@@ -47,8 +57,22 @@ export function FileUpload({
       reader.onload = (event) => {
         if (event.target?.result) {
           const svgData = event.target.result as string;
+
+          // Validate SVG content
+          if (!isValidSvg(svgData)) {
+            toast.error("Invalid SVG file format");
+            return;
+          }
+
+          // Sanitize for safe display
+          const sanitizedSvg = sanitizeSvgForPreview(svgData);
+          if (!sanitizedSvg) {
+            toast.error("SVG file could not be processed safely");
+            return;
+          }
+
           onFileUpload(svgData, file.name);
-          setSvgContent(svgData);
+          setSvgContent(sanitizedSvg);
           if (onIconSelect) onIconSelect("");
         }
       };
@@ -73,27 +97,18 @@ export function FileUpload({
     if (onIconSelect) {
       onIconSelect(iconName);
 
-      const selectedIconObj = exampleIcons.find(
-        (icon) => icon.name === iconName,
-      );
-      if (selectedIconObj) {
-        let svgContent = "";
-        if (iconName === "GitHub") {
-          svgContent = GITHUB_SVG;
-        } else if (iconName === "v0") {
-          svgContent = V0_SVG;
-        } else if (iconName === "Vercel") {
-          svgContent = VERCEL_SVG;
-        } else if (iconName === "X/Twitter") {
-          svgContent = X_SVG;
-        } else if (iconName === "AI Chat") {
-          svgContent = CHAT_APP_SVG;
-        } else if (iconName === "Vecto3d") {
-          svgContent = VECTO3D_SVG;
+      const svgContent = iconSvgMap[iconName];
+      if (svgContent) {
+        // Sanitize the preset SVG content for display
+        const sanitizedSvg = sanitizeSvgForPreview(svgContent);
+        if (!sanitizedSvg) {
+          toast.error("Icon could not be processed safely");
+          return;
         }
 
-        onFileUpload(svgContent, `${iconName.toLowerCase()}.svg`);
-        setSvgContent(svgContent);
+        const fileName = `${iconName.toLowerCase().replace(/\W+/g, "-")}.svg`;
+        onFileUpload(svgContent, fileName);
+        setSvgContent(sanitizedSvg);
       }
     }
   };
@@ -194,6 +209,7 @@ export function FileUpload({
                   <div className="relative z-10 flex items-center justify-center">
                     <div
                       className="bg-muted relative z-10 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border-2 p-2.5 shadow-lg sm:h-16 sm:w-16 sm:p-3 md:h-18 md:w-18"
+                      // Safe to use dangerouslySetInnerHTML here as svgContent is sanitized
                       dangerouslySetInnerHTML={{
                         __html: svgContent
                           .replace(/width="[^"]*"/, 'width="100%"')

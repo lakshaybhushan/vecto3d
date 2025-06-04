@@ -217,10 +217,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         const svgData2 = loader.parse(svgString);
 
         setPaths(svgData2.paths);
-
-        setTimeout(() => {
-          onLoadComplete?.();
-        }, 300);
+        onLoadComplete?.();
       } catch (error) {
         console.error("Error parsing SVG:", error);
         onError?.(
@@ -233,7 +230,8 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       };
     }, [svgData, onLoadStart, onLoadComplete, onError]);
 
-    const shapesWithMaterials = useMemo(() => {
+    // Separate geometry creation from material properties for better performance
+    const geometryData = useMemo(() => {
       if (paths.length === 0) return [];
 
       return paths
@@ -267,7 +265,31 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         renderOrder: number;
         isHole: boolean;
       }>;
-    }, [paths, customColor, spread]);
+    }, [paths, customColor, spread]); // Only depends on SVG geometry, not materials
+
+    // Separate material dependencies for better optimization
+    const materialKey = useMemo(() => {
+      return `${roughness}_${metalness}_${clearcoat}_${transmission}_${envMapIntensity}_${textureEnabled}_${texturePreset}_${textureIntensity}_${textureScale.x}_${textureScale.y}`;
+    }, [
+      roughness,
+      metalness,
+      clearcoat,
+      transmission,
+      envMapIntensity,
+      textureEnabled,
+      texturePreset,
+      textureIntensity,
+      textureScale.x,
+      textureScale.y,
+    ]);
+
+    // Create final shapes with materials, but with better dependency separation
+    const shapesWithMaterials = useMemo(() => {
+      return geometryData.map((item) => ({
+        ...item,
+        materialKey, // Include material key to trigger updates when materials change
+      }));
+    }, [geometryData, materialKey]);
 
     const scale = useMemo(() => {
       if (dimensions.width === 0 || dimensions.height === 0) return 1;

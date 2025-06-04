@@ -12,14 +12,17 @@ import { Input } from "@/components/ui/input";
 import { PopoverPicker } from "../ui/color-picker";
 
 export function BackgroundControls() {
-  const {
-    backgroundColor,
-    setBackgroundColor,
-    // userSelectedBackground,
-    setUserSelectedBackground,
-    solidColorPreset,
-    setSolidColorPreset,
-  } = useEditorStore();
+  const backgroundColor = useEditorStore((state) => state.backgroundColor);
+  const setBackgroundColor = useEditorStore(
+    (state) => state.setBackgroundColor,
+  );
+  const setUserSelectedBackground = useEditorStore(
+    (state) => state.setUserSelectedBackground,
+  );
+  const solidColorPreset = useEditorStore((state) => state.solidColorPreset);
+  const setSolidColorPreset = useEditorStore(
+    (state) => state.setSolidColorPreset,
+  );
 
   const { theme } = useTheme();
 

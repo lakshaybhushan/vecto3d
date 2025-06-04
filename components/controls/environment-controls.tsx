@@ -13,22 +13,24 @@ import { Switch } from "@/components/ui/switch";
 // import { VibeModeIcon } from "@/components/ui/ui-icons";
 
 export function EnvironmentControls() {
-  const {
-    useEnvironment,
-    setUseEnvironment,
-    environmentPreset,
-    setEnvironmentPreset,
-    customHdriUrl,
-    setCustomHdriUrl,
-    useBloom,
-    bloomIntensity,
-    setBloomIntensity,
-    bloomMipmapBlur,
-    setBloomMipmapBlur,
-    modelRotationY,
-    setModelRotationY,
-    toggleVibeMode,
-  } = useEditorStore();
+  const useEnvironment = useEditorStore((state) => state.useEnvironment);
+  const setUseEnvironment = useEditorStore((state) => state.setUseEnvironment);
+  const environmentPreset = useEditorStore((state) => state.environmentPreset);
+  const setEnvironmentPreset = useEditorStore(
+    (state) => state.setEnvironmentPreset,
+  );
+  const customHdriUrl = useEditorStore((state) => state.customHdriUrl);
+  const setCustomHdriUrl = useEditorStore((state) => state.setCustomHdriUrl);
+  const useBloom = useEditorStore((state) => state.useBloom);
+  const bloomIntensity = useEditorStore((state) => state.bloomIntensity);
+  const setBloomIntensity = useEditorStore((state) => state.setBloomIntensity);
+  const bloomMipmapBlur = useEditorStore((state) => state.bloomMipmapBlur);
+  const setBloomMipmapBlur = useEditorStore(
+    (state) => state.setBloomMipmapBlur,
+  );
+  const modelRotationY = useEditorStore((state) => state.modelRotationY);
+  const setModelRotationY = useEditorStore((state) => state.setModelRotationY);
+  const toggleVibeMode = useEditorStore((state) => state.toggleVibeMode);
 
   const hdriFileInputRef = useRef<HTMLInputElement>(null);
 

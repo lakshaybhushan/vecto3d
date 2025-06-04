@@ -105,114 +105,24 @@ const ModelErrorState = ({ error }: { error: string }) => (
   </div>
 );
 
-export default function EditPage() {
-  const {
-    svgData,
-    fileName,
-    isModelLoading,
-    svgProcessingError,
-    depth,
-    isHollowSvg,
-    modelRotationY,
-    bevelEnabled,
-    bevelThickness,
-    bevelSize,
-    bevelSegments,
-    // bevelPreset,
-    customColor,
-    useCustomColor,
-    // materialPreset,
-    roughness,
-    metalness,
-    clearcoat,
-    transmission,
-    envMapIntensity,
-    // Texture properties
-    textureEnabled,
-    texturePreset,
-    textureIntensity,
-    textureScale,
-    useEnvironment,
-    environmentPreset,
-    customHdriUrl,
-    userSelectedBackground,
-    backgroundColor,
-    // solidColorPreset,
-    autoRotate,
-    autoRotateSpeed,
-    isFullscreen,
-    useBloom,
-    bloomIntensity,
-    bloomMipmapBlur,
-    // Actions
-    setSvgData,
-    setFileName,
-    setIsModelLoading,
-    setSvgProcessingError,
-    setIsHollowSvg,
-    setBackgroundColor,
-    setSolidColorPreset,
-    setIsFullscreen,
-    toggleVibeMode,
-  } = useEditorStore();
-
-  const modelRef = useRef<THREE.Group | null>(null);
-  const modelGroupRef = useRef<THREE.Group | null>(null);
-  const previewContainerRef = useRef<HTMLDivElement>(null);
+const SvgProcessingLogic = React.memo(() => {
+  const svgData = useEditorStore((state) => state.svgData);
+  const setIsModelLoading = useEditorStore((state) => state.setIsModelLoading);
+  const setIsHollowSvg = useEditorStore((state) => state.setIsHollowSvg);
 
   const router = useRouter();
-  const { resolvedTheme } = useTheme();
-  const {
-    isMobile,
-    continueOnMobile,
-    handleContinueOnMobile,
-    clearMobilePreference,
-  } = useMobileDetection();
-
-  const themeBackgroundColor = useThemeBackgroundColor();
-  const [hasMounted, setHasMounted] = React.useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  // cleanup
-  useEffect(() => {
-    // Store the URL in a variable to ensure the cleanup function uses the correct value
-    const urlToRevoke = customHdriUrl;
-    return () => {
-      if (urlToRevoke && urlToRevoke.startsWith("blob:")) {
-        URL.revokeObjectURL(urlToRevoke);
-      }
-    };
-  }, [customHdriUrl]);
-
-  useEffect(() => {
-    if (!userSelectedBackground) {
-      setBackgroundColor(themeBackgroundColor);
-      setSolidColorPreset(resolvedTheme === "dark" ? "dark" : "light");
-    }
-  }, [
-    resolvedTheme,
-    themeBackgroundColor,
-    userSelectedBackground,
-    setBackgroundColor,
-    setSolidColorPreset,
-  ]);
-
-  // debounce expensive operations
   const debouncedSvgData = useDebounce(svgData, 300);
 
-  // update loading state when svg data changes
+  useEffect(() => {
+    if (!svgData) {
+      router.push("/");
+    }
+  }, [svgData, router]);
+
   useEffect(() => {
     if (debouncedSvgData) {
       setIsModelLoading(true);
-      // simulate processing time for complex svg
-      const timer = setTimeout(() => {
-        setIsModelLoading(false);
-      }, 800);
-
-      return () => clearTimeout(timer);
+      setIsModelLoading(false);
     }
   }, [debouncedSvgData, setIsModelLoading]);
 
@@ -236,30 +146,68 @@ export default function EditPage() {
     setIsHollowSvg(isLikelyHollow);
   }, [debouncedSvgData, setIsHollowSvg]);
 
+  return null;
+});
+
+SvgProcessingLogic.displayName = "SvgProcessingLogic";
+
+// Separate component for background theme management
+const BackgroundThemeManager = React.memo(() => {
+  const userSelectedBackground = useEditorStore(
+    (state) => state.userSelectedBackground,
+  );
+  const setBackgroundColor = useEditorStore(
+    (state) => state.setBackgroundColor,
+  );
+  const setSolidColorPreset = useEditorStore(
+    (state) => state.setSolidColorPreset,
+  );
+
+  const { resolvedTheme } = useTheme();
+  const themeBackgroundColor = useThemeBackgroundColor();
+
   useEffect(() => {
-    setIsModelLoading(true);
-    const savedSvgData = localStorage.getItem("svgData");
-    const savedFileName = localStorage.getItem("fileName");
+    if (!userSelectedBackground) {
+      setBackgroundColor(themeBackgroundColor);
+      setSolidColorPreset(resolvedTheme === "dark" ? "dark" : "light");
+    }
+  }, [
+    resolvedTheme,
+    themeBackgroundColor,
+    userSelectedBackground,
+    setBackgroundColor,
+    setSolidColorPreset,
+  ]);
 
-    if (savedSvgData) {
-      setSvgData(savedSvgData);
-    } else {
-      setIsModelLoading(false);
+  return null;
+});
 
-      if (!savedSvgData) {
-        router.push("/");
+BackgroundThemeManager.displayName = "BackgroundThemeManager";
+
+// Separate component for HDRI cleanup
+const HdriCleanupManager = React.memo(() => {
+  const customHdriUrl = useEditorStore((state) => state.customHdriUrl);
+
+  useEffect(() => {
+    const urlToRevoke = customHdriUrl;
+    return () => {
+      if (urlToRevoke && urlToRevoke.startsWith("blob:")) {
+        URL.revokeObjectURL(urlToRevoke);
       }
-    }
+    };
+  }, [customHdriUrl]);
 
-    if (savedFileName) {
-      setFileName(savedFileName);
-    }
-  }, [router, setSvgData, setFileName, setIsModelLoading]);
+  return null;
+});
 
-  const handleBackToHome = () => {
-    clearMobilePreference();
-    router.push("/");
-  };
+HdriCleanupManager.displayName = "HdriCleanupManager";
+
+// Separate component for vibe mode management
+const VibeModeManager = React.memo(() => {
+  const environmentPreset = useEditorStore((state) => state.environmentPreset);
+  const customHdriUrl = useEditorStore((state) => state.customHdriUrl);
+  const useBloom = useEditorStore((state) => state.useBloom);
+  const toggleVibeMode = useEditorStore((state) => state.toggleVibeMode);
 
   useEffect(() => {
     if (environmentPreset === "custom" && customHdriUrl && useBloom) {
@@ -273,31 +221,63 @@ export default function EditPage() {
     }
   }, [environmentPreset, customHdriUrl, useBloom, toggleVibeMode]);
 
+  return null;
+});
+
+VibeModeManager.displayName = "VibeModeManager";
+
+export default function EditPage() {
+  const svgData = useEditorStore((state) => state.svgData);
+  const fileName = useEditorStore((state) => state.fileName);
+  const isModelLoading = useEditorStore((state) => state.isModelLoading);
+  const svgProcessingError = useEditorStore(
+    (state) => state.svgProcessingError,
+  );
+
+  const isFullscreen = useEditorStore((state) => state.isFullscreen);
+  const setIsFullscreen = useEditorStore((state) => state.setIsFullscreen);
+
+  const modelRef = useRef<THREE.Group | null>(null);
+  const modelGroupRef = useRef<THREE.Group | null>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+
+  const router = useRouter();
+  const {
+    isMobile,
+    continueOnMobile,
+    handleContinueOnMobile,
+    clearMobilePreference,
+  } = useMobileDetection();
+
+  const [hasMounted, setHasMounted] = React.useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  const handleBackToHome = () => {
+    clearMobilePreference();
+    router.push("/");
+  };
+
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(document.fullscreenElement !== null);
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
-
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener(
-        "webkitfullscreenchange",
-        handleFullscreenChange,
-      );
-      document.removeEventListener(
-        "mozfullscreenchange",
-        handleFullscreenChange,
-      );
     };
   }, [setIsFullscreen]);
 
   const renderModelPreview = () => {
-    if (!hasMounted || !svgData) {
-      return <ModelLoadingState message="Waiting for SVG data..." />;
+    if (!hasMounted) {
+      return <ModelLoadingState message="Loading editor..." />;
+    }
+
+    if (!svgData) {
+      return <ModelLoadingState message="No SVG data found" />;
     }
 
     if (isModelLoading) {
@@ -312,55 +292,36 @@ export default function EditPage() {
       <div className="h-full w-full md:overflow-hidden">
         <ModelPreview
           svgData={svgData}
-          depth={depth}
-          modelRotationY={modelRotationY}
           modelGroupRef={modelGroupRef}
           modelRef={modelRef}
-          // Geometry settings
-          bevelEnabled={bevelEnabled}
-          bevelThickness={bevelThickness}
-          bevelSize={bevelSize}
-          bevelSegments={bevelSegments}
-          isHollowSvg={isHollowSvg}
-          spread={0}
-          // Material settings
-          useCustomColor={useCustomColor}
-          customColor={customColor}
-          roughness={roughness}
-          metalness={metalness}
-          clearcoat={clearcoat}
-          transmission={transmission}
-          envMapIntensity={envMapIntensity}
-          // Texture properties
-          textureEnabled={textureEnabled}
-          texturePreset={texturePreset}
-          textureIntensity={textureIntensity}
-          textureScale={textureScale}
-          // Environment settings
-          backgroundColor={backgroundColor}
-          useEnvironment={useEnvironment}
-          environmentPreset={environmentPreset}
-          customHdriUrl={customHdriUrl}
-          // Rendering options
-          autoRotate={autoRotate}
-          autoRotateSpeed={autoRotateSpeed}
-          useBloom={useBloom}
-          bloomIntensity={bloomIntensity}
-          bloomMipmapBlur={bloomMipmapBlur}
           isMobile={isMobile}
-          onLoadStart={() => setIsModelLoading(true)}
-          onLoadComplete={() => setIsModelLoading(false)}
+          onLoadStart={() => useEditorStore.getState().setIsModelLoading(true)}
+          onLoadComplete={() =>
+            useEditorStore.getState().setIsModelLoading(false)
+          }
           onError={(error) => {
-            setSvgProcessingError(error.message || "Failed to process SVG");
-            setIsModelLoading(false);
+            useEditorStore
+              .getState()
+              .setSvgProcessingError(error.message || "Failed to process SVG");
+            useEditorStore.getState().setIsModelLoading(false);
           }}
         />
       </div>
     );
   };
 
+  if (!hasMounted) {
+    return null;
+  }
+
   return (
     <main className="bg-background relative flex h-screen w-full flex-col lg:overflow-hidden">
+      {/* Include the separated logic components */}
+      <SvgProcessingLogic />
+      <BackgroundThemeManager />
+      <HdriCleanupManager />
+      <VibeModeManager />
+
       <header className="bg-background/80 sticky top-0 z-20 w-full border-b border-dashed backdrop-blur-xs">
         <div className="flex items-center justify-between px-8 py-4">
           <div className="flex items-center gap-2">
@@ -374,7 +335,6 @@ export default function EditPage() {
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            {/* <NotAScam /> */}
             <ModeToggle />
             {svgData && (
               <ExportButtons
@@ -430,25 +390,9 @@ export default function EditPage() {
                               : "Enter fullscreen"
                           }>
                           {isFullscreen ? (
-                            <Minimize2
-                              className={`h-4 w-4 ${
-                                hasMounted &&
-                                backgroundColor === "#FFFFFF" &&
-                                resolvedTheme === "dark"
-                                  ? "text-black"
-                                  : "text-primary"
-                              }`}
-                            />
+                            <Minimize2 className="h-4 w-4" />
                           ) : (
-                            <Maximize2
-                              className={`h-4 w-4 ${
-                                hasMounted &&
-                                backgroundColor === "#FFFFFF" &&
-                                resolvedTheme === "dark"
-                                  ? "text-black"
-                                  : "text-primary"
-                              }`}
-                            />
+                            <Maximize2 className="h-4 w-4" />
                           )}
                         </Button>
                       </TooltipTrigger>
@@ -475,26 +419,8 @@ export default function EditPage() {
                               variant={"ghost"}
                               onClick={() => document.exitFullscreen()}
                               aria-label="Exit fullscreen"
-                              className={`pointer-events-auto absolute top-6 right-6 bg-transparent ${
-                                backgroundColor === "#000000" || useBloom
-                                  ? "hover:bg-white/10"
-                                  : backgroundColor === "#FFFFFF" &&
-                                      resolvedTheme === "dark"
-                                    ? "hover:bg-black/10"
-                                    : "hover:bg-background/80"
-                              } backdrop-blur-xs`}>
-                              <Minimize2
-                                className={`h-4 w-4 ${
-                                  hasMounted &&
-                                  (backgroundColor === "#000000" || useBloom)
-                                    ? "text-white"
-                                    : hasMounted &&
-                                        backgroundColor === "#FFFFFF" &&
-                                        resolvedTheme === "dark"
-                                      ? "text-black"
-                                      : "text-primary/80"
-                                }`}
-                              />
+                              className="hover:bg-background/80 pointer-events-auto absolute top-6 right-6 bg-transparent backdrop-blur-xs">
+                              <Minimize2 className="h-4 w-4" />
                               <span className="sr-only">Exit fullscreen</span>
                             </Button>
                           </TooltipTrigger>

@@ -8,18 +8,18 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import Image from "next/image";
 
 export function TextureControls() {
-  const {
-    textureEnabled,
-    setTextureEnabled,
-    texturePreset,
-    setTexturePreset,
-    textureIntensity,
-    setTextureIntensity,
-    textureScale,
-    setTextureScale,
-    useEnvironment,
-    setUseEnvironment,
-  } = useEditorStore();
+  const textureEnabled = useEditorStore((state) => state.textureEnabled);
+  const setTextureEnabled = useEditorStore((state) => state.setTextureEnabled);
+  const texturePreset = useEditorStore((state) => state.texturePreset);
+  const setTexturePreset = useEditorStore((state) => state.setTexturePreset);
+  const textureIntensity = useEditorStore((state) => state.textureIntensity);
+  const setTextureIntensity = useEditorStore(
+    (state) => state.setTextureIntensity,
+  );
+  const textureScale = useEditorStore((state) => state.textureScale);
+  const setTextureScale = useEditorStore((state) => state.setTextureScale);
+  const useEnvironment = useEditorStore((state) => state.useEnvironment);
+  const setUseEnvironment = useEditorStore((state) => state.setUseEnvironment);
 
   const handleTextureToggle = (enabled: boolean) => {
     setTextureEnabled(enabled);
