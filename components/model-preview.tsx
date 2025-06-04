@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, Suspense } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { SimpleEnvironment } from "@/components/environment-presets";
@@ -12,6 +12,7 @@ import {
 import { BlendFunction } from "postprocessing";
 import { SVGModel } from "./svg-model";
 import { useEditorStore } from "@/lib/store";
+import { ColorRepresentation } from "three";
 
 export interface ModelPreviewProps {
   svgData: string;
@@ -22,6 +23,34 @@ export interface ModelPreviewProps {
   onLoadComplete?: () => void;
   onError?: (error: Error) => void;
 }
+
+// string in the format #ffffff or #ffffff00
+// output alpha from 0 to 1, or undefined if color has no alpha
+const hexaToAlpha = (color: string) => {
+  if (color.length < 9) return undefined;
+  const alpha = color.slice(7, 9);
+  return parseInt(alpha, 16) / 255;
+};
+
+const colorPart = (color: string) => {
+  return color.slice(0, 7);
+};
+
+const CustomBackground = () => {
+  const { gl, scene, camera } = useThree();
+
+  const backgroundColor = useEditorStore((state) => state.backgroundColor);
+
+  useEffect(() => {
+    if (!backgroundColor) return;
+
+    const alpha = hexaToAlpha(backgroundColor);
+    gl.setClearColor(colorPart(backgroundColor), alpha);
+    gl.render(scene, camera);
+  }, [gl, scene, camera, backgroundColor]);
+
+  return null;
+};
 
 export const ModelPreview = React.memo<ModelPreviewProps>(
   ({ svgData, modelGroupRef, modelRef, isMobile }) => {
@@ -44,7 +73,6 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
     const texturePreset = useEditorStore((state) => state.texturePreset);
     const textureIntensity = useEditorStore((state) => state.textureIntensity);
     const textureScale = useEditorStore((state) => state.textureScale);
-    const backgroundColor = useEditorStore((state) => state.backgroundColor);
     const useEnvironment = useEditorStore((state) => state.useEnvironment);
     const environmentPreset = useEditorStore(
       (state) => state.environmentPreset,
@@ -152,7 +180,7 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
           bottom: 0,
         }}>
         <Suspense fallback={null}>
-          <color attach="background" args={[backgroundColor]} />
+          <CustomBackground />
 
           <ambientLight intensity={0.4} color="#ffffff" />
 

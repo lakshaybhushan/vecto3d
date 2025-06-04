@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState, useEffect } from "react";
-import { HexColorPicker } from "react-colorful";
+import { HexAlphaColorPicker } from "react-colorful";
 import { createPortal } from "react-dom";
 
 const useClickOutside = (
@@ -95,7 +95,7 @@ export const PopoverPicker = ({ color, onChange }: PopoverPickerProps) => {
             ref={popoverRef}
             className="fixed z-[9999] rounded-lg shadow-lg"
             style={{ top: position.y, left: position.x }}>
-            <HexColorPicker color={color} onChange={onChange} />
+            <HexAlphaColorPicker color={color} onChange={onChange} />
           </div>,
           document.body,
         )}
