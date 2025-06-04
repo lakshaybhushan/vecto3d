@@ -93,7 +93,8 @@ export function TextureControls() {
         <AlertDescription className="flex items-center text-xs">
           <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
           <p className="text-muted-foreground mt-0.5 text-sm">
-            Texture settings will be applied to the exported 3D model during export.
+            Texture settings will be applied to the exported 3D model during
+            export.
           </p>
         </AlertDescription>
       </Alert>
@@ -108,134 +109,132 @@ export function TextureControls() {
       </div>
 
       {textureEnabled && (
-          <div className="space-y-6 pr-4">
-            <div className="space-y-6">
-              {Object.entries(texturesByCategory).map(
-                ([category, textures]) => (
-                  <div key={category} className="space-y-3">
-                    <Label className="text-muted-foreground text-sm font-medium capitalize">
-                      {category}
-                    </Label>
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
-                      {textures.map((texture) => (
-                        <div
-                          key={texture.name}
-                          className={`flex cursor-pointer flex-col items-center rounded-lg pt-3 pb-2 ${
-                            texturePreset === texture.name
-                              ? "bg-primary/10 ring-input ring-1"
-                              : "hover:bg-muted"
-                          }`}
-                          onClick={() => setTexturePreset(texture.name)}>
-                          <div className="relative mb-2 aspect-video w-full overflow-hidden px-2">
-                            {getTexturePreview(texture)}
-                          </div>
-                          <span className="text-center text-xs font-medium">
-                            {texture.label}
-                          </span>
-                        </div>
-                      ))}
+        <div className="space-y-6 pr-4">
+          <div className="space-y-6">
+            {Object.entries(texturesByCategory).map(([category, textures]) => (
+              <div key={category} className="space-y-3">
+                <Label className="text-muted-foreground text-sm font-medium capitalize">
+                  {category}
+                </Label>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+                  {textures.map((texture) => (
+                    <div
+                      key={texture.name}
+                      className={`flex cursor-pointer flex-col items-center rounded-lg pt-3 pb-2 ${
+                        texturePreset === texture.name
+                          ? "bg-primary/10 ring-input ring-1"
+                          : "hover:bg-muted"
+                      }`}
+                      onClick={() => setTexturePreset(texture.name)}>
+                      <div className="relative mb-2 aspect-video w-full overflow-hidden px-2">
+                        {getTexturePreview(texture)}
+                      </div>
+                      <span className="text-center text-xs font-medium">
+                        {texture.label}
+                      </span>
                     </div>
-                  </div>
-                ),
-              )}
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-4 border-t pt-4">
+            <div className="space-y-4">
+              <Label
+                htmlFor="textureIntensity"
+                className="flex items-center justify-between">
+                <span>Texture Intensity</span>
+                <span className="text-primary font-mono">
+                  {textureIntensity.toFixed(2)}
+                </span>
+              </Label>
+              <Slider
+                id="textureIntensity"
+                min={0}
+                max={1}
+                step={0.01}
+                value={[textureIntensity]}
+                onValueChange={(value) => setTextureIntensity(value[0])}
+              />
             </div>
 
-            <div className="space-y-4 border-t pt-4">
-              <div className="space-y-4">
-                <Label
-                  htmlFor="textureIntensity"
-                  className="flex items-center justify-between">
-                  <span>Texture Intensity</span>
-                  <span className="text-primary font-mono">
-                    {textureIntensity.toFixed(2)}
-                  </span>
-                </Label>
-                <Slider
-                  id="textureIntensity"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={[textureIntensity]}
-                  onValueChange={(value) => setTextureIntensity(value[0])}
-                />
+            <div className="space-y-4 pt-2">
+              <Label>Texture Scale</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="textureScaleX"
+                    className="flex justify-between text-xs">
+                    <span>X Scale</span>
+                    <span className="text-primary font-mono">
+                      {textureScale.x.toFixed(0)}x
+                    </span>
+                  </Label>
+                  <Slider
+                    id="textureScaleX"
+                    min={5}
+                    max={100}
+                    step={1}
+                    value={[textureScale.x]}
+                    onValueChange={(value) =>
+                      setTextureScale({ ...textureScale, x: value[0] })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="textureScaleY"
+                    className="flex justify-between text-xs">
+                    <span>Y Scale</span>
+                    <span className="text-primary font-mono">
+                      {textureScale.y.toFixed(0)}x
+                    </span>
+                  </Label>
+                  <Slider
+                    id="textureScaleY"
+                    min={5}
+                    max={100}
+                    step={1}
+                    value={[textureScale.y]}
+                    onValueChange={(value) =>
+                      setTextureScale({ ...textureScale, y: value[0] })
+                    }
+                  />
+                </div>
               </div>
 
-              <div className="space-y-4 pt-2">
-                <Label>Texture Scale</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="textureScaleX"
-                      className="flex justify-between text-xs">
-                      <span>X Scale</span>
-                      <span className="text-primary font-mono">
-                        {textureScale.x.toFixed(0)}x
-                      </span>
-                    </Label>
-                    <Slider
-                      id="textureScaleX"
-                      min={5}
-                      max={100}
-                      step={1}
-                      value={[textureScale.x]}
-                      onValueChange={(value) =>
-                        setTextureScale({ ...textureScale, x: value[0] })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="textureScaleY"
-                      className="flex justify-between text-xs">
-                      <span>Y Scale</span>
-                      <span className="text-primary font-mono">
-                        {textureScale.y.toFixed(0)}x
-                      </span>
-                    </Label>
-                    <Slider
-                      id="textureScaleY"
-                      min={5}
-                      max={100}
-                      step={1}
-                      value={[textureScale.y]}
-                      onValueChange={(value) =>
-                        setTextureScale({ ...textureScale, y: value[0] })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="border-primary/10 border-t pt-3">
-                  <Label className="text-muted-foreground mb-2 block text-xs">
-                    Quick Scale Presets
-                  </Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setTextureScale({ x: 25, y: 25 })}
-                      className="h-8 text-xs">
-                      25x
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setTextureScale({ x: 50, y: 50 })}
-                      className="h-8 text-xs">
-                      50x
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setTextureScale({ x: 75, y: 75 })}
-                      className="h-8 text-xs">
-                      75x
-                    </Button>
-                  </div>
+              <div className="border-primary/10 border-t pt-3">
+                <Label className="text-muted-foreground mb-2 block text-xs">
+                  Quick Scale Presets
+                </Label>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTextureScale({ x: 25, y: 25 })}
+                    className="h-8 text-xs">
+                    25x
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTextureScale({ x: 50, y: 50 })}
+                    className="h-8 text-xs">
+                    50x
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTextureScale({ x: 75, y: 75 })}
+                    className="h-8 text-xs">
+                    75x
+                  </Button>
                 </div>
               </div>
             </div>
           </div>
+        </div>
       )}
     </div>
   );

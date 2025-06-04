@@ -172,8 +172,8 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
         gl={{
           antialias: true,
           outputColorSpace: "srgb",
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.2,
+          toneMapping: THREE.AgXToneMapping,
+          toneMappingExposure: 1.0,
           preserveDrawingBuffer: true,
           powerPreference: "high-performance",
           alpha: true,
@@ -193,11 +193,19 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
         <Suspense fallback={null}>
           <color attach="background" args={[backgroundColor]} />
 
-          <ambientLight intensity={0.6 * Math.PI} />
+          <ambientLight intensity={0.4} color="#ffffff" />
 
           <directionalLight
-            position={[50, 50, 100]}
-            intensity={0.8 * Math.PI}
+            position={[10, 10, 5]}
+            intensity={2.0}
+            color="#ffffff"
+            castShadow={false}
+          />
+
+          <directionalLight
+            position={[-10, -10, -5]}
+            intensity={0.5}
+            color="#d4edff"
             castShadow={false}
           />
 

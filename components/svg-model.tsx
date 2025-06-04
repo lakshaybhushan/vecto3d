@@ -10,8 +10,9 @@ import {
 } from "react";
 import * as THREE from "three";
 import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
-import { Center, useTexture } from "@react-three/drei";
+import { Center } from "@react-three/drei";
 import { TEXTURE_PRESETS } from "@/lib/constants";
+import { FastTextureLoader } from "@/components/texture-presets";
 
 interface SVGModelProps {
   svgData: string;
@@ -125,6 +126,12 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
   ) => {
     const [paths, setPaths] = useState<THREE.ShapePath[]>([]);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const [loadedTextures, setLoadedTextures] = useState<{
+      diffuse?: THREE.Texture;
+      normal?: THREE.Texture;
+      roughness?: THREE.Texture;
+      ao?: THREE.Texture;
+    } | null>(null);
     const groupRef = useRef<THREE.Group>(null);
     const materialsCache = useRef<Map<string, THREE.Material>>(new Map());
 
@@ -133,42 +140,16 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       (preset) => preset.name === texturePreset,
     );
 
-    // Load texture maps conditionally
-    const textureUrls = useMemo(() => {
-      if (!textureEnabled || !currentTexturePreset) return {};
-
-      return {
-        diffuse: currentTexturePreset.diffuseMap,
-        normal: currentTexturePreset.normalMap || null,
-        roughness: currentTexturePreset.roughnessMap || null,
-        ao: currentTexturePreset.aoMap || null,
-      };
-    }, [textureEnabled, currentTexturePreset]);
-
-    const loadedTextures = useTexture(
-      textureEnabled && currentTexturePreset
-        ? {
-            diffuse: textureUrls.diffuse,
-            ...(textureUrls.normal && { normal: textureUrls.normal }),
-            ...(textureUrls.roughness && { roughness: textureUrls.roughness }),
-            ...(textureUrls.ao && { ao: textureUrls.ao }),
-          }
-        : {},
-    ) as {
-      diffuse?: THREE.Texture;
-      normal?: THREE.Texture;
-      roughness?: THREE.Texture;
-      ao?: THREE.Texture;
-    };
-
-    const diffuseTexture = textureEnabled
-      ? loadedTextures.diffuse || null
-      : null;
-    const normalTexture = textureEnabled ? loadedTextures.normal || null : null;
-    const roughnessTexture = textureEnabled
-      ? loadedTextures.roughness || null
-      : null;
-    const aoTexture = textureEnabled ? loadedTextures.ao || null : null;
+    const diffuseTexture =
+      textureEnabled && loadedTextures ? loadedTextures.diffuse || null : null;
+    const normalTexture =
+      textureEnabled && loadedTextures ? loadedTextures.normal || null : null;
+    const roughnessTexture =
+      textureEnabled && loadedTextures
+        ? loadedTextures.roughness || null
+        : null;
+    const aoTexture =
+      textureEnabled && loadedTextures ? loadedTextures.ao || null : null;
 
     useImperativeHandle(ref, () => groupRef.current!, []);
 
@@ -296,7 +277,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     const getMaterial = (color: string | THREE.Color, isHole: boolean) => {
       const colorString =
         color instanceof THREE.Color ? `#${color.getHexString()}` : color;
-      const cacheKey = `${colorString}_${roughness}_${metalness}_${clearcoat}_${transmission}_${envMapIntensity}_${textureEnabled}_${texturePreset}_${textureIntensity}_${textureScale.x}_${textureScale.y}`;
+      const cacheKey = `${colorString}_${roughness}_${metalness}_${clearcoat}_${transmission}_${envMapIntensity}_${textureEnabled}_${texturePreset}_${textureIntensity}_${textureScale.x}_${textureScale.y}_${loadedTextures ? "loaded" : "none"}`;
 
       if (materialsCache.current.has(cacheKey)) {
         return materialsCache.current.get(cacheKey)!;
@@ -375,7 +356,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         aoMap: configuredAoTexture,
         aoMapIntensity: configuredAoTexture ? 1.0 : 1.0,
         roughness: Math.max(
-          0.05,
+          0.01,
           textureEnabled && currentTexturePreset?.roughnessAdjust !== undefined
             ? currentTexturePreset.roughnessAdjust
             : roughness,
@@ -384,10 +365,27 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
           textureEnabled && currentTexturePreset?.metalnessAdjust !== undefined
             ? currentTexturePreset.metalnessAdjust
             : metalness,
-        clearcoat: Math.max(clearcoat, 0.05),
-        clearcoatRoughness: 0.05,
-        reflectivity: 1,
-        envMapIntensity,
+        clearcoat: clearcoat,
+        clearcoatRoughness: Math.max(
+          0.01,
+          clearcoat > 0 ? roughness * 0.3 : 0.01,
+        ),
+        reflectivity: metalness > 0.5 ? 1.0 : 0.5,
+        ior: transmission > 0 ? 1.5 : 1.4,
+        thickness: transmission > 0 ? 5.0 : 0.0,
+        attenuationDistance: transmission > 0 ? 0.5 : Infinity,
+        attenuationColor:
+          transmission > 0
+            ? new THREE.Color(1, 1, 1)
+            : new THREE.Color(0, 0, 0),
+        sheen: metalness < 0.1 && roughness > 0.5 ? 0.1 : 0.0,
+        sheenRoughness: metalness < 0.1 && roughness > 0.5 ? 0.8 : 0.0,
+        sheenColor:
+          metalness < 0.1 && roughness > 0.5
+            ? new THREE.Color(0.1, 0.1, 0.1)
+            : new THREE.Color(0, 0, 0),
+        anisotropy: metalness > 0.5 && roughness < 0.3 ? 0.2 : 0.0,
+        envMapIntensity: Math.max(0.1, envMapIntensity),
         transmission,
         side: THREE.DoubleSide,
         polygonOffset: true,
@@ -395,6 +393,8 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         polygonOffsetUnits: isHole ? -1 : 1,
         flatShading: false,
         wireframe: false,
+        transparent: transmission > 0 || isHole,
+        opacity: isHole ? 0.5 : 1.0,
       };
 
       const material = new THREE.MeshPhysicalMaterial(materialProps);
@@ -402,6 +402,21 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       materialsCache.current.set(cacheKey, material);
       return material;
     };
+
+    // Clear material cache when textures change
+    useEffect(() => {
+      materialsCache.current.forEach((material) => {
+        if (material) material.dispose();
+      });
+      materialsCache.current.clear();
+    }, [
+      textureEnabled,
+      texturePreset,
+      textureIntensity,
+      textureScale.x,
+      textureScale.y,
+      loadedTextures,
+    ]);
 
     useEffect(() => {
       const cache = materialsCache.current;
@@ -460,38 +475,46 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     const yOffset = size.y / -2;
 
     return (
-      <Center>
-        <group
-          ref={groupRef}
-          scale={[scale, -scale, scale]}
-          position={[0, 0, 0]}
-          rotation={[0, Math.PI / 4, 0]}>
-          {shapesWithMaterials.map((shapeItem, i) => (
-            <group key={i} renderOrder={shapeItem.renderOrder}>
-              {shapeItem.shapes.map((shape, j) => (
-                <mesh
-                  key={j}
-                  castShadow={castShadow}
-                  receiveShadow={receiveShadow}
-                  renderOrder={shapeItem.renderOrder}
-                  position={[
-                    xOffset,
-                    yOffset,
-                    shapeItem.isHole ? -depth / 4 : -depth / 2,
-                  ]}>
-                  <extrudeGeometry
-                    args={[shape, getExtrudeSettings(shapeItem.isHole)]}
-                  />
-                  <primitive
-                    object={getMaterial(shapeItem.color, shapeItem.isHole)}
-                    attach="material"
-                  />
-                </mesh>
-              ))}
-            </group>
-          ))}
-        </group>
-      </Center>
+      <>
+        {textureEnabled && (
+          <FastTextureLoader
+            texturePreset={texturePreset}
+            onTexturesLoaded={setLoadedTextures}
+          />
+        )}
+        <Center>
+          <group
+            ref={groupRef}
+            scale={[scale, -scale, scale]}
+            position={[0, 0, 0]}
+            rotation={[0, Math.PI / 4, 0]}>
+            {shapesWithMaterials.map((shapeItem, i) => (
+              <group key={i} renderOrder={shapeItem.renderOrder}>
+                {shapeItem.shapes.map((shape, j) => (
+                  <mesh
+                    key={j}
+                    castShadow={castShadow}
+                    receiveShadow={receiveShadow}
+                    renderOrder={shapeItem.renderOrder}
+                    position={[
+                      xOffset,
+                      yOffset,
+                      shapeItem.isHole ? -depth / 4 : -depth / 2,
+                    ]}>
+                    <extrudeGeometry
+                      args={[shape, getExtrudeSettings(shapeItem.isHole)]}
+                    />
+                    <primitive
+                      object={getMaterial(shapeItem.color, shapeItem.isHole)}
+                      attach="material"
+                    />
+                  </mesh>
+                ))}
+              </group>
+            ))}
+          </group>
+        </Center>
+      </>
     );
   },
 );

@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { MATERIAL_PRESETS, LIGHT_MODE_COLOR } from "@/lib/constants";
 
 const initialPreset =
-  MATERIAL_PRESETS.find((p) => p.name === "metallic") || MATERIAL_PRESETS[0];
+  MATERIAL_PRESETS.find((p) => p.name === "matte_metal") || MATERIAL_PRESETS[0];
 
 interface EditorState {
   // SVG and Model State
@@ -126,7 +126,7 @@ export const useEditorStore = create<EditorState>((set) => ({
 
   customColor: "#3498db",
   useCustomColor: false,
-  materialPreset: "metallic",
+  materialPreset: "matte_metal",
   roughness: initialPreset.roughness,
   metalness: initialPreset.metalness,
   clearcoat: initialPreset.clearcoat,

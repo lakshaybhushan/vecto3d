@@ -6,4 +6,4 @@
 - [ ] support for transparent image exports
 - [ ] add animations on toggle
 - [ ] normalize svg size and thickness
-- [ ] new material type
+- [ ] new material type and better scaling

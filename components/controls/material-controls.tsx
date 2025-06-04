@@ -40,6 +40,10 @@ export function MaterialControls() {
     <div className="space-y-4">
       <div>
         <Label htmlFor="materialPreset">Material Type</Label>
+        <p className="text-muted-foreground mt-1 text-xs">
+          Choose from physically-based materials designed for realism. Each
+          preset uses real-world values for optimal lighting response.
+        </p>
       </div>
 
       <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-5">
@@ -118,9 +122,11 @@ export function MaterialControls() {
       </div>
 
       {materialPreset === "custom" && (
-        <div className="space-y-4 py-2 ">
+        <div className="space-y-4 py-2">
           <div className="space-y-4">
-            <Label htmlFor="roughness" className="flex items-center justify-between">
+            <Label
+              htmlFor="roughness"
+              className="flex items-center justify-between">
               <span>Roughness</span>
               <span className="text-primary font-mono">
                 {roughness.toFixed(2)}
@@ -137,7 +143,9 @@ export function MaterialControls() {
           </div>
 
           <div className="space-y-4">
-            <Label htmlFor="metalness" className="flex items-center justify-between">
+            <Label
+              htmlFor="metalness"
+              className="flex items-center justify-between">
               <span>Metalness</span>
               <span className="text-primary font-mono">
                 {metalness.toFixed(2)}
@@ -154,7 +162,9 @@ export function MaterialControls() {
           </div>
 
           <div className="space-y-4">
-            <Label htmlFor="clearcoat" className="flex items-center justify-between">
+            <Label
+              htmlFor="clearcoat"
+              className="flex items-center justify-between">
               <span>Clearcoat</span>
               <span className="text-primary font-mono">
                 {clearcoat.toFixed(2)}
@@ -171,7 +181,9 @@ export function MaterialControls() {
           </div>
 
           <div className="space-y-4">
-            <Label htmlFor="transmission" className="flex items-center justify-between">
+            <Label
+              htmlFor="transmission"
+              className="flex items-center justify-between">
               <span>Transmission</span>
               <span className="text-primary font-mono">
                 {transmission.toFixed(2)}
@@ -188,7 +200,9 @@ export function MaterialControls() {
           </div>
 
           <div className="space-y-4">
-            <Label htmlFor="envMapIntensity" className="flex items-center justify-between">
+            <Label
+              htmlFor="envMapIntensity"
+              className="flex items-center justify-between">
               <span>Environment Reflection</span>
               <span className="text-primary font-mono">
                 {envMapIntensity.toFixed(2)}

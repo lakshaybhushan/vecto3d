@@ -247,10 +247,12 @@ export function EnvironmentControls() {
               exit={{ opacity: 0, height: 0, y: -10 }}
               transition={{ duration: 0.15 }}>
               <div className="space-y-4">
-                <Label htmlFor="bloomIntensity">
+                <Label
+                  htmlFor="bloomIntensity"
+                  className="flex items-center justify-between">
                   <span>Bloom Intensity</span>
                   <span className="text-primary font-mono">
-                    {bloomIntensity.toFixed(1)}
+                    {bloomIntensity.toFixed(2)}
                   </span>
                 </Label>
                 <Slider
