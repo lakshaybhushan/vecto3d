@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useMemo } from "react";
+import { useRef, useEffect, useMemo, useState, memo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,7 +15,6 @@ import type * as THREE from "three";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
-import React from "react";
 import { ModeToggle } from "@/components/ui/theme-toggle";
 import dynamic from "next/dynamic";
 
@@ -108,7 +107,7 @@ const ModelErrorState = ({ error }: { error: string }) => (
   </div>
 );
 
-const SvgProcessingLogic = React.memo(() => {
+const SvgProcessingLogic = memo(() => {
   const svgData = useEditorStore((state) => state.svgData);
   const setIsModelLoading = useEditorStore((state) => state.setIsModelLoading);
   const setIsHollowSvg = useEditorStore((state) => state.setIsHollowSvg);
@@ -155,7 +154,7 @@ const SvgProcessingLogic = React.memo(() => {
 SvgProcessingLogic.displayName = "SvgProcessingLogic";
 
 // Separate component for background theme management
-const BackgroundThemeManager = React.memo(() => {
+const BackgroundThemeManager = memo(() => {
   const userSelectedBackground = useEditorStore(
     (state) => state.userSelectedBackground,
   );
@@ -188,7 +187,7 @@ const BackgroundThemeManager = React.memo(() => {
 BackgroundThemeManager.displayName = "BackgroundThemeManager";
 
 // Separate component for HDRI cleanup
-const HdriCleanupManager = React.memo(() => {
+const HdriCleanupManager = memo(() => {
   const customHdriUrl = useEditorStore((state) => state.customHdriUrl);
 
   useEffect(() => {
@@ -206,7 +205,7 @@ const HdriCleanupManager = React.memo(() => {
 HdriCleanupManager.displayName = "HdriCleanupManager";
 
 // Separate component for vibe mode management
-const VibeModeManager = React.memo(() => {
+const VibeModeManager = memo(() => {
   const environmentPreset = useEditorStore((state) => state.environmentPreset);
   const customHdriUrl = useEditorStore((state) => state.customHdriUrl);
   const useBloom = useEditorStore((state) => state.useBloom);
@@ -252,7 +251,7 @@ export default function EditPage() {
     clearMobilePreference,
   } = useMobileDetection();
 
-  const [hasMounted, setHasMounted] = React.useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
     setHasMounted(true);

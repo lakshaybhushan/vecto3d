@@ -232,7 +232,7 @@ export function MaterialControls() {
               type="text"
               value={customColor}
               onChange={(e) => setCustomColor(e.target.value)}
-              className="w-26 font-mono uppercase"
+              className="w-22 font-mono uppercase"
             />
           </div>
         </div>
