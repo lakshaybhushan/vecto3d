@@ -59,7 +59,6 @@ I've used multiple tools to make this app, especially [V0.dev](https://v0.dev) f
 
 This project uses the MIT License. See the [LICENSE](LICENSE) file for details. For contributing, please read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
-
 ## Sponsors
 
 This project is proudly supported by:
@@ -67,7 +66,6 @@ This project is proudly supported by:
 <a href="https://vercel.com/oss">
   <img alt="Vercel OSS Program" src="https://vercel.com/oss/program-badge.svg" />
 </a>
-
 
 ## Contact
 
