@@ -1,0 +1,45 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+This codebase is literally messed up right now, when i enable the `toggle switch` for `textures` or `environment`, my whole app lags alot it's not performant, i know it's that bad when i  enable the `vibe mode` it does the same. The code written in the files is literall chaos at the moment, it just works for the sake of working and has ungodly amount of `useState` and `useEffect` hooks that can be minimized a lot. Other thing is the implementation of `zustand` is so poor that i don't think it is supposed to be work like this.
+
+The only good thing in the current codebase is the design and styles i'm happy about that and **YOU ARE NOT REQUIRED TO CHANGE THE TAILWIND STYLES AT ALL**
+
+Because of this, I'm assigning you a task to go to files that i've tagged below and look at the entire file as a senior software developer/architect who's only job is to make the codebase maintainable, performant and improve the DX alot.
+
+Here are files:
+
+- [page.tsx](mdc:app/page.tsx) Homepage
+- [page.tsx](mdc:app/edit/page.tsx) Edit page (the worst imo)
+- [texture-controls.tsx](mdc:components/controls/texture-controls.tsx)
+- [material-controls.tsx](mdc:components/controls/material-controls.tsx)
+- [background-controls.tsx](mdc:components/controls/background-controls.tsx)
+- [geometry-controls.tsx](mdc:components/controls/geometry-controls.tsx)
+- [raw-svgs.tsx](mdc:components/raw-svgs.tsx) (WHY DOES THIS EXIST??)
+- [environment-presets.tsx](mdc:components/environment-presets.tsx)
+- [environment-controls.tsx](mdc:components/controls/environment-controls.tsx)
+- [export-buttons.tsx](mdc:components/export-buttons.tsx)
+- [model-preview.tsx](mdc:components/model-preview.tsx)
+- [svg-model.tsx](mdc:components/svg-model.tsx)
+- [texture-presets.tsx](mdc:components/texture-presets.tsx)
+- [use-debounce.ts](mdc:hooks/use-debounce.ts)
+- [constants.ts](mdc:lib/constants.ts)
+- [exporters.ts](mdc:lib/exporters.ts)
+- [store.ts](mdc:lib/store.ts)
+- [three-imports.ts](mdc:lib/three-imports.ts)
+- [types.ts](mdc:lib/types.ts)
+
+
+The files that I've tagged sums up the entire codebase. Here are the steps how you are going to do this. **ONLY ONE STEP AT A TIME**
+
+## STEP 1: Write your observations in the [improvements.md](mdc:improvements.md) file about each and every file that i've tagged, doing sort of review.
+
+## STEP 2: Create a file named the `planning.mdx` in which you are going to mention what are going to do it about each file.
+
+## STEP 3: Start implementation in chunks, start with the core logic improvement like creating a new folder where all the things related to this will go and this component/module has to do this part.
+
+---
+
+ALL THE BEST!!
