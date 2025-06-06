@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, Suspense } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import { SimpleEnvironment } from "@/components/environment-presets";
+import { SimpleEnvironment } from "@/components/previews/environment-presets";
 import type { EnvironmentPresetName } from "@/lib/types";
 import {
   EffectComposer,
@@ -12,8 +12,6 @@ import {
 import { BlendFunction } from "postprocessing";
 import { SVGModel } from "./svg-model";
 import { useEditorStore } from "@/lib/store";
-import { ColorRepresentation } from "three";
-import { keyframes } from "framer-motion";
 
 export interface ModelPreviewProps {
   svgData: string;
@@ -41,20 +39,14 @@ const CustomBackground = () => {
   const { gl, scene, camera } = useThree();
 
   const backgroundColor = useEditorStore((state) => state.backgroundColor);
-  const useBloom = useEditorStore((state) => state.useBloom);
 
   useEffect(() => {
-    const bg = backgroundColor || "#000000";
-    const alpha = hexaToAlpha(bg);
+    if (!backgroundColor) return;
 
-    // this is needed because the effect composer overrides the autoclear to false
-    if (!useBloom) {
-      gl.autoClear = true;
-    }
-
-    gl.setClearColor(colorPart(bg), alpha);
+    const alpha = hexaToAlpha(backgroundColor);
+    gl.setClearColor(colorPart(backgroundColor), alpha);
     gl.render(scene, camera);
-  }, [gl, scene, camera, backgroundColor, useBloom]);
+  }, [gl, scene, camera, backgroundColor]);
 
   return null;
 };

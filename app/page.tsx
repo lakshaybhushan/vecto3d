@@ -1,14 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileUpload } from "@/components/file-upload";
-import { MobileWarning } from "@/components/mobile-warning";
+import { FileUpload } from "@/components/forms/file-upload";
+import { MobileWarning } from "@/components/modals/mobile-warning";
 import { useMobileDetection } from "@/hooks/use-mobile-detection";
 import { RainbowButton } from "@/components/ui/rainbow-button";
-import Footer from "@/components/footer";
-import Nav from "@/components/nav";
+import Footer from "@/components/layouts/footer";
+import Nav from "@/components/layouts/nav";
 import AnimatedLogo from "@/components/ui/animated-logo";
 import BackgroundEffect from "@/components/ui/background-effect";
 import {
@@ -36,13 +36,38 @@ export default function Home() {
   const { isMobile, continueOnMobile, handleContinueOnMobile } =
     useMobileDetection();
 
+  const continueButtonSectionRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (isLoading) {
+  const scrollToContinueButton = () => {
+    if (continueButtonSectionRef.current) {
+      continueButtonSectionRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  };
+
+  const handleFileUpload = (data: string, name: string) => {
+    setSvgData(data);
+    setFileName(name);
+    scrollToContinueButton();
+  };
+
+  const handleIconSelect = (iconName: string) => {
+    setSelectedIcon(iconName);
+    scrollToContinueButton();
+  };
+
+  const handleContinue = async () => {
+    if (svgData) {
+      setIsLoading(true);
+
       try {
+        // Play audio when loading starts
         const audio = new Audio("/continue.mp3");
         audio.play().catch((error) => {
           console.log("Audio play failed:", error);
@@ -50,41 +75,6 @@ export default function Home() {
       } catch (error) {
         console.log("Audio initialization failed:", error);
       }
-    }
-  }, [isLoading]);
-
-  const handleFileUpload = (data: string, name: string) => {
-    setSvgData(data);
-    setFileName(name);
-
-    setTimeout(() => {
-      const element = document.getElementById("continue-button-section");
-      if (element) {
-        window.scrollTo({
-          top: element.offsetTop - window.innerHeight / 4,
-          behavior: "smooth",
-        });
-      }
-    }, 150);
-  };
-
-  const handleIconSelect = (iconName: string) => {
-    setSelectedIcon(iconName);
-
-    setTimeout(() => {
-      const element = document.getElementById("continue-button-section");
-      if (element) {
-        window.scrollTo({
-          top: element.offsetTop - window.innerHeight / 4,
-          behavior: "smooth",
-        });
-      }
-    }, 150);
-  };
-
-  const handleContinue = async () => {
-    if (svgData) {
-      setIsLoading(true);
 
       try {
         const { setSvgData, setFileName } = useEditorStore.getState();
@@ -119,14 +109,10 @@ export default function Home() {
       variants={pageTransitionVariants}
       initial="initial"
       animate="animate"
-      exit="exit"
-      style={{ willChange: "transform" }}>
+      exit="exit">
       <BackgroundEffect />
 
-      <motion.div
-        className="flex-shrink-0"
-        variants={staggeredItemVariants}
-        style={{ willChange: "transform" }}>
+      <motion.div className="flex-shrink-0" variants={staggeredItemVariants}>
         <Nav />
       </motion.div>
 
@@ -159,19 +145,17 @@ export default function Home() {
         variants={staggeredContainerVariants}
         initial="initial"
         animate="animate"
-        style={{ willChange: "transform", minHeight: 0 }}>
+        style={{ minHeight: 0 }}>
         <motion.div
           className="mb-2 text-center sm:mb-3 md:mb-6"
           variants={titleContainerVariants}
           initial="initial"
-          animate="animate"
-          style={{ willChange: "transform" }}>
+          animate="animate">
           <h1 className="text-primary leading-tighter font-serif text-5xl tracking-tight md:text-6xl">
             <motion.span
               variants={titleSpanVariants}
               style={{
                 display: "inline-block",
-                willChange: "transform",
               }}>
               Transform Your Vectors{" "}
             </motion.span>
@@ -181,7 +165,6 @@ export default function Home() {
               variants={titleSpanVariants}
               style={{
                 display: "inline-block",
-                willChange: "transform",
               }}>
               in a New Dimension
             </motion.span>
@@ -191,21 +174,18 @@ export default function Home() {
         {isMobile && !continueOnMobile ? (
           <motion.div
             className="w-full max-w-md flex-shrink-0"
-            variants={staggeredItemVariants}
-            style={{ willChange: "transform" }}>
+            variants={staggeredItemVariants}>
             <MobileWarning onContinue={handleContinueOnMobile} />
           </motion.div>
         ) : (
           <motion.div
             className="mx-auto w-fit flex-shrink-0"
-            variants={staggeredItemVariants}
-            style={{ willChange: "transform" }}>
+            variants={staggeredItemVariants}>
             <motion.div
               className="w-full"
               variants={fileUploadVariants}
               initial="initial"
-              animate="animate"
-              style={{ willChange: "transform" }}>
+              animate="animate">
               <FileUpload
                 onFileUpload={handleFileUpload}
                 fileName={fileName}
@@ -216,15 +196,14 @@ export default function Home() {
                 className="text-muted-foreground mt-1 mb-2 text-center text-xs sm:mt-2 sm:mb-3 sm:text-sm md:text-base"
                 variants={helpTextVariants}
                 initial="initial"
-                animate="animate"
-                style={{ willChange: "transform" }}>
+                animate="animate">
                 Works best with SVGs having simple geometry and transparent
                 background
               </motion.p>
             </motion.div>
 
             <motion.div
-              id="continue-button-section"
+              ref={continueButtonSectionRef}
               className="mt-2 flex items-center justify-center sm:mt-3 md:mt-4">
               <AnimatePresence mode="wait">
                 {svgData && (
@@ -234,16 +213,14 @@ export default function Home() {
                     initial="initial"
                     animate="animate"
                     exit="exit"
-                    layout
-                    style={{ willChange: "transform" }}>
+                    layout>
                     <motion.div
                       className="flex w-full max-w-sm"
                       variants={continueButtonVariants}
                       initial="initial"
                       animate="animate"
                       exit="exit"
-                      layout
-                      style={{ willChange: "transform" }}>
+                      layout>
                       <RainbowButton
                         className="mx-auto w-full max-w-[16rem] rounded-lg py-3 text-sm sm:py-4 sm:text-base md:py-5"
                         onClick={handleContinue}
@@ -259,10 +236,7 @@ export default function Home() {
         )}
       </motion.div>
 
-      <motion.div
-        className="flex-shrink-0"
-        variants={staggeredItemVariants}
-        style={{ willChange: "transform" }}>
+      <motion.div className="flex-shrink-0" variants={staggeredItemVariants}>
         <Footer />
       </motion.div>
     </motion.main>
