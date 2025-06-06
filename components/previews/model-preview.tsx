@@ -39,14 +39,18 @@ const CustomBackground = () => {
   const { gl, scene, camera } = useThree();
 
   const backgroundColor = useEditorStore((state) => state.backgroundColor);
+  const useBloom = useEditorStore((state) => state.useBloom);
 
   useEffect(() => {
-    if (!backgroundColor) return;
+    const bg = backgroundColor || "#000000";
+    const alpha = hexaToAlpha(bg);
+    if (!useBloom) {
+      gl.autoClear = true;
+    }
 
-    const alpha = hexaToAlpha(backgroundColor);
-    gl.setClearColor(colorPart(backgroundColor), alpha);
+    gl.setClearColor(colorPart(bg), alpha);
     gl.render(scene, camera);
-  }, [gl, scene, camera, backgroundColor]);
+  }, [gl, scene, camera, backgroundColor, useBloom]);
 
   return null;
 };
