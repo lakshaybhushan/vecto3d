@@ -13,6 +13,7 @@ import { BlendFunction } from "postprocessing";
 import { SVGModel } from "./svg-model";
 import { useEditorStore } from "@/lib/store";
 import { ColorRepresentation } from "three";
+import { keyframes } from "framer-motion";
 
 export interface ModelPreviewProps {
   svgData: string;
@@ -40,14 +41,20 @@ const CustomBackground = () => {
   const { gl, scene, camera } = useThree();
 
   const backgroundColor = useEditorStore((state) => state.backgroundColor);
+  const useBloom = useEditorStore((state) => state.useBloom);
 
   useEffect(() => {
-    if (!backgroundColor) return;
+    const bg = backgroundColor || "#000000";
+    const alpha = hexaToAlpha(bg);
 
-    const alpha = hexaToAlpha(backgroundColor);
-    gl.setClearColor(colorPart(backgroundColor), alpha);
+    // this is needed because the effect composer overrides the autoclear to false
+    if (!useBloom) {
+      gl.autoClear = true;
+    }
+
+    gl.setClearColor(colorPart(bg), alpha);
     gl.render(scene, camera);
-  }, [gl, scene, camera, backgroundColor]);
+  }, [gl, scene, camera, backgroundColor, useBloom]);
 
   return null;
 };
