@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, Suspense } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import { SimpleEnvironment } from "@/components/environment-presets";
+import { SimpleEnvironment } from "@/components/previews/environment-presets";
 import type { EnvironmentPresetName } from "@/lib/types";
 import {
   EffectComposer,
@@ -12,7 +12,6 @@ import {
 import { BlendFunction } from "postprocessing";
 import { SVGModel } from "./svg-model";
 import { useEditorStore } from "@/lib/store";
-import { ColorRepresentation } from "three";
 
 export interface ModelPreviewProps {
   svgData: string;

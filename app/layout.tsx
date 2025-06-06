@@ -2,7 +2,7 @@ import type React from "react";
 import "@/styles/globals.css";
 import { Geist_Mono, Instrument_Serif } from "next/font/google";
 import LocalFont from "next/font/local";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/layouts/theme-provider";
 import { Toaster as SonnerToaster } from "sonner";
 import Script from "next/script";
 import { cn } from "@/lib/utils";

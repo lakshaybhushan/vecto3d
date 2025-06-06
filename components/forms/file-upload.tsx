@@ -9,8 +9,8 @@ import {
   XIcon,
   ChatAppIcon,
   Vecto3dIcon,
-} from "@/components/ui/example-icons";
-import { AsteriskIcon } from "@/components/ui/ui-icons";
+} from "@/components/ui/icons";
+import { AsteriskIcon } from "@/components/ui/icons";
 import { Button } from "@/components/ui/button";
 import {
   GITHUB_SVG,
@@ -19,7 +19,7 @@ import {
   X_SVG,
   CHAT_APP_SVG,
   VECTO3D_SVG,
-} from "@/components/raw-svgs";
+} from "@/components/data/raw-svgs";
 import { sanitizeSvgForPreview, isValidSvg } from "@/lib/svg-sanitizer";
 
 const exampleIcons = [

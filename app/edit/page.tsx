@@ -31,8 +31,8 @@ import { MaterialControls } from "@/components/controls/material-controls";
 import { TextureControls } from "@/components/controls/texture-controls";
 import { EnvironmentControls } from "@/components/controls/environment-controls";
 import { BackgroundControls } from "@/components/controls/background-controls";
-import { ExportButtons } from "@/components/export-buttons";
-import { EditorMobileWarning } from "@/components/mobile-warning";
+import { ExportButtons } from "@/components/forms/export-buttons";
+import { EditorMobileWarning } from "@/components/modals/mobile-warning";
 
 import { useDebounce } from "@/hooks/use-debounce";
 import { useMobileDetection } from "@/hooks/use-mobile-detection";
@@ -41,26 +41,29 @@ import { DARK_MODE_COLOR, LIGHT_MODE_COLOR } from "@/lib/constants";
 import AnimatedLogo from "@/components/ui/animated-logo";
 
 // Dynamically import ModelPreview with SSR disabled to prevent ProgressEvent errors
-const ModelPreview = dynamic(() => import("@/components/model-preview"), {
-  ssr: false,
-  loading: () => (
-    <div className="bg-card flex h-full w-full flex-col items-center justify-center">
-      <div className="flex max-w-xs flex-col items-center gap-4 px-4 text-center">
-        <div className="relative h-20 w-20">
-          <div className="bg-background/20 absolute inset-0 animate-pulse rounded-full"></div>
-          <div className="bg-background/40 absolute inset-4 animate-pulse rounded-full [animation-delay:200ms]"></div>
-          <AnimatedLogo className="absolute inset-0 h-full w-full" />
-        </div>
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Loading 3D preview...</p>
-          <p className="text-muted-foreground text-xs">
-            Initializing Three.js components
-          </p>
+const ModelPreview = dynamic(
+  () => import("@/components/previews/model-preview"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="bg-card flex h-full w-full flex-col items-center justify-center">
+        <div className="flex max-w-xs flex-col items-center gap-4 px-4 text-center">
+          <div className="relative h-20 w-20">
+            <div className="bg-background/20 absolute inset-0 animate-pulse rounded-full"></div>
+            <div className="bg-background/40 absolute inset-4 animate-pulse rounded-full [animation-delay:200ms]"></div>
+            <AnimatedLogo className="absolute inset-0 h-full w-full" />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Loading 3D preview...</p>
+            <p className="text-muted-foreground text-xs">
+              Initializing Three.js components
+            </p>
+          </div>
         </div>
       </div>
-    </div>
-  ),
-});
+    ),
+  },
+);
 
 function useThemeBackgroundColor() {
   const { resolvedTheme } = useTheme();

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { VercelIcon, V0Icon } from "@/components/ui/example-icons";
+import { VercelIcon } from "@/components/ui/icons";
 import { motion } from "framer-motion";
 import {
   footerVariants,

@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "if [ \"$NODE_ENV\" != \"production\" ]; then bunx prettier --write .; fi && next build --turbopack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@pmndrs/assets": "^1.7.0",

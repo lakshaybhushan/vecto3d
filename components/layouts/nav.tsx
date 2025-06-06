@@ -4,9 +4,9 @@ import { Logo } from "@/components/ui/logo";
 import { ModeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
-import { GitHubIcon } from "@/components/ui/example-icons";
+import { GitHubIcon } from "@/components/ui/icons";
 import Link from "next/link";
-import { AnimatedNumber } from "./ui/animated-numbers";
+import { AnimatedNumber } from "@/components/ui/animated-numbers";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {

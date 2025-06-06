@@ -38,13 +38,7 @@ export function MaterialControls() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <Label htmlFor="materialPreset">Material Type</Label>
-        <p className="text-muted-foreground mt-1 text-xs">
-          Choose from physically-based materials designed for realism. Each
-          preset uses real-world values for optimal lighting response.
-        </p>
-      </div>
+      <p className="text-sm font-medium">Choose a material</p>
 
       <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-5">
         {MATERIAL_PRESETS.map((preset) => {

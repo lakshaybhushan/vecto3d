@@ -143,11 +143,61 @@ export const PNG_RESOLUTIONS: ResolutionPreset[] = [
 
 // Bevel presets
 export const BEVEL_PRESETS: BevelPreset[] = [
-  { name: "none", label: "None", thickness: 0, size: 0, segments: 1 },
-  { name: "light", label: "Light", thickness: 0.5, size: 0.3, segments: 2 },
-  { name: "medium", label: "Medium", thickness: 1.0, size: 0.5, segments: 4 },
-  { name: "heavy", label: "Heavy", thickness: 2.0, size: 1.0, segments: 8 },
-  { name: "custom", label: "Custom", thickness: 1.0, size: 0.5, segments: 4 },
+  {
+    name: "none",
+    label: "None",
+    thickness: 0,
+    size: 0,
+    segments: 1,
+    previewStyle: {
+      borderRadius: "0px",
+      boxShadow: "inset 2px -2px 4px rgba(255,255,255,0.4)",
+    },
+  },
+  {
+    name: "light",
+    label: "Light",
+    thickness: 0.5,
+    size: 0.3,
+    segments: 2,
+    previewStyle: {
+      borderRadius: "6px",
+      boxShadow: "inset 2px -2px 4px rgba(255,255,255,0.4)",
+    },
+  },
+  {
+    name: "medium",
+    label: "Medium",
+    thickness: 1.0,
+    size: 0.5,
+    segments: 4,
+    previewStyle: {
+      borderRadius: "12px",
+      boxShadow: "inset 3px -3px 6px rgba(255,255,255,0.4)",
+    },
+  },
+  {
+    name: "heavy",
+    label: "Heavy",
+    thickness: 2.0,
+    size: 1.0,
+    segments: 8,
+    previewStyle: {
+      borderRadius: "20px",
+      boxShadow: "inset 4px -4px 8px rgba(255,255,255,0.4)",
+    },
+  },
+  {
+    name: "custom",
+    label: "Custom",
+    thickness: 1.0,
+    size: 0.5,
+    segments: 4,
+    previewStyle: {
+      borderRadius: "12px",
+      boxShadow: "inset 4px -4px 8px rgba(255,255,255,0.4)",
+    },
+  },
 ];
 
 // Texture presets

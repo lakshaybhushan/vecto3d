@@ -64,6 +64,10 @@ export interface BevelPreset {
   thickness: number;
   size: number;
   segments: number;
+  previewStyle?: {
+    borderRadius: string;
+    boxShadow: string;
+  };
 }
 
 // Environment preset names type

@@ -12,7 +12,7 @@ import * as THREE from "three";
 import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
 import { Center } from "@react-three/drei";
 import { TEXTURE_PRESETS } from "@/lib/constants";
-import { FastTextureLoader } from "@/components/texture-presets";
+import { FastTextureLoader } from "@/components/previews/texture-presets";
 
 interface SVGModelProps {
   svgData: string;

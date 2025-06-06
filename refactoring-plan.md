@@ -221,6 +221,21 @@ This document outlines the prioritized plan for refactoring the Vecto3D applicat
   - Ensuring smooth scrolling works reliably across different rendering timings.
   - Performance profiling can be nuanced.
 
+### 4. Folder Refactoring for better organization
+
+- **File(s) Affected:** `components/` directory, potentially others that import from it.
+- **Issue:** As the project grows, the root `components/` directory may become cluttered, making it harder to find related components. There might be opportunities to further organize components into logical subdirectories beyond the existing `ui/` and `controls/`.
+- **Specific Changes:**
+  1.  Review the current structure of the `components/` directory.
+  2.  Identify groups of related components that could be moved into new subdirectories.
+  3.  Create new subdirectories as needed.
+  4.  Move relevant components into the new subdirectories.
+  5.  Update import paths in all affected files across the codebase.
+- **Potential Challenges:**
+  - Identifying the most logical grouping for components.
+  - Managing potentially widespread import path changes.
+  - Ensuring no components are inadvertently broken or missed during the move.
+
 ---
 
 ## P3: Low Impact Issues

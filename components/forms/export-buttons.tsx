@@ -15,7 +15,7 @@ import {
   ImageDownloadIcon,
   ThreeDExportIcon,
   ThreeDPrintIcon,
-} from "@/components/ui/ui-icons";
+} from "@/components/ui/icons";
 
 interface ExportButtonsProps {
   fileName: string;
