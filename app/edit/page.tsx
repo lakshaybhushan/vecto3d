@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Maximize2, Minimize2, ChevronLeft } from "lucide-react";
+import { Maximize2, Minimize2, ChevronLeft, RotateCcw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type * as THREE from "three";
 import { useRouter } from "next/navigation";
@@ -109,17 +109,35 @@ const ModelErrorState = ({ error }: { error: string }) => (
 
 const SvgProcessingLogic = memo(() => {
   const svgData = useEditorStore((state) => state.svgData);
+  const fileName = useEditorStore((state) => state.fileName);
+  const setSvgData = useEditorStore((state) => state.setSvgData);
+  const setFileName = useEditorStore((state) => state.setFileName);
   const setIsModelLoading = useEditorStore((state) => state.setIsModelLoading);
   const setIsHollowSvg = useEditorStore((state) => state.setIsHollowSvg);
+  const resetEditor = useEditorStore((state) => state.resetEditor);
 
   const router = useRouter();
   const debouncedSvgData = useDebounce(svgData, 300);
 
   useEffect(() => {
-    if (!svgData) {
+    const storedSvgData = sessionStorage.getItem("vecto3d_svgData");
+    const storedFileName = sessionStorage.getItem("vecto3d_fileName");
+
+    if (!svgData && storedSvgData) {
+      setSvgData(storedSvgData);
+      setFileName(storedFileName || "");
+      resetEditor();
+    } else if (!svgData && !storedSvgData) {
       router.push("/");
     }
-  }, [svgData, router]);
+  }, [svgData, setSvgData, setFileName, resetEditor, router]);
+
+  useEffect(() => {
+    if (svgData) {
+      sessionStorage.setItem("vecto3d_svgData", svgData);
+      sessionStorage.setItem("vecto3d_fileName", fileName);
+    }
+  }, [svgData, fileName]);
 
   useEffect(() => {
     if (debouncedSvgData) {
@@ -153,7 +171,6 @@ const SvgProcessingLogic = memo(() => {
 
 SvgProcessingLogic.displayName = "SvgProcessingLogic";
 
-// Separate component for background theme management
 const BackgroundThemeManager = memo(() => {
   const userSelectedBackground = useEditorStore(
     (state) => state.userSelectedBackground,
@@ -186,7 +203,6 @@ const BackgroundThemeManager = memo(() => {
 
 BackgroundThemeManager.displayName = "BackgroundThemeManager";
 
-// Separate component for HDRI cleanup
 const HdriCleanupManager = memo(() => {
   const customHdriUrl = useEditorStore((state) => state.customHdriUrl);
 
@@ -204,7 +220,6 @@ const HdriCleanupManager = memo(() => {
 
 HdriCleanupManager.displayName = "HdriCleanupManager";
 
-// Separate component for vibe mode management
 const VibeModeManager = memo(() => {
   const environmentPreset = useEditorStore((state) => state.environmentPreset);
   const customHdriUrl = useEditorStore((state) => state.customHdriUrl);
@@ -238,6 +253,7 @@ export default function EditPage() {
 
   const isFullscreen = useEditorStore((state) => state.isFullscreen);
   const setIsFullscreen = useEditorStore((state) => state.setIsFullscreen);
+  const resetEditor = useEditorStore((state) => state.resetEditor);
 
   const modelRef = useRef<THREE.Group | null>(null);
   const modelGroupRef = useRef<THREE.Group | null>(null);
@@ -255,10 +271,23 @@ export default function EditPage() {
 
   useEffect(() => {
     setHasMounted(true);
+
+    // Cleanup session storage when component unmounts (user navigates away)
+    return () => {
+      // Only clear if user is not reloading (which would cause immediate unmount/mount)
+      const currentPath = window.location.pathname;
+      if (currentPath !== "/edit") {
+        sessionStorage.removeItem("vecto3d_svgData");
+        sessionStorage.removeItem("vecto3d_fileName");
+      }
+    };
   }, []);
 
   const handleBackToHome = () => {
     clearMobilePreference();
+    // Clear session storage when intentionally navigating back to home
+    sessionStorage.removeItem("vecto3d_svgData");
+    sessionStorage.removeItem("vecto3d_fileName");
     router.push("/");
   };
 
@@ -374,38 +403,61 @@ export default function EditPage() {
                     </CardDescription>
                   </div>
                   <TooltipProvider>
-                    <Tooltip delayDuration={100}>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => {
-                            if (isFullscreen) {
-                              document.exitFullscreen();
-                            } else if (previewContainerRef.current) {
-                              previewContainerRef.current.requestFullscreen();
-                            }
-                          }}
-                          aria-label={
-                            isFullscreen
-                              ? "Exit fullscreen"
-                              : "Enter fullscreen"
-                          }>
-                          {isFullscreen ? (
-                            <Minimize2 className="h-4 w-4" />
-                          ) : (
-                            <Maximize2 className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="left"
-                        align="center"
-                        sideOffset={10}
-                        className="z-99999 px-4 py-2 text-xs shadow-md">
-                        Performance may be affected
-                      </TooltipContent>
-                    </Tooltip>
+                    <div className="flex gap-2">
+                      <Tooltip delayDuration={100}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              resetEditor();
+                              toast.success("Editor settings reset to default");
+                            }}
+                            aria-label="Reset editor settings">
+                            <RotateCcw className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="bottom"
+                          align="center"
+                          sideOffset={10}
+                          className="px-4 text-sm">
+                          Reset all settings
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip delayDuration={100}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              if (isFullscreen) {
+                                document.exitFullscreen();
+                              } else if (previewContainerRef.current) {
+                                previewContainerRef.current.requestFullscreen();
+                              }
+                            }}
+                            aria-label={
+                              isFullscreen
+                                ? "Exit fullscreen"
+                                : "Enter fullscreen"
+                            }>
+                            {isFullscreen ? (
+                              <Minimize2 className="h-4 w-4" />
+                            ) : (
+                              <Maximize2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="bottom"
+                          align="center"
+                          sideOffset={10}
+                          className="px-4 text-sm">
+                          Full Screen
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                   </TooltipProvider>
                 </CardHeader>
 
@@ -430,7 +482,8 @@ export default function EditPage() {
                             side="left"
                             align="center"
                             sideOffset={10}
-                            className="px-4 py-2 text-xs shadow-md">
+                            className="z-[99999] px-4 text-sm"
+                            container={previewContainerRef.current}>
                             Exit fullscreen
                           </TooltipContent>
                         </Tooltip>

@@ -28,9 +28,13 @@ export function BackgroundControls() {
 
   const { theme } = useTheme();
 
-  const [isTransparent, setIsTransparent] = useState(
-    () => backgroundColor.endsWith("00") || backgroundColor === "transparent",
-  );
+  const [isTransparent, setIsTransparent] = useState(() => {
+    // Only check transparency for 8-character hex colors (with alpha) or "transparent" keyword
+    return (
+      (backgroundColor.length === 9 && backgroundColor.endsWith("00")) ||
+      backgroundColor === "transparent"
+    );
+  });
   const [lastOpaqueColor, setLastOpaqueColor] = useState(() =>
     isTransparent
       ? theme === "dark"
@@ -41,7 +45,8 @@ export function BackgroundControls() {
 
   useEffect(() => {
     const isTransparentNow =
-      backgroundColor.endsWith("00") || backgroundColor === "transparent";
+      (backgroundColor.length === 9 && backgroundColor.endsWith("00")) ||
+      backgroundColor === "transparent";
     setIsTransparent(isTransparentNow);
     if (!isTransparentNow) {
       setLastOpaqueColor(backgroundColor);
@@ -55,11 +60,14 @@ export function BackgroundControls() {
 
     if (checked) {
       if (
-        !(backgroundColor.endsWith("00") || backgroundColor === "transparent")
+        !(
+          (backgroundColor.length === 9 && backgroundColor.endsWith("00")) ||
+          backgroundColor === "transparent"
+        )
       ) {
         setLastOpaqueColor(backgroundColor);
       }
-      setBackgroundColor("#00000000"); // Standard transparent color
+      setBackgroundColor("#00000000");
     } else {
       setBackgroundColor(lastOpaqueColor);
     }
@@ -69,6 +77,12 @@ export function BackgroundControls() {
     setUserSelectedBackground(true);
     setSolidColorPreset(preset);
     setBackgroundColor(color);
+    const isColorTransparent =
+      (color.length === 9 && color.endsWith("00")) || color === "transparent";
+    setIsTransparent(isColorTransparent);
+    if (!isColorTransparent) {
+      setLastOpaqueColor(color);
+    }
   };
 
   return (
@@ -134,7 +148,7 @@ export function BackgroundControls() {
                 onChange={(e) =>
                   handleBackgroundChange(e.target.value, "custom")
                 }
-                className="w-26 font-mono uppercase"
+                className="w-22 font-mono uppercase"
               />
             </div>
           </div>

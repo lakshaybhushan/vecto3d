@@ -3,7 +3,7 @@ import "@/styles/globals.css";
 import { Geist_Mono, Instrument_Serif } from "next/font/google";
 import LocalFont from "next/font/local";
 import { ThemeProvider } from "@/components/layouts/theme-provider";
-import { Toaster as SonnerToaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import Script from "next/script";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
@@ -77,12 +77,7 @@ export default function RootLayout({
           disableTransitionOnChange>
           {children}
           <Analytics />
-          <SonnerToaster
-            position="top-center"
-            richColors
-            closeButton
-            theme="system"
-          />
+          <Toaster position="top-center" theme="system" />
         </ThemeProvider>
       </body>
     </html>

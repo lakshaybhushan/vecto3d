@@ -78,6 +78,9 @@ export default function Home() {
 
       try {
         const { setSvgData, setFileName } = useEditorStore.getState();
+        // Clear any existing session storage before setting new data
+        sessionStorage.removeItem("vecto3d_svgData");
+        sessionStorage.removeItem("vecto3d_fileName");
         setSvgData(svgData);
         setFileName(fileName);
 
