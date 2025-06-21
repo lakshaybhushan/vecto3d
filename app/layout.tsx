@@ -68,7 +68,7 @@ export default function RootLayout({
           clashGrotesk.className,
           instrumentSerif.variable,
           geistMono.variable,
-          "overflow-x-hidden"
+          "overflow-x-hidden",
         )}
         suppressHydrationWarning>
         <ThemeProvider

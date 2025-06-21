@@ -6,6 +6,6 @@
 - [x] support for transparent image exports
 - [ ] add animations on toggle
 - [ ] all new mobile redesign
-- [ ] homepage bg doesn't scale well on mobile 
+- [ ] homepage bg doesn't scale well on mobile
 - [ ] separate layers bug
-- [ ] new material 
+- [ ] new material

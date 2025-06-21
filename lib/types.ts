@@ -48,6 +48,13 @@ export interface ResolutionPreset {
   multiplier: number;
 }
 
+// Texture export state for enhanced exports
+export interface TextureExportState {
+  textureEnabled: boolean;
+  texturePreset: string;
+  textureScale: { x: number; y: number };
+}
+
 // Bevel preset interface
 export interface BevelPreset {
   name: string;

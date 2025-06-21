@@ -8,7 +8,12 @@ import {
 import { ChevronDown, Loader2 } from "lucide-react";
 import { File, Image } from "lucide-react";
 import { PNG_RESOLUTIONS } from "@/lib/constants";
-import { handleExport, handlePrint } from "@/lib/exporters";
+import {
+  handleExport,
+  handleExportWithTextures,
+  handlePrint,
+} from "@/lib/exporters";
+import { useEditorStore } from "@/lib/store";
 import * as THREE from "three";
 import { useEffect, useState } from "react";
 import {
@@ -25,6 +30,8 @@ interface ExportButtonsProps {
 export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
   const [isUS, setIsUS] = useState<boolean | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
+
+  const { textureEnabled, texturePreset, textureScale } = useEditorStore();
 
   useEffect(() => {
     const checkLocation = async () => {
@@ -100,14 +107,26 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
             Export as STL
           </DropdownMenuItem>
           <DropdownMenuItem
-            onSelect={() => handleExport("glb", modelGroupRef, fileName)}>
+            onSelect={() =>
+              handleExportWithTextures("glb", modelGroupRef, fileName, 1, {
+                textureEnabled,
+                texturePreset,
+                textureScale,
+              })
+            }>
             <File className="h-4 w-4" />
-            Export as GLB
+            Export as GLB{textureEnabled ? " + Textures" : ""}
           </DropdownMenuItem>
           <DropdownMenuItem
-            onSelect={() => handleExport("gltf", modelGroupRef, fileName)}>
+            onSelect={() =>
+              handleExportWithTextures("gltf", modelGroupRef, fileName, 1, {
+                textureEnabled,
+                texturePreset,
+                textureScale,
+              })
+            }>
             <File className="h-4 w-4" />
-            Export as GLTF
+            Export as GLTF{textureEnabled ? " + Textures" : ""}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
