@@ -269,7 +269,7 @@ export default function EditPage() {
   } = useMobileDetection();
 
   // Initialize texture preloader
-  const textureStats = useTexturePreloader(true);
+  useTexturePreloader(true);
 
   useEffect(() => {
     setIsClientMounted(true);

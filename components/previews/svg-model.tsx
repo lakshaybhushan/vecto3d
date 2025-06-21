@@ -361,6 +361,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       [
         textureEnabled,
         currentTexturePreset,
+        texturePreset,
         roughness,
         metalness,
         clearcoat,
@@ -394,14 +395,15 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
 
     // Cleanup on unmount
     useEffect(() => {
+      const currentGroup = groupRef.current;
       return () => {
         materialsRef.current.forEach((material) => {
           material.dispose();
         });
         materialsRef.current = [];
 
-        if (groupRef.current) {
-          groupRef.current.traverse((object) => {
+        if (currentGroup) {
+          currentGroup.traverse((object) => {
             if (object instanceof THREE.Mesh) {
               if (object.geometry) object.geometry.dispose();
             }
@@ -490,17 +492,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
                     onMaterialReady={(mat) => {
                       materialsRef.current.push(mat);
                     }}
-                    // Material props
-                    roughness={roughness}
-                    metalness={metalness}
-                    clearcoat={clearcoat}
-                    transmission={transmission}
-                    envMapIntensity={envMapIntensity}
-                    textureEnabled={textureEnabled}
-                    texturePreset={texturePreset}
-                    textureIntensity={textureIntensity}
-                    textureScale={textureScale}
-                    currentTexturePreset={currentTexturePreset}
                     createMaterial={createMaterial}
                   />
                 </React.Suspense>
@@ -524,37 +515,24 @@ function MaterializedMesh({
   receiveShadow,
   renderOrder,
   onMaterialReady,
-  roughness,
-  metalness,
-  clearcoat,
-  transmission,
-  envMapIntensity,
-  textureEnabled,
-  texturePreset,
-  textureIntensity,
-  textureScale,
-  currentTexturePreset,
   createMaterial,
 }: {
   shape: THREE.Shape;
   color: string | THREE.Color;
   isHole: boolean;
-  extrudeSettings: any;
+  extrudeSettings: {
+    depth: number;
+    bevelEnabled: boolean;
+    bevelThickness: number;
+    bevelSize: number;
+    bevelSegments: number;
+    curveSegments: number;
+  };
   position: [number, number, number];
   castShadow: boolean;
   receiveShadow: boolean;
   renderOrder: number;
   onMaterialReady: (material: THREE.MeshPhysicalMaterial) => void;
-  roughness: number;
-  metalness: number;
-  clearcoat: number;
-  transmission: number;
-  envMapIntensity: number;
-  textureEnabled: boolean;
-  texturePreset: string;
-  textureIntensity: number;
-  textureScale: { x: number; y: number };
-  currentTexturePreset: { name: string } | undefined;
   createMaterial: (
     color: string | THREE.Color,
     isHole: boolean,

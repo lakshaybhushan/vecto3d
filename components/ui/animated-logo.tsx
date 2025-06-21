@@ -1,5 +1,5 @@
-import React from "react";
-import { motion, SVGMotionProps } from "framer-motion";
+import * as React from "react";
+import { motion, SVGMotionProps, Variants } from "framer-motion";
 
 interface LogoProps extends SVGMotionProps<SVGSVGElement> {
   size?: number | string;
@@ -13,14 +13,16 @@ export default function AnimatedLogo({
   speed = 1.5,
   ...props
 }: LogoProps) {
-  const STROKE_DURATION = 1.5 / speed;
-  const FILL_DURATION = 0.5 / speed;
-  const PAUSE_DURATION = 0.6 / speed;
-  const RESET_DURATION = 1.01 / speed;
+  const safeSpeed = typeof speed === "number" && speed > 0 ? speed : 1.5;
+
+  const STROKE_DURATION = 1.5 / safeSpeed;
+  const FILL_DURATION = 0.5 / safeSpeed;
+  const PAUSE_DURATION = 0.6 / safeSpeed;
+  const RESET_DURATION = 1.01 / safeSpeed;
   const TOTAL_DURATION =
     STROKE_DURATION + FILL_DURATION + PAUSE_DURATION + RESET_DURATION;
 
-  const hexagonVariants = {
+  const hexagonVariants: Variants = {
     hidden: {
       pathLength: 0,
       opacity: 1,
@@ -51,7 +53,8 @@ export default function AnimatedLogo({
       },
     },
   };
-  const fillVariants = {
+
+  const fillVariants: Variants = {
     hidden: {
       fillOpacity: 0,
     },
@@ -80,7 +83,7 @@ export default function AnimatedLogo({
     },
   };
 
-  const starStrokeVariants = {
+  const starStrokeVariants: Variants = {
     hidden: {
       pathLength: 0,
       opacity: 0,
@@ -91,12 +94,12 @@ export default function AnimatedLogo({
       transition: {
         pathLength: {
           duration: STROKE_DURATION,
-          delay: 0.3 / speed,
+          delay: 0.3 / safeSpeed,
           ease: "easeInOut",
         },
         opacity: {
-          duration: 0.6 / speed,
-          delay: 0.3 / speed,
+          duration: 0.6 / safeSpeed,
+          delay: 0.3 / safeSpeed,
         },
       },
     },
@@ -114,14 +117,13 @@ export default function AnimatedLogo({
             1,
           ],
           repeat: Infinity,
-          // Changed the third easing function from "linear" to "easeInOut"
           ease: ["easeOut", "linear", "easeInOut", "linear"],
         },
       },
     },
   };
 
-  const starFillVariants = {
+  const starFillVariants: Variants = {
     hidden: {
       fillOpacity: 0,
     },
@@ -129,7 +131,7 @@ export default function AnimatedLogo({
       fillOpacity: 1,
       transition: {
         duration: FILL_DURATION,
-        delay: FILL_DURATION + 0.3 / speed,
+        delay: FILL_DURATION + 0.3 / safeSpeed,
         ease: "easeOut",
       },
     },

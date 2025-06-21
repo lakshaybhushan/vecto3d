@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { TEXTURE_PRESETS } from "@/lib/constants";
 import { loadTexture, preloadTextures } from "@/lib/texture-cache";
 import type { TextureOptions } from "@/lib/texture-cache";
+import * as THREE from "three";
 
 interface OptimizedTextureCache {
   diffuse?: THREE.Texture;
@@ -13,7 +14,6 @@ interface OptimizedTextureCache {
 const textureCache = new Map<string, OptimizedTextureCache>();
 let isPreloading = false;
 
-// Preload default textures for better initial experience
 const preloadDefaultTextures = async () => {
   try {
     const oakPreset = TEXTURE_PRESETS.find((preset) => preset.name === "oak");
@@ -27,10 +27,8 @@ const preloadDefaultTextures = async () => {
 
     const textures: OptimizedTextureCache = {};
 
-    // Load diffuse texture
     textures.diffuse = await loadTexture(oakPreset.diffuseMap, textureOptions);
 
-    // Load other maps if available
     if (oakPreset.normalMap) {
       textures.normal = await loadTexture(oakPreset.normalMap, textureOptions);
     }
@@ -52,13 +50,11 @@ const preloadDefaultTextures = async () => {
   }
 };
 
-// Preload all texture URLs for faster switching
 const preloadAllTextures = async () => {
   if (isPreloading) return;
   isPreloading = true;
 
   try {
-    // Collect all texture URLs
     const allUrls: string[] = [];
     for (const preset of TEXTURE_PRESETS) {
       allUrls.push(preset.diffuseMap);
@@ -67,7 +63,6 @@ const preloadAllTextures = async () => {
       if (preset.aoMap) allUrls.push(preset.aoMap);
     }
 
-    // Preload all textures in batches to avoid overwhelming the network
     const batchSize = 5;
     for (let i = 0; i < allUrls.length; i += batchSize) {
       const batch = allUrls.slice(i, i + batchSize);
@@ -76,12 +71,9 @@ const preloadAllTextures = async () => {
         wrapT: THREE.RepeatWrapping,
         generateMipmaps: true,
       });
-
-      // Small delay between batches to prevent browser throttling
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
-    // Cache textures by preset name for quick access
     for (const preset of TEXTURE_PRESETS) {
       try {
         const textures: OptimizedTextureCache = {};
@@ -123,10 +115,8 @@ export function OptimizedTextureProvider({
   );
 
   useEffect(() => {
-    // Start preloading all textures in the background
     preloadAllTextures();
 
-    // Check if textures are already cached
     if (textureCache.has(texturePreset)) {
       const cachedTextures = textureCache.get(texturePreset)!;
       if (textures !== cachedTextures) {
@@ -148,7 +138,6 @@ export function OptimizedTextureProvider({
           generateMipmaps: true,
         };
 
-        // Load textures using the optimized cache
         loadedTextures.diffuse = await loadTexture(
           preset.diffuseMap,
           textureOptions,
@@ -209,7 +198,6 @@ export function FastOptimizedTextureLoader({
       return;
     }
 
-    // Check if textures are already cached
     const cachedTextures = textureCache.get(texturePreset);
     if (cachedTextures) {
       onTexturesLoaded(cachedTextures);
@@ -226,7 +214,6 @@ export function FastOptimizedTextureLoader({
           generateMipmaps: true,
         };
 
-        // Load all textures in parallel for fastest loading
         const promises: Promise<void>[] = [
           loadTexture(preset.diffuseMap, textureOptions).then((tex) => {
             if (isMounted) loadedTextures.diffuse = tex;
@@ -281,8 +268,6 @@ export function FastOptimizedTextureLoader({
   return null;
 }
 
-// Initialize default texture preloading
 if (typeof window !== "undefined") {
-  // Run preloading after a short delay to not block initial render
   setTimeout(preloadDefaultTextures, 1000);
 }
