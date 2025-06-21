@@ -113,9 +113,6 @@ export function TextureControls() {
           <div className="space-y-6">
             {Object.entries(texturesByCategory).map(([category, textures]) => (
               <div key={category} className="space-y-3">
-                <Label className="text-muted-foreground text-sm font-medium capitalize">
-                  {category}
-                </Label>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
                   {textures.map((texture) => (
                     <div

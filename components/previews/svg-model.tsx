@@ -1,12 +1,13 @@
 "use client";
 
-import {
+import React, {
   useRef,
   useMemo,
   useState,
   useEffect,
   forwardRef,
   useImperativeHandle,
+  useCallback,
 } from "react";
 import * as THREE from "three";
 import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
@@ -40,32 +41,6 @@ interface SVGModelProps {
   onLoadComplete?: () => void;
   onError?: (error: Error) => void;
 }
-
-// Optimized texture cache with proper disposal
-const textureCache = new Map<
-  string,
-  {
-    diffuse?: THREE.Texture;
-    normal?: THREE.Texture;
-    roughness?: THREE.Texture;
-    ao?: THREE.Texture;
-    lastUsed: number;
-  }
->();
-
-// Cache cleanup function
-const cleanupOldTextures = (maxAge = 5 * 60 * 1000) => {
-  const now = Date.now();
-  for (const [key, cached] of textureCache.entries()) {
-    if (now - cached.lastUsed > maxAge) {
-      if (cached.diffuse) cached.diffuse.dispose();
-      if (cached.normal) cached.normal.dispose();
-      if (cached.roughness) cached.roughness.dispose();
-      if (cached.ao) cached.ao.dispose();
-      textureCache.delete(key);
-    }
-  }
-};
 
 const applySpread = (
   shape: THREE.Shape,
@@ -137,7 +112,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       transmission = 0,
       receiveShadow = true,
       castShadow = true,
-      // isHollowSvg = false,
       spread = 0,
       // Texture properties
       textureEnabled = false,
@@ -152,16 +126,9 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
   ) => {
     const [paths, setPaths] = useState<THREE.ShapePath[]>([]);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-    const [loadedTextures, setLoadedTextures] = useState<{
-      diffuse?: THREE.Texture;
-      normal?: THREE.Texture;
-      roughness?: THREE.Texture;
-      ao?: THREE.Texture;
-    } | null>(null);
-    const [isLoadingTextures, setIsLoadingTextures] = useState(false);
 
     const groupRef = useRef<THREE.Group>(null);
-    const materialsCache = useRef<Map<string, THREE.Material>>(new Map());
+    const materialsRef = useRef<THREE.Material[]>([]);
 
     // Get current texture preset configuration
     const currentTexturePreset = TEXTURE_PRESETS.find(
@@ -169,115 +136,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     );
 
     useImperativeHandle(ref, () => groupRef.current!, []);
-
-    // Optimized texture loading with proper caching
-    useEffect(() => {
-      if (!textureEnabled || !currentTexturePreset) {
-        setLoadedTextures(null);
-        // Clear materials immediately when textures are disabled
-        materialsCache.current.forEach((material) => {
-          if (material) material.dispose();
-        });
-        materialsCache.current.clear();
-        return;
-      }
-
-      const cacheKey = `${texturePreset}_${textureScale.x}_${textureScale.y}`;
-
-      // Check if textures are already cached
-      const cached = textureCache.get(cacheKey);
-      if (cached) {
-        cached.lastUsed = Date.now();
-        setLoadedTextures(cached);
-        return;
-      }
-
-      // Mark as loading but keep existing textures to avoid visual flashing
-      setIsLoadingTextures(true);
-
-      const loadTexturesAsync = async () => {
-        try {
-          const textures: {
-            diffuse?: THREE.Texture;
-            normal?: THREE.Texture;
-            roughness?: THREE.Texture;
-            ao?: THREE.Texture;
-          } = {};
-
-          // Load textures with proper wrapping and scaling
-          const textureOptions = {
-            wrapS: THREE.RepeatWrapping,
-            wrapT: THREE.RepeatWrapping,
-            repeat: {
-              x: currentTexturePreset.repeat.x / textureScale.x,
-              y: currentTexturePreset.repeat.y / textureScale.y,
-            },
-            generateMipmaps: true,
-          };
-
-          // Load diffuse texture
-          textures.diffuse = await loadTexture(
-            currentTexturePreset.diffuseMap,
-            {
-              ...textureOptions,
-              colorSpace: THREE.SRGBColorSpace,
-            },
-          );
-
-          // Load additional texture maps if available
-          if (currentTexturePreset.normalMap) {
-            textures.normal = await loadTexture(
-              currentTexturePreset.normalMap,
-              textureOptions,
-            );
-          }
-
-          if (currentTexturePreset.roughnessMap) {
-            textures.roughness = await loadTexture(
-              currentTexturePreset.roughnessMap,
-              textureOptions,
-            );
-          }
-
-          if (currentTexturePreset.aoMap) {
-            textures.ao = await loadTexture(
-              currentTexturePreset.aoMap,
-              textureOptions,
-            );
-          }
-
-          // Cache the loaded textures
-          textureCache.set(cacheKey, {
-            ...textures,
-            lastUsed: Date.now(),
-          });
-
-          setLoadedTextures(textures);
-          setIsLoadingTextures(false);
-
-          // Force regeneration of materials with the freshly-loaded textures
-          materialsCache.current.forEach((material) => {
-            material.dispose();
-          });
-          materialsCache.current.clear();
-
-          // Clean up old textures periodically
-          cleanupOldTextures();
-        } catch (error) {
-          console.warn(`Failed to load textures for ${texturePreset}:`, error);
-          setLoadedTextures(null);
-          setIsLoadingTextures(false);
-        }
-      };
-
-      loadTexturesAsync();
-    }, [
-      textureEnabled,
-      texturePreset,
-      textureScale.x,
-      textureScale.y,
-      currentTexturePreset,
-    ]);
 
     // Parse SVG data
     useEffect(() => {
@@ -376,47 +234,17 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       }>;
     }, [paths, customColor, spread]);
 
-    // Optimized material creation with texture support
-    const getMaterial = useMemo(() => {
-      return (color: string | THREE.Color, isHole: boolean) => {
-        const colorString =
-          color instanceof THREE.Color ? `#${color.getHexString()}` : color;
-        const cacheKey = `${colorString}_${roughness}_${metalness}_${clearcoat}_${transmission}_${envMapIntensity}_${textureEnabled}_${texturePreset}_${textureIntensity}_${textureScale.x}_${textureScale.y}_${isHole}_${loadedTextures ? "loaded" : "none"}`;
-
-        if (materialsCache.current.has(cacheKey)) {
-          return materialsCache.current.get(cacheKey)!;
-        }
-
+    // Clean material creation function
+    const createMaterial = useCallback(
+      async (
+        color: string | THREE.Color,
+        isHole: boolean,
+      ): Promise<THREE.MeshPhysicalMaterial> => {
         const threeColor =
           color instanceof THREE.Color ? color : new THREE.Color(color);
 
         const materialProps: THREE.MeshPhysicalMaterialParameters = {
-          color:
-            textureEnabled && loadedTextures?.diffuse
-              ? new THREE.Color(1, 1, 1).lerp(threeColor, 1 - textureIntensity)
-              : threeColor,
-          map:
-            textureEnabled && loadedTextures?.diffuse
-              ? loadedTextures.diffuse
-              : null,
-          normalMap:
-            textureEnabled && loadedTextures?.normal
-              ? loadedTextures.normal
-              : null,
-          normalScale:
-            textureEnabled && loadedTextures?.normal
-              ? new THREE.Vector2(
-                  currentTexturePreset?.bumpScale || 0.02,
-                  currentTexturePreset?.bumpScale || 0.02,
-                )
-              : undefined,
-          roughnessMap:
-            textureEnabled && loadedTextures?.roughness
-              ? loadedTextures.roughness
-              : null,
-          aoMap:
-            textureEnabled && loadedTextures?.ao ? loadedTextures.ao : null,
-          aoMapIntensity: textureEnabled && loadedTextures?.ao ? 1.0 : 1.0,
+          color: threeColor,
           roughness: Math.max(
             0.01,
             textureEnabled &&
@@ -461,10 +289,96 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
           opacity: isHole ? 0.5 : 1.0,
         };
 
-        const material = new THREE.MeshPhysicalMaterial(materialProps);
-        materialsCache.current.set(cacheKey, material);
-        return material;
-      };
+        // Apply textures if enabled
+        if (textureEnabled && currentTexturePreset) {
+          try {
+            const textureOptions = {
+              wrapS: THREE.RepeatWrapping,
+              wrapT: THREE.RepeatWrapping,
+              repeat: {
+                x: currentTexturePreset.repeat.x / textureScale.x,
+                y: currentTexturePreset.repeat.y / textureScale.y,
+              },
+              generateMipmaps: true,
+            };
+
+            // Load diffuse texture
+            const diffuseTexture = await loadTexture(
+              currentTexturePreset.diffuseMap,
+              {
+                ...textureOptions,
+                colorSpace: THREE.SRGBColorSpace,
+              },
+            );
+
+            materialProps.map = diffuseTexture;
+            materialProps.color = new THREE.Color(1, 1, 1).lerp(
+              threeColor,
+              1 - textureIntensity,
+            );
+
+            // Load normal map if available
+            if (currentTexturePreset.normalMap) {
+              const normalTexture = await loadTexture(
+                currentTexturePreset.normalMap,
+                textureOptions,
+              );
+              materialProps.normalMap = normalTexture;
+              materialProps.normalScale = new THREE.Vector2(
+                currentTexturePreset?.bumpScale || 0.02,
+                currentTexturePreset?.bumpScale || 0.02,
+              );
+            }
+
+            // Load roughness map if available
+            if (currentTexturePreset.roughnessMap) {
+              const roughnessTexture = await loadTexture(
+                currentTexturePreset.roughnessMap,
+                textureOptions,
+              );
+              materialProps.roughnessMap = roughnessTexture;
+            }
+
+            // Load AO map if available
+            if (currentTexturePreset.aoMap) {
+              const aoTexture = await loadTexture(
+                currentTexturePreset.aoMap,
+                textureOptions,
+              );
+              materialProps.aoMap = aoTexture;
+              materialProps.aoMapIntensity = 1.0;
+            }
+          } catch (error) {
+            console.warn(
+              `Failed to load textures for ${texturePreset}:`,
+              error,
+            );
+          }
+        }
+
+        return new THREE.MeshPhysicalMaterial(materialProps);
+      },
+      [
+        textureEnabled,
+        currentTexturePreset,
+        roughness,
+        metalness,
+        clearcoat,
+        transmission,
+        envMapIntensity,
+        textureIntensity,
+        textureScale.x,
+        textureScale.y,
+      ],
+    );
+
+    // Clean up materials on component props change
+    useEffect(() => {
+      // Dispose old materials
+      materialsRef.current.forEach((material) => {
+        material.dispose();
+      });
+      materialsRef.current = [];
     }, [
       roughness,
       metalness,
@@ -476,34 +390,20 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       textureIntensity,
       textureScale.x,
       textureScale.y,
-      loadedTextures,
-      currentTexturePreset,
     ]);
-
-    // Material cache is now cleared in the texture loading useEffect to ensure immediate updates
 
     // Cleanup on unmount
     useEffect(() => {
-      const cache = materialsCache.current;
-      const group = groupRef.current;
-
       return () => {
-        cache.forEach((material) => {
-          if (material) material.dispose();
+        materialsRef.current.forEach((material) => {
+          material.dispose();
         });
-        cache.clear();
+        materialsRef.current = [];
 
-        if (group) {
-          group.traverse((object) => {
+        if (groupRef.current) {
+          groupRef.current.traverse((object) => {
             if (object instanceof THREE.Mesh) {
               if (object.geometry) object.geometry.dispose();
-              if (Array.isArray(object.material)) {
-                object.material.forEach((material) => {
-                  if (!cache.has(material.uuid)) material.dispose();
-                });
-              } else if (object.material && !cache.has(object.material.uuid)) {
-                object.material.dispose();
-              }
             }
           });
         }
@@ -514,6 +414,22 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       if (dimensions.width === 0 || dimensions.height === 0) return 1;
       return 100 / Math.max(dimensions.width, dimensions.height);
     }, [dimensions]);
+
+    // Create a stable key for material changes
+    const materialKey = useMemo(() => {
+      return `${textureEnabled}-${texturePreset}-${roughness}-${metalness}-${clearcoat}-${transmission}-${envMapIntensity}-${textureIntensity}-${textureScale.x}-${textureScale.y}`;
+    }, [
+      textureEnabled,
+      texturePreset,
+      roughness,
+      metalness,
+      clearcoat,
+      transmission,
+      envMapIntensity,
+      textureIntensity,
+      textureScale.x,
+      textureScale.y,
+    ]);
 
     if (geometryData.length === 0) return null;
 
@@ -554,24 +470,40 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
           {geometryData.map((shapeItem, i) => (
             <group key={i} renderOrder={shapeItem.renderOrder}>
               {shapeItem.shapes.map((shape, j) => (
-                <mesh
-                  key={j}
-                  castShadow={castShadow}
-                  receiveShadow={receiveShadow}
-                  renderOrder={shapeItem.renderOrder}
-                  position={[
-                    xOffset,
-                    yOffset,
-                    shapeItem.isHole ? -depth / 4 : -depth / 2,
-                  ]}>
-                  <extrudeGeometry
-                    args={[shape, getExtrudeSettings(shapeItem.isHole)]}
+                <React.Suspense
+                  key={`${materialKey}-${i}-${j}`}
+                  fallback={null}>
+                  <MaterializedMesh
+                    key={`${materialKey}-${i}-${j}`}
+                    shape={shape}
+                    color={shapeItem.color}
+                    isHole={shapeItem.isHole}
+                    extrudeSettings={getExtrudeSettings(shapeItem.isHole)}
+                    position={[
+                      xOffset,
+                      yOffset,
+                      shapeItem.isHole ? -depth / 4 : -depth / 2,
+                    ]}
+                    castShadow={castShadow}
+                    receiveShadow={receiveShadow}
+                    renderOrder={shapeItem.renderOrder}
+                    onMaterialReady={(mat) => {
+                      materialsRef.current.push(mat);
+                    }}
+                    // Material props
+                    roughness={roughness}
+                    metalness={metalness}
+                    clearcoat={clearcoat}
+                    transmission={transmission}
+                    envMapIntensity={envMapIntensity}
+                    textureEnabled={textureEnabled}
+                    texturePreset={texturePreset}
+                    textureIntensity={textureIntensity}
+                    textureScale={textureScale}
+                    currentTexturePreset={currentTexturePreset}
+                    createMaterial={createMaterial}
                   />
-                  <primitive
-                    object={getMaterial(shapeItem.color, shapeItem.isHole)}
-                    attach="material"
-                  />
-                </mesh>
+                </React.Suspense>
               ))}
             </group>
           ))}
@@ -580,5 +512,77 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     );
   },
 );
+
+// Helper component to handle async material loading
+function MaterializedMesh({
+  shape,
+  color,
+  isHole,
+  extrudeSettings,
+  position,
+  castShadow,
+  receiveShadow,
+  renderOrder,
+  onMaterialReady,
+  roughness,
+  metalness,
+  clearcoat,
+  transmission,
+  envMapIntensity,
+  textureEnabled,
+  texturePreset,
+  textureIntensity,
+  textureScale,
+  currentTexturePreset,
+  createMaterial,
+}: {
+  shape: THREE.Shape;
+  color: string | THREE.Color;
+  isHole: boolean;
+  extrudeSettings: any;
+  position: [number, number, number];
+  castShadow: boolean;
+  receiveShadow: boolean;
+  renderOrder: number;
+  onMaterialReady: (material: THREE.MeshPhysicalMaterial) => void;
+  roughness: number;
+  metalness: number;
+  clearcoat: number;
+  transmission: number;
+  envMapIntensity: number;
+  textureEnabled: boolean;
+  texturePreset: string;
+  textureIntensity: number;
+  textureScale: { x: number; y: number };
+  currentTexturePreset: { name: string } | undefined;
+  createMaterial: (
+    color: string | THREE.Color,
+    isHole: boolean,
+  ) => Promise<THREE.MeshPhysicalMaterial>;
+}) {
+  const [material, setMaterial] = useState<THREE.MeshPhysicalMaterial | null>(
+    null,
+  );
+
+  useEffect(() => {
+    createMaterial(color, isHole).then((mat) => {
+      setMaterial(mat);
+      onMaterialReady(mat);
+    });
+  }, [createMaterial, color, isHole, onMaterialReady]);
+
+  if (!material) return null;
+
+  return (
+    <mesh
+      castShadow={castShadow}
+      receiveShadow={receiveShadow}
+      renderOrder={renderOrder}
+      position={position}>
+      <extrudeGeometry args={[shape, extrudeSettings]} />
+      <primitive object={material} attach="material" />
+    </mesh>
+  );
+}
 
 SVGModel.displayName = "SVGModel";

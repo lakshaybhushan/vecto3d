@@ -252,13 +252,12 @@ export default function EditPage() {
   const svgProcessingError = useEditorStore(
     (state) => state.svgProcessingError,
   );
-
   const isFullscreen = useEditorStore((state) => state.isFullscreen);
   const setIsFullscreen = useEditorStore((state) => state.setIsFullscreen);
   const resetEditor = useEditorStore((state) => state.resetEditor);
 
-  const modelRef = useRef<THREE.Group | null>(null);
   const modelGroupRef = useRef<THREE.Group | null>(null);
+  const modelRef = useRef<THREE.Group | null>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
   const router = useRouter();
@@ -269,8 +268,8 @@ export default function EditPage() {
     clearMobilePreference,
   } = useMobileDetection();
 
-  // Preload all textures immediately when /edit route is visited
-  const texturePreloadStats = useTexturePreloader(true);
+  // Initialize texture preloader
+  const textureStats = useTexturePreloader(true);
 
   useEffect(() => {
     setIsClientMounted(true);
