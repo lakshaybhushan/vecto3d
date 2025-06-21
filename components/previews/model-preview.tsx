@@ -159,7 +159,7 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
         dpr={
           typeof window !== "undefined" ? window?.devicePixelRatio || 1.5 : 1.5
         }
-        frameloop="demand"
+        frameloop="always"
         performance={{ min: 0.5 }}
         gl={{
           antialias: true,

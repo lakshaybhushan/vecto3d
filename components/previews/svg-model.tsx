@@ -12,7 +12,7 @@ import * as THREE from "three";
 import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
 import { Center } from "@react-three/drei";
 import { TEXTURE_PRESETS } from "@/lib/constants";
-import { FastTextureLoader } from "@/components/previews/texture-presets";
+import { loadTexture } from "@/lib/texture-cache";
 
 interface SVGModelProps {
   svgData: string;
@@ -40,6 +40,32 @@ interface SVGModelProps {
   onLoadComplete?: () => void;
   onError?: (error: Error) => void;
 }
+
+// Optimized texture cache with proper disposal
+const textureCache = new Map<
+  string,
+  {
+    diffuse?: THREE.Texture;
+    normal?: THREE.Texture;
+    roughness?: THREE.Texture;
+    ao?: THREE.Texture;
+    lastUsed: number;
+  }
+>();
+
+// Cache cleanup function
+const cleanupOldTextures = (maxAge = 5 * 60 * 1000) => {
+  const now = Date.now();
+  for (const [key, cached] of textureCache.entries()) {
+    if (now - cached.lastUsed > maxAge) {
+      if (cached.diffuse) cached.diffuse.dispose();
+      if (cached.normal) cached.normal.dispose();
+      if (cached.roughness) cached.roughness.dispose();
+      if (cached.ao) cached.ao.dispose();
+      textureCache.delete(key);
+    }
+  }
+};
 
 const applySpread = (
   shape: THREE.Shape,
@@ -132,38 +158,137 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       roughness?: THREE.Texture;
       ao?: THREE.Texture;
     } | null>(null);
+    const [isLoadingTextures, setIsLoadingTextures] = useState(false);
+
     const groupRef = useRef<THREE.Group>(null);
     const materialsCache = useRef<Map<string, THREE.Material>>(new Map());
 
-    // Load textures based on preset
+    // Get current texture preset configuration
     const currentTexturePreset = TEXTURE_PRESETS.find(
       (preset) => preset.name === texturePreset,
     );
 
-    const diffuseTexture =
-      textureEnabled && loadedTextures ? loadedTextures.diffuse || null : null;
-    const normalTexture =
-      textureEnabled && loadedTextures ? loadedTextures.normal || null : null;
-    const roughnessTexture =
-      textureEnabled && loadedTextures
-        ? loadedTextures.roughness || null
-        : null;
-    const aoTexture =
-      textureEnabled && loadedTextures ? loadedTextures.ao || null : null;
-
     useImperativeHandle(ref, () => groupRef.current!, []);
 
+    // Optimized texture loading with proper caching
+    useEffect(() => {
+      if (!textureEnabled || !currentTexturePreset) {
+        setLoadedTextures(null);
+        // Clear materials immediately when textures are disabled
+        materialsCache.current.forEach((material) => {
+          if (material) material.dispose();
+        });
+        materialsCache.current.clear();
+        return;
+      }
+
+      const cacheKey = `${texturePreset}_${textureScale.x}_${textureScale.y}`;
+
+      // Check if textures are already cached
+      const cached = textureCache.get(cacheKey);
+      if (cached) {
+        cached.lastUsed = Date.now();
+        setLoadedTextures(cached);
+        return;
+      }
+
+      // Mark as loading but keep existing textures to avoid visual flashing
+      setIsLoadingTextures(true);
+
+      const loadTexturesAsync = async () => {
+        try {
+          const textures: {
+            diffuse?: THREE.Texture;
+            normal?: THREE.Texture;
+            roughness?: THREE.Texture;
+            ao?: THREE.Texture;
+          } = {};
+
+          // Load textures with proper wrapping and scaling
+          const textureOptions = {
+            wrapS: THREE.RepeatWrapping,
+            wrapT: THREE.RepeatWrapping,
+            repeat: {
+              x: currentTexturePreset.repeat.x / textureScale.x,
+              y: currentTexturePreset.repeat.y / textureScale.y,
+            },
+            generateMipmaps: true,
+          };
+
+          // Load diffuse texture
+          textures.diffuse = await loadTexture(
+            currentTexturePreset.diffuseMap,
+            {
+              ...textureOptions,
+              colorSpace: THREE.SRGBColorSpace,
+            },
+          );
+
+          // Load additional texture maps if available
+          if (currentTexturePreset.normalMap) {
+            textures.normal = await loadTexture(
+              currentTexturePreset.normalMap,
+              textureOptions,
+            );
+          }
+
+          if (currentTexturePreset.roughnessMap) {
+            textures.roughness = await loadTexture(
+              currentTexturePreset.roughnessMap,
+              textureOptions,
+            );
+          }
+
+          if (currentTexturePreset.aoMap) {
+            textures.ao = await loadTexture(
+              currentTexturePreset.aoMap,
+              textureOptions,
+            );
+          }
+
+          // Cache the loaded textures
+          textureCache.set(cacheKey, {
+            ...textures,
+            lastUsed: Date.now(),
+          });
+
+          setLoadedTextures(textures);
+          setIsLoadingTextures(false);
+
+          // Force regeneration of materials with the freshly-loaded textures
+          materialsCache.current.forEach((material) => {
+            material.dispose();
+          });
+          materialsCache.current.clear();
+
+          // Clean up old textures periodically
+          cleanupOldTextures();
+        } catch (error) {
+          console.warn(`Failed to load textures for ${texturePreset}:`, error);
+          setLoadedTextures(null);
+          setIsLoadingTextures(false);
+        }
+      };
+
+      loadTexturesAsync();
+    }, [
+      textureEnabled,
+      texturePreset,
+      textureScale.x,
+      textureScale.y,
+      currentTexturePreset,
+    ]);
+
+    // Parse SVG data
     useEffect(() => {
       if (!svgData) return;
-      const cache = materialsCache.current;
 
       onLoadStart?.();
 
       try {
-        // Remove special characters and symbols
         const processedSvgData = svgData
-          .replace(/[™®©]/g, "") // Remove trademark, registered, and copyright symbols
-          .replace(/&trade;|&reg;|&copy;/g, ""); // Remove HTML entities
+          .replace(/[™®©]/g, "")
+          .replace(/&trade;|&reg;|&copy;/g, "");
 
         const parser = new DOMParser();
         const svgDoc = parser.parseFromString(
@@ -177,12 +302,10 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         }
 
         const svgElement = svgDoc.querySelector("svg");
-
         if (!svgElement) {
           throw new Error("Invalid SVG: No SVG element found");
         }
 
-        // Remove text elements containing special characters
         const textElements = svgDoc.querySelectorAll("text");
         if (textElements.length > 0) {
           textElements.forEach((textEl) => {
@@ -194,7 +317,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         }
 
         const svgString = new XMLSerializer().serializeToString(svgDoc);
-
         const viewBox = svgElement.getAttribute("viewBox");
         let width = Number.parseFloat(
           svgElement.getAttribute("width") || "100",
@@ -204,9 +326,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         );
 
         if (viewBox) {
-          const [, , vbWidth, vbHeight] = viewBox
-            .split(" ")
-            .map(Number.parseFloat);
+          const [, , vbWidth, vbHeight] = viewBox.split(" ").map(Number);
           width = vbWidth;
           height = vbHeight;
         }
@@ -214,36 +334,25 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         setDimensions({ width, height });
 
         const loader = new SVGLoader();
-        const svgData2 = loader.parse(svgString);
-
-        setPaths(svgData2.paths);
+        const svgResult = loader.parse(svgString);
+        setPaths(svgResult.paths);
         onLoadComplete?.();
       } catch (error) {
-        console.error("Error parsing SVG:", error);
+        console.error("SVG parsing error:", error);
         onError?.(
-          error instanceof Error ? error : new Error("Failed to parse SVG"),
+          error instanceof Error ? error : new Error("SVG parsing failed"),
         );
       }
-
-      return () => {
-        cache.clear();
-      };
     }, [svgData, onLoadStart, onLoadComplete, onError]);
 
-    // Separate geometry creation from material properties for better performance
+    // Optimized geometry generation
     const geometryData = useMemo(() => {
-      if (paths.length === 0) return [];
+      if (!paths.length) return [];
 
       return paths
         .map((path, index) => {
           try {
             const shapes = SVGLoader.createShapes(path);
-
-            if (shapes.length === 0) {
-              console.warn("No shapes created from path", index);
-              return null;
-            }
-
             const processedShapes = shapes.map((shape) =>
               applySpread(shape, false, spread),
             );
@@ -265,11 +374,97 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         renderOrder: number;
         isHole: boolean;
       }>;
-    }, [paths, customColor, spread]); // Only depends on SVG geometry, not materials
+    }, [paths, customColor, spread]);
 
-    // Separate material dependencies for better optimization
-    const materialKey = useMemo(() => {
-      return `${roughness}_${metalness}_${clearcoat}_${transmission}_${envMapIntensity}_${textureEnabled}_${texturePreset}_${textureIntensity}_${textureScale.x}_${textureScale.y}`;
+    // Optimized material creation with texture support
+    const getMaterial = useMemo(() => {
+      return (color: string | THREE.Color, isHole: boolean) => {
+        const colorString =
+          color instanceof THREE.Color ? `#${color.getHexString()}` : color;
+        const cacheKey = `${colorString}_${roughness}_${metalness}_${clearcoat}_${transmission}_${envMapIntensity}_${textureEnabled}_${texturePreset}_${textureIntensity}_${textureScale.x}_${textureScale.y}_${isHole}_${loadedTextures ? "loaded" : "none"}`;
+
+        if (materialsCache.current.has(cacheKey)) {
+          return materialsCache.current.get(cacheKey)!;
+        }
+
+        const threeColor =
+          color instanceof THREE.Color ? color : new THREE.Color(color);
+
+        const materialProps: THREE.MeshPhysicalMaterialParameters = {
+          color:
+            textureEnabled && loadedTextures?.diffuse
+              ? new THREE.Color(1, 1, 1).lerp(threeColor, 1 - textureIntensity)
+              : threeColor,
+          map:
+            textureEnabled && loadedTextures?.diffuse
+              ? loadedTextures.diffuse
+              : null,
+          normalMap:
+            textureEnabled && loadedTextures?.normal
+              ? loadedTextures.normal
+              : null,
+          normalScale:
+            textureEnabled && loadedTextures?.normal
+              ? new THREE.Vector2(
+                  currentTexturePreset?.bumpScale || 0.02,
+                  currentTexturePreset?.bumpScale || 0.02,
+                )
+              : undefined,
+          roughnessMap:
+            textureEnabled && loadedTextures?.roughness
+              ? loadedTextures.roughness
+              : null,
+          aoMap:
+            textureEnabled && loadedTextures?.ao ? loadedTextures.ao : null,
+          aoMapIntensity: textureEnabled && loadedTextures?.ao ? 1.0 : 1.0,
+          roughness: Math.max(
+            0.01,
+            textureEnabled &&
+              currentTexturePreset?.roughnessAdjust !== undefined
+              ? currentTexturePreset.roughnessAdjust
+              : roughness,
+          ),
+          metalness:
+            textureEnabled &&
+            currentTexturePreset?.metalnessAdjust !== undefined
+              ? currentTexturePreset.metalnessAdjust
+              : metalness,
+          clearcoat: clearcoat,
+          clearcoatRoughness: Math.max(
+            0.01,
+            clearcoat > 0 ? roughness * 0.3 : 0.01,
+          ),
+          reflectivity: metalness > 0.5 ? 1.0 : 0.5,
+          ior: transmission > 0 ? 1.5 : 1.4,
+          thickness: transmission > 0 ? 5.0 : 0.0,
+          attenuationDistance: transmission > 0 ? 0.5 : Infinity,
+          attenuationColor:
+            transmission > 0
+              ? new THREE.Color(1, 1, 1)
+              : new THREE.Color(0, 0, 0),
+          sheen: metalness < 0.1 && roughness > 0.5 ? 0.1 : 0.0,
+          sheenRoughness: metalness < 0.1 && roughness > 0.5 ? 0.8 : 0.0,
+          sheenColor:
+            metalness < 0.1 && roughness > 0.5
+              ? new THREE.Color(0.1, 0.1, 0.1)
+              : new THREE.Color(0, 0, 0),
+          anisotropy: metalness > 0.5 && roughness < 0.3 ? 0.2 : 0.0,
+          envMapIntensity: Math.max(0.1, envMapIntensity),
+          transmission,
+          side: THREE.DoubleSide,
+          polygonOffset: true,
+          polygonOffsetFactor: isHole ? -1 : 1,
+          polygonOffsetUnits: isHole ? -1 : 1,
+          flatShading: false,
+          wireframe: false,
+          transparent: transmission > 0 || isHole,
+          opacity: isHole ? 0.5 : 1.0,
+        };
+
+        const material = new THREE.MeshPhysicalMaterial(materialProps);
+        materialsCache.current.set(cacheKey, material);
+        return material;
+      };
     }, [
       roughness,
       metalness,
@@ -281,168 +476,17 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       textureIntensity,
       textureScale.x,
       textureScale.y,
-    ]);
-
-    // Create final shapes with materials, but with better dependency separation
-    const shapesWithMaterials = useMemo(() => {
-      return geometryData.map((item) => ({
-        ...item,
-        materialKey, // Include material key to trigger updates when materials change
-      }));
-    }, [geometryData, materialKey]);
-
-    const scale = useMemo(() => {
-      if (dimensions.width === 0 || dimensions.height === 0) return 1;
-      return 100 / Math.max(dimensions.width, dimensions.height);
-    }, [dimensions]);
-
-    const getMaterial = (color: string | THREE.Color, isHole: boolean) => {
-      const colorString =
-        color instanceof THREE.Color ? `#${color.getHexString()}` : color;
-      const cacheKey = `${colorString}_${roughness}_${metalness}_${clearcoat}_${transmission}_${envMapIntensity}_${textureEnabled}_${texturePreset}_${textureIntensity}_${textureScale.x}_${textureScale.y}_${loadedTextures ? "loaded" : "none"}`;
-
-      if (materialsCache.current.has(cacheKey)) {
-        return materialsCache.current.get(cacheKey)!;
-      }
-
-      const threeColor =
-        color instanceof THREE.Color ? color : new THREE.Color(color);
-
-      // Configure textures if enabled
-      let configuredDiffuseTexture: THREE.Texture | null = null;
-      let configuredNormalTexture: THREE.Texture | null = null;
-      let configuredRoughnessTexture: THREE.Texture | null = null;
-      let configuredAoTexture: THREE.Texture | null = null;
-
-      if (textureEnabled && currentTexturePreset) {
-        // Configure diffuse texture
-        if (diffuseTexture && diffuseTexture instanceof THREE.Texture) {
-          configuredDiffuseTexture = diffuseTexture.clone();
-          configuredDiffuseTexture.wrapS = THREE.RepeatWrapping;
-          configuredDiffuseTexture.wrapT = THREE.RepeatWrapping;
-          configuredDiffuseTexture.repeat.set(
-            currentTexturePreset.repeat.x / textureScale.x,
-            currentTexturePreset.repeat.y / textureScale.y,
-          );
-          configuredDiffuseTexture.colorSpace = THREE.SRGBColorSpace;
-        }
-
-        // Configure normal texture
-        if (normalTexture && normalTexture instanceof THREE.Texture) {
-          configuredNormalTexture = normalTexture.clone();
-          configuredNormalTexture.wrapS = THREE.RepeatWrapping;
-          configuredNormalTexture.wrapT = THREE.RepeatWrapping;
-          configuredNormalTexture.repeat.set(
-            currentTexturePreset.repeat.x / textureScale.x,
-            currentTexturePreset.repeat.y / textureScale.y,
-          );
-        }
-
-        // Configure roughness texture
-        if (roughnessTexture && roughnessTexture instanceof THREE.Texture) {
-          configuredRoughnessTexture = roughnessTexture.clone();
-          configuredRoughnessTexture.wrapS = THREE.RepeatWrapping;
-          configuredRoughnessTexture.wrapT = THREE.RepeatWrapping;
-          configuredRoughnessTexture.repeat.set(
-            currentTexturePreset.repeat.x / textureScale.x,
-            currentTexturePreset.repeat.y / textureScale.y,
-          );
-        }
-
-        // Configure AO texture
-        if (aoTexture && aoTexture instanceof THREE.Texture) {
-          configuredAoTexture = aoTexture.clone();
-          configuredAoTexture.wrapS = THREE.RepeatWrapping;
-          configuredAoTexture.wrapT = THREE.RepeatWrapping;
-          configuredAoTexture.repeat.set(
-            currentTexturePreset.repeat.x / textureScale.x,
-            currentTexturePreset.repeat.y / textureScale.y,
-          );
-        }
-      }
-
-      const materialProps: THREE.MeshPhysicalMaterialParameters = {
-        color:
-          textureEnabled && configuredDiffuseTexture
-            ? new THREE.Color(1, 1, 1).lerp(threeColor, 1 - textureIntensity)
-            : threeColor,
-        map: configuredDiffuseTexture,
-        normalMap: configuredNormalTexture,
-        normalScale: configuredNormalTexture
-          ? new THREE.Vector2(
-              currentTexturePreset?.bumpScale || 0.02,
-              currentTexturePreset?.bumpScale || 0.02,
-            )
-          : undefined,
-        roughnessMap: configuredRoughnessTexture,
-        aoMap: configuredAoTexture,
-        aoMapIntensity: configuredAoTexture ? 1.0 : 1.0,
-        roughness: Math.max(
-          0.01,
-          textureEnabled && currentTexturePreset?.roughnessAdjust !== undefined
-            ? currentTexturePreset.roughnessAdjust
-            : roughness,
-        ),
-        metalness:
-          textureEnabled && currentTexturePreset?.metalnessAdjust !== undefined
-            ? currentTexturePreset.metalnessAdjust
-            : metalness,
-        clearcoat: clearcoat,
-        clearcoatRoughness: Math.max(
-          0.01,
-          clearcoat > 0 ? roughness * 0.3 : 0.01,
-        ),
-        reflectivity: metalness > 0.5 ? 1.0 : 0.5,
-        ior: transmission > 0 ? 1.5 : 1.4,
-        thickness: transmission > 0 ? 5.0 : 0.0,
-        attenuationDistance: transmission > 0 ? 0.5 : Infinity,
-        attenuationColor:
-          transmission > 0
-            ? new THREE.Color(1, 1, 1)
-            : new THREE.Color(0, 0, 0),
-        sheen: metalness < 0.1 && roughness > 0.5 ? 0.1 : 0.0,
-        sheenRoughness: metalness < 0.1 && roughness > 0.5 ? 0.8 : 0.0,
-        sheenColor:
-          metalness < 0.1 && roughness > 0.5
-            ? new THREE.Color(0.1, 0.1, 0.1)
-            : new THREE.Color(0, 0, 0),
-        anisotropy: metalness > 0.5 && roughness < 0.3 ? 0.2 : 0.0,
-        envMapIntensity: Math.max(0.1, envMapIntensity),
-        transmission,
-        side: THREE.DoubleSide,
-        polygonOffset: true,
-        polygonOffsetFactor: isHole ? -1 : 1,
-        polygonOffsetUnits: isHole ? -1 : 1,
-        flatShading: false,
-        wireframe: false,
-        transparent: transmission > 0 || isHole,
-        opacity: isHole ? 0.5 : 1.0,
-      };
-
-      const material = new THREE.MeshPhysicalMaterial(materialProps);
-
-      materialsCache.current.set(cacheKey, material);
-      return material;
-    };
-
-    // Clear material cache when textures change
-    useEffect(() => {
-      materialsCache.current.forEach((material) => {
-        if (material) material.dispose();
-      });
-      materialsCache.current.clear();
-    }, [
-      textureEnabled,
-      texturePreset,
-      textureIntensity,
-      textureScale.x,
-      textureScale.y,
       loadedTextures,
+      currentTexturePreset,
     ]);
 
+    // Material cache is now cleared in the texture loading useEffect to ensure immediate updates
+
+    // Cleanup on unmount
     useEffect(() => {
       const cache = materialsCache.current;
       const group = groupRef.current;
+
       return () => {
         cache.forEach((material) => {
           if (material) material.dispose();
@@ -453,7 +497,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
           group.traverse((object) => {
             if (object instanceof THREE.Mesh) {
               if (object.geometry) object.geometry.dispose();
-
               if (Array.isArray(object.material)) {
                 object.material.forEach((material) => {
                   if (!cache.has(material.uuid)) material.dispose();
@@ -467,7 +510,12 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       };
     }, []);
 
-    if (shapesWithMaterials.length === 0) return null;
+    const scale = useMemo(() => {
+      if (dimensions.width === 0 || dimensions.height === 0) return 1;
+      return 100 / Math.max(dimensions.width, dimensions.height);
+    }, [dimensions]);
+
+    if (geometryData.length === 0) return null;
 
     const getExtrudeSettings = (isHole: boolean) => ({
       depth,
@@ -481,7 +529,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     const box = new THREE.Box3();
     const tempGroup = new THREE.Group();
 
-    shapesWithMaterials.forEach((shapeItem) => {
+    geometryData.forEach((shapeItem) => {
       shapeItem.shapes.forEach((shape) => {
         const geometry = new THREE.ShapeGeometry(shape);
         const mesh = new THREE.Mesh(geometry);
@@ -497,46 +545,38 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     const yOffset = size.y / -2;
 
     return (
-      <>
-        {textureEnabled && (
-          <FastTextureLoader
-            texturePreset={texturePreset}
-            onTexturesLoaded={setLoadedTextures}
-          />
-        )}
-        <Center>
-          <group
-            ref={groupRef}
-            scale={[scale, -scale, scale]}
-            position={[0, 0, 0]}
-            rotation={[0, Math.PI / 4, 0]}>
-            {shapesWithMaterials.map((shapeItem, i) => (
-              <group key={i} renderOrder={shapeItem.renderOrder}>
-                {shapeItem.shapes.map((shape, j) => (
-                  <mesh
-                    key={j}
-                    castShadow={castShadow}
-                    receiveShadow={receiveShadow}
-                    renderOrder={shapeItem.renderOrder}
-                    position={[
-                      xOffset,
-                      yOffset,
-                      shapeItem.isHole ? -depth / 4 : -depth / 2,
-                    ]}>
-                    <extrudeGeometry
-                      args={[shape, getExtrudeSettings(shapeItem.isHole)]}
-                    />
-                    <primitive
-                      object={getMaterial(shapeItem.color, shapeItem.isHole)}
-                      attach="material"
-                    />
-                  </mesh>
-                ))}
-              </group>
-            ))}
-          </group>
-        </Center>
-      </>
+      <Center>
+        <group
+          ref={groupRef}
+          scale={[scale, -scale, scale]}
+          position={[0, 0, 0]}
+          rotation={[0, Math.PI / 4, 0]}>
+          {geometryData.map((shapeItem, i) => (
+            <group key={i} renderOrder={shapeItem.renderOrder}>
+              {shapeItem.shapes.map((shape, j) => (
+                <mesh
+                  key={j}
+                  castShadow={castShadow}
+                  receiveShadow={receiveShadow}
+                  renderOrder={shapeItem.renderOrder}
+                  position={[
+                    xOffset,
+                    yOffset,
+                    shapeItem.isHole ? -depth / 4 : -depth / 2,
+                  ]}>
+                  <extrudeGeometry
+                    args={[shape, getExtrudeSettings(shapeItem.isHole)]}
+                  />
+                  <primitive
+                    object={getMaterial(shapeItem.color, shapeItem.isHole)}
+                    attach="material"
+                  />
+                </mesh>
+              ))}
+            </group>
+          ))}
+        </group>
+      </Center>
     );
   },
 );

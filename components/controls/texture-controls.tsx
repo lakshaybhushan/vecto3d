@@ -109,7 +109,7 @@ export function TextureControls() {
       </div>
 
       {textureEnabled && (
-        <div className="space-y-6 pr-4">
+        <div className="space-y-6">
           <div className="space-y-6">
             {Object.entries(texturesByCategory).map(([category, textures]) => (
               <div key={category} className="space-y-3">

@@ -35,6 +35,7 @@ import { EditorMobileWarning } from "@/components/modals/mobile-warning";
 
 import { useDebounce } from "@/hooks/use-debounce";
 import { useMobileDetection } from "@/hooks/use-mobile-detection";
+import { useTexturePreloader } from "@/hooks/use-texture-preloader";
 import { useEditorStore } from "@/lib/store";
 import { DARK_MODE_COLOR, LIGHT_MODE_COLOR } from "@/lib/constants";
 import AnimatedLogo from "@/components/ui/animated-logo";
@@ -244,6 +245,7 @@ const VibeModeManager = memo(() => {
 VibeModeManager.displayName = "VibeModeManager";
 
 export default function EditPage() {
+  const [isClientMounted, setIsClientMounted] = useState(false);
   const svgData = useEditorStore((state) => state.svgData);
   const fileName = useEditorStore((state) => state.fileName);
   const isModelLoading = useEditorStore((state) => state.isModelLoading);
@@ -267,10 +269,11 @@ export default function EditPage() {
     clearMobilePreference,
   } = useMobileDetection();
 
-  const [hasMounted, setHasMounted] = useState(false);
+  // Preload all textures immediately when /edit route is visited
+  const texturePreloadStats = useTexturePreloader(true);
 
   useEffect(() => {
-    setHasMounted(true);
+    setIsClientMounted(true);
 
     // Cleanup session storage when component unmounts (user navigates away)
     return () => {
@@ -303,26 +306,21 @@ export default function EditPage() {
   }, [setIsFullscreen]);
 
   const renderModelPreview = () => {
-    if (!hasMounted) {
-      return <ModelLoadingState message="Loading editor..." />;
+    if (!isClientMounted) {
+      return <ModelLoadingState message="Initializing editor..." />;
     }
-
-    if (!svgData) {
-      return <ModelLoadingState message="No SVG data found" />;
-    }
-
-    if (isModelLoading) {
-      return <ModelLoadingState message="Generating 3D model..." />;
-    }
-
-    if (svgProcessingError) {
+    if (svgProcessingError)
       return <ModelErrorState error={svgProcessingError} />;
+    if (isModelLoading) {
+      return (
+        <ModelLoadingState message="Reconstructing your 3D model geometry..." />
+      );
     }
 
     return (
       <div className="h-full w-full md:overflow-hidden">
         <ModelPreview
-          svgData={svgData}
+          svgData={svgData!}
           modelGroupRef={modelGroupRef}
           modelRef={modelRef}
           isMobile={isMobile}
@@ -341,7 +339,7 @@ export default function EditPage() {
     );
   };
 
-  if (!hasMounted) {
+  if (!isClientMounted) {
     return null;
   }
 
@@ -505,7 +503,7 @@ export default function EditPage() {
                     </CardDescription>
                   </div>
                 </CardHeader>
-                <CardContent className="flex-1 overflow-y-auto p-4">
+                <CardContent className="flex-1 overflow-hidden p-4">
                   <Tabs defaultValue="geometry">
                     <TabsList className="mb-4 flex w-full justify-between overflow-x-auto">
                       <TabsTrigger value="geometry" className="flex-1">
