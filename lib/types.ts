@@ -4,16 +4,7 @@ import type * as THREE from "three";
 export interface TexturePreset {
   name: string;
   label: string;
-  category:
-    | "wood"
-    | "metal"
-    | "stone"
-    | "fabric"
-    | "concrete"
-    | "paper"
-    | "road"
-    | "weather"
-    | "miscellaneous";
+  category: "wood" | "miscellaneous";
   diffuseMap: string;
   normalMap?: string;
   roughnessMap?: string;
@@ -110,7 +101,6 @@ export interface SVGModelProps {
   // Texture properties
   textureEnabled?: boolean;
   texturePreset?: string;
-  textureIntensity?: number;
   textureScale?: { x: number; y: number };
 }
 
@@ -139,7 +129,6 @@ export interface ModelPreviewProps {
   // Texture settings
   textureEnabled: boolean;
   texturePreset: string;
-  textureIntensity: number;
   textureScale: { x: number; y: number };
   // Environment settings
   backgroundColor: string;

@@ -35,7 +35,6 @@ interface EditorState {
   // Texture Options
   textureEnabled: boolean;
   texturePreset: string;
-  textureIntensity: number;
   textureScale: { x: number; y: number };
 
   // Environment Options
@@ -85,7 +84,6 @@ interface EditorState {
 
   setTextureEnabled: (enabled: boolean) => void;
   setTexturePreset: (preset: string) => void;
-  setTextureIntensity: (intensity: number) => void;
   setTextureScale: (scale: { x: number; y: number }) => void;
 
   setUseEnvironment: (use: boolean) => void;
@@ -137,7 +135,6 @@ export const useEditorStore = create<EditorState>((set) => ({
 
   textureEnabled: false,
   texturePreset: "oak",
-  textureIntensity: 1.0,
   textureScale: { x: 25, y: 25 },
 
   useEnvironment: true,
@@ -184,7 +181,6 @@ export const useEditorStore = create<EditorState>((set) => ({
 
   setTextureEnabled: (enabled) => set({ textureEnabled: enabled }),
   setTexturePreset: (preset) => set({ texturePreset: preset }),
-  setTextureIntensity: (intensity) => set({ textureIntensity: intensity }),
   setTextureScale: (scale) => set({ textureScale: scale }),
 
   setUseEnvironment: (use) => set({ useEnvironment: use }),
@@ -255,7 +251,6 @@ export const useEditorStore = create<EditorState>((set) => ({
 
       textureEnabled: false,
       texturePreset: "oak",
-      textureIntensity: 1.0,
       textureScale: { x: 25, y: 25 },
 
       useEnvironment: true,

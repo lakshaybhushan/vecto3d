@@ -35,7 +35,6 @@ interface SVGModelProps {
   // Texture properties
   textureEnabled?: boolean;
   texturePreset?: string;
-  textureIntensity?: number;
   textureScale?: { x: number; y: number };
   onLoadStart?: () => void;
   onLoadComplete?: () => void;
@@ -116,7 +115,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       // Texture properties
       textureEnabled = false,
       texturePreset = "oak",
-      textureIntensity = 1.0,
       textureScale = { x: 1, y: 1 },
       onLoadStart,
       onLoadComplete,
@@ -312,10 +310,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
             );
 
             materialProps.map = diffuseTexture;
-            materialProps.color = new THREE.Color(1, 1, 1).lerp(
-              threeColor,
-              1 - textureIntensity,
-            );
+            materialProps.color = new THREE.Color(1, 1, 1).lerp(threeColor, 1);
 
             // Load normal map if available
             if (currentTexturePreset.normalMap) {
@@ -367,7 +362,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         clearcoat,
         transmission,
         envMapIntensity,
-        textureIntensity,
         textureScale.x,
         textureScale.y,
       ],
@@ -388,7 +382,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       envMapIntensity,
       textureEnabled,
       texturePreset,
-      textureIntensity,
       textureScale.x,
       textureScale.y,
     ]);
@@ -419,7 +412,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
 
     // Create a stable key for material changes
     const materialKey = useMemo(() => {
-      return `${textureEnabled}-${texturePreset}-${roughness}-${metalness}-${clearcoat}-${transmission}-${envMapIntensity}-${textureIntensity}-${textureScale.x}-${textureScale.y}`;
+      return `${textureEnabled}-${texturePreset}-${roughness}-${metalness}-${clearcoat}-${transmission}-${envMapIntensity}-${textureScale.x}-${textureScale.y}`;
     }, [
       textureEnabled,
       texturePreset,
@@ -428,7 +421,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       clearcoat,
       transmission,
       envMapIntensity,
-      textureIntensity,
       textureScale.x,
       textureScale.y,
     ]);
@@ -456,11 +448,12 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     });
 
     box.setFromObject(tempGroup);
-    const size = new THREE.Vector3();
-    box.getSize(size);
+    // Calculate the center of the bounding box to properly centre the model
+    const center = new THREE.Vector3();
+    box.getCenter(center);
 
-    const xOffset = size.x / -2;
-    const yOffset = size.y / -2;
+    const xOffset = -center.x;
+    const yOffset = -center.y;
 
     return (
       <Center>

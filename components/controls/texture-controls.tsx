@@ -12,10 +12,6 @@ export function TextureControls() {
   const setTextureEnabled = useEditorStore((state) => state.setTextureEnabled);
   const texturePreset = useEditorStore((state) => state.texturePreset);
   const setTexturePreset = useEditorStore((state) => state.setTexturePreset);
-  const textureIntensity = useEditorStore((state) => state.textureIntensity);
-  const setTextureIntensity = useEditorStore(
-    (state) => state.setTextureIntensity,
-  );
   const textureScale = useEditorStore((state) => state.textureScale);
   const setTextureScale = useEditorStore((state) => state.setTextureScale);
   const useEnvironment = useEditorStore((state) => state.useEnvironment);
@@ -61,13 +57,6 @@ export function TextureControls() {
               ${texture.name.includes("oak") ? "#D2B48C" : "#8B4513"} 0%, 
               ${texture.name.includes("oak") ? "#CD853F" : "#A0522D"} 50%, 
               ${texture.name.includes("oak") ? "#DEB887" : "#8B4513"} 100%)`,
-          };
-        case "stone":
-          return {
-            background: `radial-gradient(circle at 30% 30%, 
-              #F5F5DC 0%, 
-              #D3D3D3 50%, 
-              #A9A9A9 100%)`,
           };
         case "miscellaneous":
           return {
@@ -137,25 +126,6 @@ export function TextureControls() {
           </div>
 
           <div className="space-y-4 border-t pt-4">
-            <div className="space-y-4">
-              <Label
-                htmlFor="textureIntensity"
-                className="flex items-center justify-between">
-                <span>Texture Intensity</span>
-                <span className="text-primary font-mono">
-                  {textureIntensity.toFixed(2)}
-                </span>
-              </Label>
-              <Slider
-                id="textureIntensity"
-                min={0}
-                max={1}
-                step={0.01}
-                value={[textureIntensity]}
-                onValueChange={(value) => setTextureIntensity(value[0])}
-              />
-            </div>
-
             <div className="space-y-4 pt-2">
               <Label>Texture Scale</Label>
               <div className="grid grid-cols-2 gap-4">

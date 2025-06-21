@@ -5,5 +5,7 @@
 - [-] fix the low res image exports
 - [x] support for transparent image exports
 - [ ] add animations on toggle
-- [ ] new material type
+- [ ] all new mobile redesign
+- [ ] homepage bg doesn't scale well on mobile 
 - [ ] separate layers bug
+- [ ] new material 

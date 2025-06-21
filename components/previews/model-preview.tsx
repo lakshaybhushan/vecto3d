@@ -74,7 +74,6 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
     const envMapIntensity = useEditorStore((state) => state.envMapIntensity);
     const textureEnabled = useEditorStore((state) => state.textureEnabled);
     const texturePreset = useEditorStore((state) => state.texturePreset);
-    const textureIntensity = useEditorStore((state) => state.textureIntensity);
     const textureScale = useEditorStore((state) => state.textureScale);
     const useEnvironment = useEditorStore((state) => state.useEnvironment);
     const environmentPreset = useEditorStore(
@@ -225,7 +224,6 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
               // Texture settings
               textureEnabled={textureEnabled}
               texturePreset={texturePreset}
-              textureIntensity={textureIntensity}
               textureScale={textureScale}
             />
           </group>
