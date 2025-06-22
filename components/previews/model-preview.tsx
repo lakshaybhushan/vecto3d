@@ -12,6 +12,7 @@ import {
 import { BlendFunction } from "postprocessing";
 import { SVGModel } from "./svg-model";
 import { useEditorStore } from "@/lib/store";
+import { memoryManager } from "@/lib/memory-manager";
 
 export interface ModelPreviewProps {
   svgData: string;
@@ -98,6 +99,11 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
     );
 
     useEffect(() => {
+      // Track the camera with memory manager
+      if (cameraRef.current) {
+        memoryManager.track(cameraRef.current);
+      }
+
       const handleResize = () => {
         if (cameraRef.current) {
           cameraRef.current.aspect = window.innerWidth / window.innerHeight;
@@ -106,9 +112,13 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
       };
       if (typeof window !== "undefined") {
         window.addEventListener("resize", handleResize);
-        handleResize(); // Initial call
+        handleResize();
         return () => {
           window.removeEventListener("resize", handleResize);
+          // Cleanup camera when component unmounts
+          if (cameraRef.current) {
+            memoryManager.untrack(cameraRef.current);
+          }
         };
       }
     }, []);

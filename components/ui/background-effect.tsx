@@ -10,6 +10,7 @@ import {
   backgroundCanvasVariants,
 } from "@/lib/motion-variants";
 import * as THREE from "three";
+import { memoryManager } from "@/lib/memory-manager";
 
 const vertexShader = `
   varying vec2 vUv;
@@ -94,6 +95,7 @@ function BackgroundShader({ isDark }: { isDark: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null!);
   const { viewport } = useThree();
   const [dimensions, setDimensions] = useState({ width: 1920, height: 1080 });
+  const materialRef = useRef<THREE.ShaderMaterial | null>(null);
 
   const uniforms = useRef({
     iTime: { value: 0 },
@@ -103,7 +105,6 @@ function BackgroundShader({ isDark }: { isDark: boolean }) {
     isDark: { value: isDark ? 1.0 : 0.0 },
   });
 
-  // Update isDark uniform when theme changes
   useEffect(() => {
     uniforms.current.isDark.value = isDark ? 1.0 : 0.0;
   }, [isDark]);
@@ -129,12 +130,31 @@ function BackgroundShader({ isDark }: { isDark: boolean }) {
     }
   });
 
+  useEffect(() => {
+    return () => {
+      if (materialRef.current) {
+        memoryManager.untrack(materialRef.current);
+        materialRef.current.dispose();
+      }
+      if (meshRef.current && meshRef.current.geometry) {
+        memoryManager.untrack(meshRef.current.geometry);
+        meshRef.current.geometry.dispose();
+      }
+    };
+  }, []);
+
   const planeWidth = viewport.width;
   const planeHeight = viewport.height;
 
   return (
     <Plane ref={meshRef} args={[planeWidth, planeHeight]}>
       <shaderMaterial
+        ref={(material) => {
+          materialRef.current = material;
+          if (material) {
+            memoryManager.track(material);
+          }
+        }}
         uniforms={uniforms.current}
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
@@ -147,9 +167,21 @@ function BackgroundShader({ isDark }: { isDark: boolean }) {
 export default function BackgroundEffect() {
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     setMounted(true);
+
+    return () => {
+      if (canvasRef.current) {
+        const gl =
+          canvasRef.current.getContext("webgl") ||
+          canvasRef.current.getContext("webgl2");
+        if (gl && gl.getExtension("WEBGL_lose_context")) {
+          gl.getExtension("WEBGL_lose_context")?.loseContext();
+        }
+      }
+    };
   }, []);
 
   const isDark = resolvedTheme === "dark";
@@ -187,6 +219,7 @@ export default function BackgroundEffect() {
         animate="animate"
         className="h-full w-full">
         <Canvas
+          ref={canvasRef}
           camera={{ position: [0, 0, 1], fov: 75, near: 0.1, far: 1000 }}
           gl={{
             alpha: false,

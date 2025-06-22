@@ -14,6 +14,7 @@ import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
 import { Center } from "@react-three/drei";
 import { TEXTURE_PRESETS } from "@/lib/constants";
 import { loadTexture } from "@/lib/texture-cache";
+import { memoryManager } from "@/lib/memory-manager";
 
 interface SVGModelProps {
   svgData: string;
@@ -287,8 +288,12 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
           opacity: isHole ? 0.5 : 1.0,
         };
 
-        // Apply textures if enabled
-        if (textureEnabled && currentTexturePreset) {
+        // Apply textures if enabled (only in browser environment)
+        if (
+          textureEnabled &&
+          currentTexturePreset &&
+          typeof window !== "undefined"
+        ) {
           try {
             const textureOptions = {
               wrapS: THREE.RepeatWrapping,
@@ -351,7 +356,9 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
           }
         }
 
-        return new THREE.MeshPhysicalMaterial(materialProps);
+        const material = new THREE.MeshPhysicalMaterial(materialProps);
+        memoryManager.track(material);
+        return material;
       },
       [
         textureEnabled,
@@ -369,11 +376,17 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
 
     // Clean up materials on component props change
     useEffect(() => {
-      // Dispose old materials
-      materialsRef.current.forEach((material) => {
-        material.dispose();
-      });
+      // Dispose old materials safely
+      const materialsToDispose = [...materialsRef.current];
       materialsRef.current = [];
+
+      // Dispose in next tick to avoid race conditions
+      setTimeout(() => {
+        materialsToDispose.forEach((material) => {
+          memoryManager.untrack(material);
+          material.dispose();
+        });
+      }, 0);
     }, [
       roughness,
       metalness,
@@ -390,15 +403,33 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     useEffect(() => {
       const currentGroup = groupRef.current;
       return () => {
-        materialsRef.current.forEach((material) => {
+        // Clear materials safely
+        const materialsToDispose = [...materialsRef.current];
+        materialsRef.current = [];
+
+        materialsToDispose.forEach((material) => {
+          memoryManager.untrack(material);
           material.dispose();
         });
-        materialsRef.current = [];
 
         if (currentGroup) {
           currentGroup.traverse((object) => {
             if (object instanceof THREE.Mesh) {
-              if (object.geometry) object.geometry.dispose();
+              if (object.geometry) {
+                memoryManager.untrack(object.geometry);
+                object.geometry.dispose();
+              }
+              if (object.material) {
+                if (Array.isArray(object.material)) {
+                  object.material.forEach((mat) => {
+                    memoryManager.untrack(mat);
+                    mat.dispose();
+                  });
+                } else {
+                  memoryManager.untrack(object.material);
+                  object.material.dispose();
+                }
+              }
             }
           });
         }

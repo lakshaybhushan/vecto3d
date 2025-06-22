@@ -4,9 +4,18 @@ import { EXRLoader } from "three-stdlib";
 import * as THREE from "three";
 import { CustomEnvironmentProps, SimpleEnvironmentProps } from "@/lib/types";
 import { ENVIRONMENT_PRESETS } from "@/lib/constants";
+import { memoryManager } from "@/lib/memory-manager";
 
 const textureCache = new Map<string, THREE.Texture>();
 let isPreloading = false;
+
+const clearTextureCache = () => {
+  for (const [key, texture] of textureCache.entries()) {
+    memoryManager.untrack(texture);
+    texture.dispose();
+  }
+  textureCache.clear();
+};
 
 const preloadDefaultEnvironment = async () => {
   try {
@@ -15,6 +24,7 @@ const preloadDefaultEnvironment = async () => {
 
     loader.load(apartment.default, (texture) => {
       texture.mapping = THREE.EquirectangularReflectionMapping;
+      memoryManager.track(texture);
       textureCache.set("apartment.exr.js", texture);
     });
   } catch (error) {
@@ -37,6 +47,7 @@ const preloadEXRTextures = async () => {
 
         loader.load(asset.default, (texture) => {
           texture.mapping = THREE.EquirectangularReflectionMapping;
+          memoryManager.track(texture);
           textureCache.set(preset.exrFile!, texture);
         });
       } catch (error) {
@@ -51,10 +62,21 @@ export function CustomEnvironment({ imageUrl }: CustomEnvironmentProps) {
 
   useEffect(() => {
     const loader = new THREE.TextureLoader();
-    loader.load(imageUrl, (loadedTexture) => {
-      loadedTexture.mapping = THREE.EquirectangularReflectionMapping;
-      setTexture(loadedTexture);
+    let loadedTexture: THREE.Texture | null = null;
+
+    loader.load(imageUrl, (loadedTextureFromFile) => {
+      loadedTextureFromFile.mapping = THREE.EquirectangularReflectionMapping;
+      loadedTexture = loadedTextureFromFile;
+      memoryManager.track(loadedTexture);
+      setTexture(loadedTextureFromFile);
     });
+
+    return () => {
+      if (loadedTexture) {
+        memoryManager.untrack(loadedTexture);
+        loadedTexture.dispose();
+      }
+    };
   }, [imageUrl]);
 
   if (!texture) return null;
@@ -89,6 +111,7 @@ export function EXREnvironment({ exrFile }: { exrFile: string }) {
           if (!isMounted) return;
           loadedTextureFromFile.mapping =
             THREE.EquirectangularReflectionMapping;
+          memoryManager.track(loadedTextureFromFile);
           textureCache.set(exrFile, loadedTextureFromFile);
           setTexture(loadedTextureFromFile);
         });
@@ -113,6 +136,20 @@ export function SimpleEnvironment({
   environmentPreset,
   customHdriUrl,
 }: SimpleEnvironmentProps) {
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined") {
+        const handleBeforeUnload = () => {
+          clearTextureCache();
+        };
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => {
+          window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+      }
+    };
+  }, []);
+
   if (environmentPreset === "custom" && customHdriUrl) {
     return <CustomEnvironment imageUrl={customHdriUrl} />;
   }
@@ -131,3 +168,5 @@ export function SimpleEnvironment({
 
   return null;
 }
+
+export { clearTextureCache };

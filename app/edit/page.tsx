@@ -39,6 +39,7 @@ import { useTexturePreloader } from "@/hooks/use-texture-preloader";
 import { useEditorStore } from "@/lib/store";
 import { DARK_MODE_COLOR, LIGHT_MODE_COLOR } from "@/lib/constants";
 import AnimatedLogo from "@/components/ui/animated-logo";
+import { memoryManager } from "@/lib/memory-manager";
 
 // Dynamically import ModelPreview with SSR disabled to prevent ProgressEvent errors
 const ModelPreview = dynamic(
@@ -274,13 +275,31 @@ export default function EditPage() {
   useEffect(() => {
     setIsClientMounted(true);
 
+    // Track model refs with memory manager
+    if (modelGroupRef.current) {
+      memoryManager.track(modelGroupRef.current);
+    }
+    if (modelRef.current) {
+      memoryManager.track(modelRef.current);
+    }
+
     // Cleanup session storage when component unmounts (user navigates away)
     return () => {
+      // Cleanup tracked models
+      if (modelGroupRef.current) {
+        memoryManager.untrack(modelGroupRef.current);
+      }
+      if (modelRef.current) {
+        memoryManager.untrack(modelRef.current);
+      }
+
       // Only clear if user is not reloading (which would cause immediate unmount/mount)
       const currentPath = window.location.pathname;
       if (currentPath !== "/edit") {
         sessionStorage.removeItem("vecto3d_svgData");
         sessionStorage.removeItem("vecto3d_fileName");
+        // Trigger memory cleanup when leaving edit page
+        memoryManager.scheduleCleanup();
       }
     };
   }, []);

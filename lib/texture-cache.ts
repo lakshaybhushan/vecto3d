@@ -26,12 +26,20 @@ class TextureCache {
     url: string,
     options: TextureOptions = {},
   ): Promise<THREE.Texture> {
+    // Prevent SSR issues by checking if we're in a browser environment
+    if (typeof window === "undefined") {
+      throw new Error(
+        "Texture loading is only available in browser environment",
+      );
+    }
+
     // Check if texture is already cached
     const cached = this.cache.get(url);
     if (cached) {
       cached.lastUsed = Date.now();
-      this.applyTextureOptions(cached.texture, options);
-      return cached.texture;
+      const clonedTexture = cached.texture.clone();
+      this.applyTextureOptions(clonedTexture, options);
+      return clonedTexture;
     }
 
     try {
@@ -55,9 +63,10 @@ class TextureCache {
       // Check cache limits and clean if necessary
       this.ensureCacheSpace(estimatedSize);
 
-      // Cache the texture
+      // Cache the texture (clone for cache, return original)
+      const cachedTexture = texture.clone();
       this.cache.set(url, {
-        texture: texture.clone(),
+        texture: cachedTexture,
         lastUsed: Date.now(),
         size: estimatedSize,
       });
@@ -130,6 +139,14 @@ class TextureCache {
     urls: string[],
     options: TextureOptions = {},
   ): Promise<void> {
+    // Prevent SSR issues by checking if we're in a browser environment
+    if (typeof window === "undefined") {
+      console.warn(
+        "Texture preloading is only available in browser environment",
+      );
+      return;
+    }
+
     const promises = urls.map((url) =>
       this.loadTexture(url, options).catch((error) => {
         console.warn(`Failed to preload texture ${url}:`, error);
