@@ -125,20 +125,24 @@ function BackgroundShader({ isDark }: { isDark: boolean }) {
   }, []);
 
   useFrame((state) => {
-    if (meshRef.current) {
+    const mesh = meshRef.current;
+    if (mesh) {
       uniforms.current.iTime.value = state.clock.elapsedTime;
     }
   });
 
   useEffect(() => {
+    const material = materialRef.current;
+    const mesh = meshRef.current;
+
     return () => {
-      if (materialRef.current) {
-        memoryManager.untrack(materialRef.current);
-        materialRef.current.dispose();
+      if (material) {
+        memoryManager.untrack(material);
+        material.dispose();
       }
-      if (meshRef.current && meshRef.current.geometry) {
-        memoryManager.untrack(meshRef.current.geometry);
-        meshRef.current.geometry.dispose();
+      if (mesh && mesh.geometry) {
+        memoryManager.untrack(mesh.geometry);
+        mesh.geometry.dispose();
       }
     };
   }, []);
@@ -171,12 +175,11 @@ export default function BackgroundEffect() {
 
   useEffect(() => {
     setMounted(true);
+    const canvas = canvasRef.current;
 
     return () => {
-      if (canvasRef.current) {
-        const gl =
-          canvasRef.current.getContext("webgl") ||
-          canvasRef.current.getContext("webgl2");
+      if (canvas) {
+        const gl = canvas.getContext("webgl") || canvas.getContext("webgl2");
         if (gl && gl.getExtension("WEBGL_lose_context")) {
           gl.getExtension("WEBGL_lose_context")?.loseContext();
         }

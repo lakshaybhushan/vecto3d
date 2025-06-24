@@ -88,8 +88,11 @@ class MemoryManager {
       console.warn("Error clearing texture caches:", error);
     }
 
-    if (typeof window !== "undefined" && (window as any).gc) {
-      (window as any).gc();
+    if (
+      typeof window !== "undefined" &&
+      (window as Record<string, unknown>).gc
+    ) {
+      (window as Record<string, unknown>).gc();
     }
   }
 
@@ -110,9 +113,14 @@ class MemoryManager {
       memoryUsage: undefined as number | undefined,
     };
 
-    if (typeof window !== "undefined" && (performance as any).memory) {
-      stats.memoryUsage =
-        (performance as any).memory.usedJSHeapSize / 1024 / 1024;
+    if (
+      typeof window !== "undefined" &&
+      (performance as Record<string, unknown>).memory
+    ) {
+      const perfMemory = (performance as Record<string, unknown>).memory as {
+        usedJSHeapSize: number;
+      };
+      stats.memoryUsage = perfMemory.usedJSHeapSize / 1024 / 1024;
     }
 
     return stats;
@@ -152,10 +160,13 @@ if (typeof window !== "undefined") {
   if (
     typeof performance !== "undefined" &&
     "memory" in performance &&
-    (performance as any).memory
+    (performance as Record<string, unknown>).memory
   ) {
     setInterval(() => {
-      const memory = (performance as any).memory;
+      const memory = (performance as Record<string, unknown>).memory as {
+        usedJSHeapSize: number;
+        jsHeapSizeLimit: number;
+      };
       const usedMemory = memory.usedJSHeapSize;
       const memoryLimit = memory.jsHeapSizeLimit;
 

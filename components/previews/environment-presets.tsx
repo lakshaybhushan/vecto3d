@@ -10,7 +10,7 @@ const textureCache = new Map<string, THREE.Texture>();
 let isPreloading = false;
 
 const clearTextureCache = () => {
-  for (const [key, texture] of textureCache.entries()) {
+  for (const [, texture] of textureCache.entries()) {
     memoryManager.untrack(texture);
     texture.dispose();
   }

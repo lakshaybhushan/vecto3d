@@ -100,14 +100,15 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
 
     useEffect(() => {
       // Track the camera with memory manager
-      if (cameraRef.current) {
-        memoryManager.track(cameraRef.current);
+      const camera = cameraRef.current;
+      if (camera) {
+        memoryManager.track(camera);
       }
 
       const handleResize = () => {
-        if (cameraRef.current) {
-          cameraRef.current.aspect = window.innerWidth / window.innerHeight;
-          cameraRef.current.updateProjectionMatrix();
+        if (camera) {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
         }
       };
       if (typeof window !== "undefined") {
@@ -116,8 +117,8 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
         return () => {
           window.removeEventListener("resize", handleResize);
           // Cleanup camera when component unmounts
-          if (cameraRef.current) {
-            memoryManager.untrack(cameraRef.current);
+          if (camera) {
+            memoryManager.untrack(camera);
           }
         };
       }

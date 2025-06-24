@@ -276,21 +276,24 @@ export default function EditPage() {
     setIsClientMounted(true);
 
     // Track model refs with memory manager
-    if (modelGroupRef.current) {
-      memoryManager.track(modelGroupRef.current);
+    const modelGroup = modelGroupRef.current;
+    const model = modelRef.current;
+
+    if (modelGroup) {
+      memoryManager.track(modelGroup);
     }
-    if (modelRef.current) {
-      memoryManager.track(modelRef.current);
+    if (model) {
+      memoryManager.track(model);
     }
 
     // Cleanup session storage when component unmounts (user navigates away)
     return () => {
       // Cleanup tracked models
-      if (modelGroupRef.current) {
-        memoryManager.untrack(modelGroupRef.current);
+      if (modelGroup) {
+        memoryManager.untrack(modelGroup);
       }
-      if (modelRef.current) {
-        memoryManager.untrack(modelRef.current);
+      if (model) {
+        memoryManager.untrack(model);
       }
 
       // Only clear if user is not reloading (which would cause immediate unmount/mount)
