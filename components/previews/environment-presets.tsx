@@ -137,17 +137,15 @@ export function SimpleEnvironment({
   customHdriUrl,
 }: SimpleEnvironmentProps) {
   useEffect(() => {
-    return () => {
-      if (typeof window !== "undefined") {
-        const handleBeforeUnload = () => {
-          clearTextureCache();
-        };
-        window.addEventListener("beforeunload", handleBeforeUnload);
-        return () => {
-          window.removeEventListener("beforeunload", handleBeforeUnload);
-        };
-      }
-    };
+    if (typeof window !== "undefined") {
+      const handleBeforeUnload = () => {
+        clearTextureCache();
+      };
+      window.addEventListener("beforeunload", handleBeforeUnload);
+      return () => {
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+      };
+    }
   }, []);
 
   if (environmentPreset === "custom" && customHdriUrl) {

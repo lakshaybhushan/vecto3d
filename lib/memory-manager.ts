@@ -90,9 +90,10 @@ class MemoryManager {
 
     if (
       typeof window !== "undefined" &&
-      (window as Record<string, unknown>).gc
+      "gc" in window &&
+      typeof (window as unknown as { gc?: () => void }).gc === "function"
     ) {
-      (window as Record<string, unknown>).gc();
+      (window as unknown as { gc: () => void }).gc();
     }
   }
 
@@ -115,11 +116,11 @@ class MemoryManager {
 
     if (
       typeof window !== "undefined" &&
-      (performance as Record<string, unknown>).memory
+      (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory
     ) {
-      const perfMemory = (performance as Record<string, unknown>).memory as {
-        usedJSHeapSize: number;
-      };
+      const perfMemory = (
+        performance as unknown as { memory: { usedJSHeapSize: number } }
+      ).memory;
       stats.memoryUsage = perfMemory.usedJSHeapSize / 1024 / 1024;
     }
 
@@ -160,13 +161,18 @@ if (typeof window !== "undefined") {
   if (
     typeof performance !== "undefined" &&
     "memory" in performance &&
-    (performance as Record<string, unknown>).memory
+    (
+      performance as unknown as {
+        memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number };
+      }
+    ).memory
   ) {
     setInterval(() => {
-      const memory = (performance as Record<string, unknown>).memory as {
-        usedJSHeapSize: number;
-        jsHeapSizeLimit: number;
-      };
+      const memory = (
+        performance as unknown as {
+          memory: { usedJSHeapSize: number; jsHeapSizeLimit: number };
+        }
+      ).memory;
       const usedMemory = memory.usedJSHeapSize;
       const memoryLimit = memory.jsHeapSizeLimit;
 
