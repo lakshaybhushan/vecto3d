@@ -225,7 +225,7 @@ export default function Home() {
                       exit="exit"
                       layout>
                       <RainbowButton
-                        className="mx-auto w-full max-w-[16rem] rounded-lg py-3 text-sm sm:py-4 sm:text-base md:py-5"
+                        className="mx-auto w-full max-w-[16rem] rounded-md py-3 text-sm sm:py-4 sm:text-base md:py-5"
                         onClick={handleContinue}
                         disabled={isLoading}>
                         {isLoading ? "Processing..." : "Continue to Editor"}

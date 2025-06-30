@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useEditorStore } from "@/lib/store";
 import { Switch } from "@/components/ui/switch";
-// import { VibeModeIcon } from "@/components/ui/ui-icons";
+import { RainbowButton } from "../ui/rainbow-button";
 
 export function EnvironmentControls() {
   const useEnvironment = useEditorStore((state) => state.useEnvironment);
@@ -93,8 +93,7 @@ export function EnvironmentControls() {
         <AlertDescription className="flex items-center text-xs">
           <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
           <p className="text-muted-foreground mt-0.5 text-sm">
-            Environment settings are for preview only and will not affect the
-            exported 3D model.
+            Preview-only environment settings.
           </p>
         </AlertDescription>
       </Alert>
@@ -110,45 +109,58 @@ export function EnvironmentControls() {
 
       {useEnvironment && (
         <>
-          <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-5">
+          <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
             {ENVIRONMENT_PRESETS.map((preset) => (
               <div
                 key={preset.name}
-                className={`flex cursor-pointer flex-col items-center rounded-lg p-2 ${
+                className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                   environmentPreset === preset.name
-                    ? "bg-primary/10 ring-input ring-1"
-                    : "hover:bg-muted"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-muted-foreground/50"
                 }`}
                 onClick={() => handlePresetChange(preset.name)}>
-                <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-md">
+                <div className="relative aspect-square w-full p-3">
+                  {/* Clean background with subtle color wash */}
                   <div
-                    className="absolute inset-0 h-full w-full"
+                    className="absolute inset-3 rounded-md"
                     style={{
-                      background: `linear-gradient(135deg, ${preset.color}40, ${preset.color}, ${preset.color}90)`,
+                      backgroundColor: `${preset.color}15`,
                     }}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center">
+
+                  {/* Central orb representing the environment */}
+                  <div className="relative flex h-full items-center justify-center">
                     <div
-                      className="h-10 w-10 rounded-full"
+                      className="relative h-10 w-10 rounded-full border border-white/20 shadow-lg"
                       style={{
-                        background: `radial-gradient(circle at 30% 30%, white, ${preset.color}80, rgba(0,0,0,0.2))`,
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                      }}
-                    />
+                        backgroundColor: preset.color,
+                        boxShadow: `
+                          0 4px 12px ${preset.color}30,
+                          inset 0 1px 0 rgba(255,255,255,0.2),
+                          inset 0 -1px 0 rgba(0,0,0,0.1)
+                        `,
+                      }}>
+                      {/* Subtle highlight */}
+                      <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/30 blur-sm" />
+                    </div>
                   </div>
                 </div>
-                <span className="text-center text-xs font-medium">
-                  {preset.label}
-                </span>
+
+                {/* Clean label at bottom */}
+                <div className="bg-muted/30 border-t px-3 py-2 text-center">
+                  <span className="text-muted-foreground text-sm font-medium">
+                    {preset.label}
+                  </span>
+                </div>
               </div>
             ))}
 
             <div
               key="custom-preset"
-              className={`flex cursor-pointer flex-col items-center rounded-md p-2 ${
+              className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                 environmentPreset === "custom"
-                  ? "bg-primary/10 ring-input ring-1"
-                  : "hover:bg-muted"
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-muted-foreground/50"
               }`}
               onClick={() => {
                 if (customHdriUrl) {
@@ -167,26 +179,32 @@ export function EnvironmentControls() {
 
               {customHdriUrl ? (
                 <>
-                  <div className="mb-2 aspect-video w-full overflow-hidden rounded-md">
+                  <div className="relative aspect-square w-full p-3">
                     <div
-                      className="h-full w-full"
+                      className="absolute inset-3 rounded-md bg-cover bg-center"
                       style={{
                         backgroundImage: `url(${customHdriUrl})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
                       }}
                     />
                   </div>
-                  <span className="text-xs font-medium">Custom</span>
+                  <div className="bg-muted/30 border-t px-3 py-2 text-center">
+                    <span className="text-muted-foreground text-sm font-medium">
+                      Custom
+                    </span>
+                  </div>
                 </>
               ) : (
                 <>
-                  <div className="bg-primary/5 border-primary/20 mb-2 flex aspect-video w-full items-center justify-center rounded-md border-2 border-dashed">
-                    <span className="text-primary text-2xl font-semibold">
-                      <PlusIcon className="text-primary h-4 w-4" />
+                  <div className="relative aspect-square w-full p-3">
+                    <div className="border-muted-foreground/30 bg-muted/20 flex h-full items-center justify-center rounded-md border-2 border-dashed">
+                      <PlusIcon className="text-muted-foreground h-6 w-6" />
+                    </div>
+                  </div>
+                  <div className="bg-muted/30 border-t px-3 py-2 text-center">
+                    <span className="text-muted-foreground text-sm font-medium">
+                      Custom
                     </span>
                   </div>
-                  <span className="text-xs font-medium">Custom</span>
                 </>
               )}
             </div>
@@ -213,7 +231,6 @@ export function EnvironmentControls() {
           )}
         </>
       )}
-
       {useEnvironment && (
         <div className="mt-4 space-y-4 border-t pt-4">
           <div className="w-full cursor-not-allowed">
@@ -226,10 +243,8 @@ export function EnvironmentControls() {
                 Sorry, Vibe Mode is not available with custom images :(
               </Button>
             ) : (
-              <Button
-                className={`w-full py-5 text-base font-medium transition-all ${
-                  useBloom ? "animate-rainbow" : "opacity-90 hover:opacity-100"
-                }`}
+              <RainbowButton
+                className={`w-full py-5 text-base font-medium transition-all`}
                 onClick={() => {
                   const newValue = !useBloom;
                   toggleVibeMode(newValue);
@@ -237,7 +252,7 @@ export function EnvironmentControls() {
                 <span className="ml-1">
                   {useBloom ? "Disable Vibe Mode" : "Enable Vibe Mode"}
                 </span>
-              </Button>
+              </RainbowButton>
             )}
           </div>
 

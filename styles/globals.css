@@ -45,7 +45,7 @@
   --font-serif: Instrument Serif, serif;
   --font-mono: Geist Mono, monospace;
 
-  --rainbow: rainbow var(--speed, 2s) infinite linear;
+  --animate-rainbow: rainbow var(--speed, 2s) infinite linear;
 
   @keyframes rainbow {
     0% {

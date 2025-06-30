@@ -405,8 +405,8 @@ export default function EditPage() {
         ) : (
           <div
             key="editor-content"
-            className="grid grid-cols-1 gap-8 lg:grid-cols-5">
-            <div className="col relative order-first h-[60dvh] overflow-hidden lg:order-last lg:col-span-3 lg:h-[calc(100vh-8rem)]">
+            className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="col relative order-first h-[60dvh] overflow-hidden lg:order-last lg:col-span-7 lg:h-[calc(100vh-8rem)]">
               <Card className="flex h-full w-full flex-col overflow-hidden border">
                 <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 backdrop-blur-xs [.border-b]:pb-4">
                   <div>
@@ -512,8 +512,8 @@ export default function EditPage() {
                 </div>
               </Card>
             </div>
-            <div className="order-last space-y-6 lg:order-first lg:col-span-2">
-              <Card className="flex max-h-[60dvh] w-full flex-col overflow-hidden border lg:max-h-[calc(100vh-8rem)]">
+            <div className="order-last space-y-6 lg:order-first lg:col-span-5">
+              <Card className="flex w-full flex-col overflow-hidden border md:max-h-[60dvh] lg:max-h-[calc(100vh-8rem)]">
                 <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 pb-4 backdrop-blur-xs [.border-b]:pb-4">
                   <div>
                     <CardTitle className="text-xl font-medium">

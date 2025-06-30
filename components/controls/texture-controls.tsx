@@ -82,8 +82,7 @@ export function TextureControls() {
         <AlertDescription className="flex items-center text-xs">
           <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
           <p className="text-muted-foreground mt-0.5 text-sm">
-            Texture settings will be applied to the exported 3D model during
-            export.
+            Applies to exported 3D models.
           </p>
         </AlertDescription>
       </Alert>
@@ -102,22 +101,34 @@ export function TextureControls() {
           <div className="space-y-6">
             {Object.entries(texturesByCategory).map(([category, textures]) => (
               <div key={category} className="space-y-3">
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                   {textures.map((texture) => (
                     <div
                       key={texture.name}
-                      className={`flex cursor-pointer flex-col items-center rounded-lg pt-3 pb-2 ${
+                      className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                         texturePreset === texture.name
-                          ? "bg-primary/10 ring-input ring-1"
-                          : "hover:bg-muted"
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-muted-foreground/50"
                       }`}
                       onClick={() => setTexturePreset(texture.name)}>
-                      <div className="relative mb-2 aspect-video w-full overflow-hidden px-2">
-                        {getTexturePreview(texture)}
+                      <div className="relative aspect-square w-full p-3">
+                        {/* Clean background */}
+                        <div className="bg-muted/20 absolute inset-3 rounded-md" />
+
+                        {/* Texture preview container */}
+                        <div className="relative flex h-full items-center justify-center">
+                          <div className="h-full w-full overflow-hidden rounded-md">
+                            {getTexturePreview(texture)}
+                          </div>
+                        </div>
                       </div>
-                      <span className="text-center text-xs font-medium">
-                        {texture.label}
-                      </span>
+
+                      {/* Clean label at bottom */}
+                      <div className="bg-muted/30 border-t px-3 py-2">
+                        <span className="text-muted-foreground text-xs font-medium">
+                          {texture.label}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -91,8 +91,8 @@ export function BackgroundControls() {
         <AlertDescription className="flex items-center text-xs">
           <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
           <p className="text-muted-foreground mt-0.5 text-sm">
-            Works with <span className="text-primary">image exports</span> . If
-            you export a 3D model, the background color will be ignored.
+            Applies to <span className="text-primary">image exports</span>, not
+            3D models.
           </p>
         </AlertDescription>
       </Alert>
