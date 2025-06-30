@@ -380,13 +380,13 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       const materialsToDispose = [...materialsRef.current];
       materialsRef.current = [];
 
-      // Dispose in next tick to avoid race conditions
-      setTimeout(() => {
+      // Dispose via requestAnimationFrame to ensure render pass is done
+      requestAnimationFrame(() => {
         materialsToDispose.forEach((material) => {
           memoryManager.untrack(material);
           material.dispose();
         });
-      }, 0);
+      });
     }, [
       roughness,
       metalness,
@@ -479,6 +479,18 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     });
 
     box.setFromObject(tempGroup);
+
+    // Dispose temporary objects to prevent GPU memory leaks (see gpu_leaks.md)
+    tempGroup.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        if (child.geometry) {
+          memoryManager.untrack(child.geometry as THREE.BufferGeometry);
+          child.geometry.dispose();
+        }
+      }
+    });
+    tempGroup.clear();
+
     // Calculate the center of the bounding box to properly centre the model
     const center = new THREE.Vector3();
     box.getCenter(center);
@@ -566,12 +578,25 @@ function MaterializedMesh({
     null,
   );
 
+  const geometryRef = useRef<THREE.ExtrudeGeometry | null>(null);
+
   useEffect(() => {
     createMaterial(color, isHole).then((mat) => {
       setMaterial(mat);
       onMaterialReady(mat);
     });
   }, [createMaterial, color, isHole, onMaterialReady]);
+
+  // Dispose geometry on unmount to prevent GPU memory leaks (see gpu_leaks.md)
+  useEffect(() => {
+    return () => {
+      if (geometryRef.current) {
+        memoryManager.untrack(geometryRef.current);
+        geometryRef.current.dispose();
+        geometryRef.current = null;
+      }
+    };
+  }, []);
 
   if (!material) return null;
 
@@ -581,7 +606,13 @@ function MaterializedMesh({
       receiveShadow={receiveShadow}
       renderOrder={renderOrder}
       position={position}>
-      <extrudeGeometry args={[shape, extrudeSettings]} />
+      <extrudeGeometry
+        ref={(geo) => {
+          if (geo) memoryManager.track(geo);
+          geometryRef.current = geo;
+        }}
+        args={[shape, extrudeSettings]}
+      />
       <primitive object={material} attach="material" />
     </mesh>
   );

@@ -135,8 +135,21 @@ class MemoryManager {
       const canvases = document.querySelectorAll("canvas");
       canvases.forEach((canvas) => {
         const gl = canvas.getContext("webgl") || canvas.getContext("webgl2");
-        if (gl && gl.getExtension("WEBGL_lose_context")) {
-          gl.getExtension("WEBGL_lose_context")?.loseContext();
+        if (!gl) return;
+
+        const loseExt = gl.getExtension("WEBGL_lose_context");
+        if (loseExt) {
+          // Aggressively free GPU memory, then attempt to restore shortly after (Mindful Chase best-practice)
+          loseExt.loseContext();
+
+          // Try to restore context after a short delay so the app can continue running without manual refresh
+          setTimeout(() => {
+            try {
+              loseExt.restoreContext();
+            } catch (err) {
+              console.warn("Failed to restore WebGL context", err);
+            }
+          }, 1000);
         }
       });
     }

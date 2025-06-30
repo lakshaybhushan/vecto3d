@@ -164,6 +164,7 @@ function BackgroundShader({ isDark }: { isDark: boolean }) {
         fragmentShader={fragmentShader}
         transparent={false}
       />
+      <ContextEvents />
     </Plane>
   );
 }
@@ -236,4 +237,28 @@ export default function BackgroundEffect() {
       </motion.div>
     </motion.div>
   );
+}
+
+// Component to handle WebGL context lost/restored for the background canvas
+function ContextEvents() {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const handleLost = (e: Event) => {
+      e.preventDefault();
+      console.warn("Background WebGL context lost");
+      memoryManager.scheduleCleanup();
+    };
+    const handleRestored = () => {
+      console.info("Background WebGL context restored");
+    };
+    canvas.addEventListener("webglcontextlost", handleLost, false);
+    canvas.addEventListener("webglcontextrestored", handleRestored, false);
+    return () => {
+      canvas.removeEventListener("webglcontextlost", handleLost);
+      canvas.removeEventListener("webglcontextrestored", handleRestored);
+    };
+  }, [gl]);
+  return null;
 }

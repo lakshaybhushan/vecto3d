@@ -56,6 +56,39 @@ const CustomBackground = () => {
   return null;
 };
 
+// Helper to attach context lost/restored listeners (Mindful Chase best-practice)
+function WebGLContextEvents() {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+
+    const handleContextLost = (e: Event) => {
+      e.preventDefault();
+      console.warn("WebGL context lost – attempting cleanup and restore...");
+      memoryManager.scheduleCleanup();
+    };
+
+    const handleContextRestored = () => {
+      console.info("WebGL context restored");
+    };
+
+    canvas.addEventListener("webglcontextlost", handleContextLost, false);
+    canvas.addEventListener(
+      "webglcontextrestored",
+      handleContextRestored,
+      false,
+    );
+
+    return () => {
+      canvas.removeEventListener("webglcontextlost", handleContextLost);
+      canvas.removeEventListener("webglcontextrestored", handleContextRestored);
+    };
+  }, [gl]);
+
+  return null;
+}
+
 export const ModelPreview = React.memo<ModelPreviewProps>(
   ({ svgData, modelGroupRef, modelRef, isMobile }) => {
     // Use fine-grained selectors for all state
@@ -194,6 +227,8 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
         }}>
         <Suspense fallback={null}>
           <CustomBackground />
+          {/* Attach WebGL context event listeners */}
+          <WebGLContextEvents />
 
           <ambientLight intensity={0.4} color="#ffffff" />
 
