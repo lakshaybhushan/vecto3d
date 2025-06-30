@@ -3,8 +3,10 @@
 import * as React from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
+import { springConfigs } from "@/lib/animation-values";
 
 function DropdownMenu({
   ...props
@@ -41,12 +43,24 @@ function DropdownMenuContent({
       <DropdownMenuPrimitive.Content
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
-        className={cn(
-          "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md",
-          className,
-        )}
-        {...props}
-      />
+        className="z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto"
+        {...props}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)", y: -8 }}
+          animate={{ opacity: 1, scale: 1, filter: "blur(0px)", y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)", y: -8 }}
+          transition={{
+            ...springConfigs.appleLike,
+            opacity: { duration: 0.15, ease: [0.23, 1, 0.32, 1] },
+            filter: { duration: 0.2, ease: [0.215, 0.61, 0.355, 1] },
+          }}
+          className={cn(
+            "bg-popover/80 text-popover-foreground rounded-md border p-1 shadow-md backdrop-blur-xl",
+            className,
+          )}>
+          {props.children}
+        </motion.div>
+      </DropdownMenuPrimitive.Content>
     </DropdownMenuPrimitive.Portal>
   );
 }
@@ -226,12 +240,24 @@ function DropdownMenuSubContent({
   return (
     <DropdownMenuPrimitive.SubContent
       data-slot="dropdown-menu-sub-content"
-      className={cn(
-        "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-hidden rounded-md border p-1 shadow-lg",
-        className,
-      )}
-      {...props}
-    />
+      className="z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-hidden"
+      {...props}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)", x: -8 }}
+        animate={{ opacity: 1, scale: 1, filter: "blur(0px)", x: 0 }}
+        exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)", x: -8 }}
+        transition={{
+          ...springConfigs.appleLike,
+          opacity: { duration: 0.15, ease: [0.23, 1, 0.32, 1] },
+          filter: { duration: 0.2, ease: [0.215, 0.61, 0.355, 1] },
+        }}
+        className={cn(
+          "bg-popover/80 text-popover-foreground rounded-md border p-1 shadow-lg backdrop-blur-xl",
+          className,
+        )}>
+        {props.children}
+      </motion.div>
+    </DropdownMenuPrimitive.SubContent>
   );
 }
 

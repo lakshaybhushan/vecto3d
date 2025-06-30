@@ -93,7 +93,7 @@ export function EnvironmentControls() {
         <AlertDescription className="flex items-center text-xs">
           <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
           <p className="text-muted-foreground mt-0.5 text-sm">
-            Preview-only environment settings.
+            Applies to image exports only.
           </p>
         </AlertDescription>
       </Alert>

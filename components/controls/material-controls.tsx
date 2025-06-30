@@ -90,7 +90,7 @@ export function MaterialControls() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm font-medium">Choose a material</p>
+      <p className="text-sm font-medium">Select your material of choice</p>
 
       <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {MATERIAL_PRESETS.map((preset) => {
@@ -150,7 +150,7 @@ export function MaterialControls() {
 
               {/* Clean label at bottom */}
               <div className="bg-muted/30 border-t px-2 py-2">
-                <span className="text-muted-foreground text-xs font-medium">
+                <span className="text-muted-foreground text-sm font-medium">
                   {preset.label}
                 </span>
               </div>

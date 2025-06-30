@@ -112,26 +112,43 @@ export function BackgroundControls() {
         <div className="space-y-4 pt-2">
           <Label>Background Color</Label>
 
-          <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-5">
+          <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
             {SOLID_COLOR_PRESETS.map((preset) => (
-              <div
+              <button
                 key={preset.name}
-                className={`flex cursor-pointer flex-col items-center rounded-lg pt-3 pb-2 ${
+                className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                   solidColorPreset === preset.name
-                    ? "bg-primary/10 ring-input ring-1"
-                    : "hover:bg-muted"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-muted-foreground/50"
                 }`}
                 onClick={() =>
                   handleBackgroundChange(preset.color, preset.name)
-                }>
-                <div
-                  className="border-input mb-1 h-12 w-12 rounded-full border"
-                  style={{
-                    background: preset.color,
-                  }}
-                />
-                <span className="pt-1 text-xs font-medium">{preset.label}</span>
-              </div>
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    handleBackgroundChange(preset.color, preset.name);
+                  }
+                }}
+                type="button">
+                <div className="relative aspect-[4/3] w-full p-2">
+                  <div className="bg-muted/5 absolute inset-2 rounded-md" />
+
+                  <div className="relative flex h-full items-center justify-center">
+                    <div
+                      className="h-14 w-14 rounded-full border border-white/20 shadow-lg"
+                      style={{
+                        background: preset.color,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-muted/30 border-t px-2 py-2">
+                  <span className="text-muted-foreground text-sm font-medium">
+                    {preset.label}
+                  </span>
+                </div>
+              </button>
             ))}
           </div>
 

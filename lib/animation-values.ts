@@ -46,6 +46,27 @@ export const springConfigs = {
     damping: 30,
     mass: 0.6,
   },
+  appleLike: {
+    type: "spring" as const,
+    stiffness: 400,
+    damping: 30,
+    mass: 0.5,
+    velocity: 0,
+  },
+  appleGentle: {
+    type: "spring" as const,
+    stiffness: 300,
+    damping: 35,
+    mass: 0.8,
+    velocity: 0,
+  },
+  iosSheet: {
+    type: "spring" as const,
+    stiffness: 500,
+    damping: 40,
+    mass: 0.4,
+    velocity: 0,
+  },
 } as const;
 
 export const pageTransitions = {

@@ -4,7 +4,6 @@ import { Switch } from "@/components/ui/switch";
 import { TEXTURE_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import Image from "next/image";
 
 export function TextureControls() {
@@ -78,15 +77,6 @@ export function TextureControls() {
 
   return (
     <div className="space-y-4">
-      <Alert className="bg-muted/50 mb-4">
-        <AlertDescription className="flex items-center text-xs">
-          <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
-          <p className="text-muted-foreground mt-0.5 text-sm">
-            Applies to exported 3D models.
-          </p>
-        </AlertDescription>
-      </Alert>
-
       <div className="flex items-center space-x-2">
         <Switch
           id="textureSwitch"

@@ -3,7 +3,6 @@ import { Slider } from "@/components/ui/slider";
 import { BEVEL_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
 import { Switch } from "@/components/ui/switch";
-import { BevelPreview } from "@/components/previews/bevel-preview";
 
 const MIN_ACTUAL_DEPTH = 0.01;
 const MAX_ACTUAL_DEPTH = 50;
@@ -98,14 +97,74 @@ export function GeometryControls() {
 
       <div className="space-y-4 pt-2">
         <Label htmlFor="bevelPreset">Bevel Style</Label>
-        <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-5">
+        <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
           {BEVEL_PRESETS.map((preset) => (
-            <BevelPreview
+            <button
               key={preset.name}
-              preset={preset}
-              isSelected={bevelPreset === preset.name}
+              className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                bevelPreset === preset.name
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-muted-foreground/50"
+              }`}
               onClick={() => applyBevelPreset(preset.name)}
-            />
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  applyBevelPreset(preset.name);
+                }
+              }}
+              type="button">
+              <div className="relative aspect-[4/3] w-full p-2">
+                <div className="bg-muted/5 absolute inset-2 rounded-md" />
+
+                <div className="relative flex h-full items-center justify-center">
+                  <div
+                    className="relative h-14 w-14 overflow-hidden rounded-md"
+                    style={{
+                      backgroundColor: "var(--input)",
+                      border: "1px solid hsl(var(--primary)/0.4)",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                    }}>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div
+                        className="bg-primary/40 from-primary/40 to-primary/20 relative h-10 w-10 bg-gradient-to-tl"
+                        style={{
+                          position: "absolute",
+                          bottom: "-1px",
+                          left: "-1px",
+                          borderTopRightRadius:
+                            preset.previewStyle?.borderRadius || "0px",
+                          boxShadow:
+                            preset.previewStyle?.boxShadow ||
+                            "inset 2px -2px 4px rgba(255,255,255,0.4)",
+                        }}
+                      />
+                      {preset.name === "custom" && (
+                        <div
+                          className="absolute h-3 w-3"
+                          style={{
+                            right: "8px",
+                            top: "8px",
+                          }}>
+                          <div
+                            className="bg-primary/40 from-primary/40 to-primary/20 relative h-full w-full rounded-full bg-gradient-to-tl"
+                            style={{
+                              boxShadow:
+                                "inset 1px 1px 3px rgba(255,255,255,0.6), 0 1px 3px rgba(0,0,0,0.1)",
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-muted/30 border-t px-2 py-2">
+                <span className="text-muted-foreground text-sm font-medium">
+                  {preset.label}
+                </span>
+              </div>
+            </button>
           ))}
         </div>
 
