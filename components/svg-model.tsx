@@ -57,7 +57,7 @@ interface SVGModelProps {
 const applySpread = (
   shape: THREE.Shape,
   isHole: boolean,
-  amount: number,
+  amount: number
 ): THREE.Shape => {
   if (amount === 0) return shape;
 
@@ -164,7 +164,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       onLoadComplete,
       onError,
     },
-    ref,
+    ref
   ) => {
     const [paths, setPaths] = useState<THREE.ShapePath[]>([]);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -188,7 +188,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         const parser = new DOMParser();
         const svgDoc = parser.parseFromString(
           processedSvgData,
-          "image/svg+xml",
+          "image/svg+xml"
         );
 
         const parserError = svgDoc.querySelector("parsererror");
@@ -217,10 +217,10 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
 
         const viewBox = svgElement.getAttribute("viewBox");
         let width = Number.parseFloat(
-          svgElement.getAttribute("width") || "100",
+          svgElement.getAttribute("width") || "100"
         );
         let height = Number.parseFloat(
-          svgElement.getAttribute("height") || "100",
+          svgElement.getAttribute("height") || "100"
         );
 
         if (viewBox) {
@@ -244,7 +244,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       } catch (error) {
         console.error("Error parsing SVG:", error);
         onError?.(
-          error instanceof Error ? error : new Error("Failed to parse SVG"),
+          error instanceof Error ? error : new Error("Failed to parse SVG")
         );
       }
 
@@ -256,25 +256,76 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     const shapesWithMaterials = useMemo(() => {
       if (paths.length === 0) return [];
 
-      return paths
-        .map((path, index) => {
-          try {
-            const shapes = SVGLoader.createShapes(path);
+      // Sort paths by area to identify background rectangles vs inner paths
+      const pathsWithArea = paths.map((path, index) => {
+        try {
+          const shapes = SVGLoader.createShapes(path);
 
-            if (shapes.length === 0) {
-              console.warn("No shapes created from path", index);
+          // Calculate the total area of all shapes in this path
+          let totalArea = 0;
+          shapes.forEach((shape) => {
+            const points = shape.getPoints();
+            if (points.length >= 3) {
+              // Simple polygon area calculation using shoelace formula
+              let area = 0;
+              for (let i = 0; i < points.length; i++) {
+                const j = (i + 1) % points.length;
+                area += points[i].x * points[j].y;
+                area -= points[j].x * points[i].y;
+              }
+              totalArea += Math.abs(area) / 2;
+            }
+          });
+
+          return {
+            path,
+            shapes,
+            area: totalArea,
+            originalIndex: index,
+          };
+        } catch (error) {
+          console.warn("Error calculating area for path:", error);
+          return {
+            path,
+            shapes: [],
+            area: 0,
+            originalIndex: index,
+          };
+        }
+      });
+
+      // Sort by area (largest first) to render background elements first
+      pathsWithArea.sort((a, b) => b.area - a.area);
+
+      return pathsWithArea
+        .map((pathItem, sortedIndex) => {
+          try {
+            if (pathItem.shapes.length === 0) {
+              console.warn(
+                "No shapes created from path",
+                pathItem.originalIndex
+              );
               return null;
             }
 
-            const processedShapes = shapes.map((shape) =>
-              applySpread(shape, false, spread),
+            const processedShapes = pathItem.shapes.map((shape) =>
+              applySpread(shape, false, spread)
             );
+
+            // Determine if this is likely a background element based on area and position
+            // Background elements are typically the largest areas and often rectangles
+            const isBackground =
+              sortedIndex === 0 &&
+              pathItem.area > 0 &&
+              pathsWithArea.length > 1;
 
             return {
               shapes: processedShapes,
-              color: customColor || path.color,
-              renderOrder: index,
+              color: customColor || pathItem.path.color,
+              renderOrder: sortedIndex, // Use sorted index for proper layering
               isHole: false,
+              isBackground,
+              originalIndex: pathItem.originalIndex,
             };
           } catch (error) {
             console.warn("Error creating shapes from path:", error);
@@ -286,6 +337,8 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         color: string | THREE.Color;
         renderOrder: number;
         isHole: boolean;
+        isBackground: boolean;
+        originalIndex: number;
       }>;
     }, [paths, customColor, spread]);
 
@@ -294,10 +347,15 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       return 100 / Math.max(dimensions.width, dimensions.height);
     }, [dimensions]);
 
-    const getMaterial = (color: string | THREE.Color, isHole: boolean) => {
+    const getMaterial = (
+      color: string | THREE.Color,
+      isHole: boolean,
+      renderOrder: number,
+      isBackground: boolean
+    ) => {
       const colorString =
         color instanceof THREE.Color ? `#${color.getHexString()}` : color;
-      const cacheKey = `${colorString}_${roughness}_${metalness}_${clearcoat}_${transmission}_${envMapIntensity}`;
+      const cacheKey = `${colorString}_${roughness}_${metalness}_${clearcoat}_${transmission}_${envMapIntensity}_${renderOrder}_${isBackground}`;
 
       if (materialsCache.current.has(cacheKey)) {
         return materialsCache.current.get(cacheKey)!;
@@ -305,6 +363,21 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
 
       const threeColor =
         color instanceof THREE.Color ? color : new THREE.Color(color);
+
+      // Enhanced polygon offset logic to prevent Z-fighting
+      let polygonOffsetFactor: number;
+      let polygonOffsetUnits: number;
+
+      if (isBackground) {
+        // Background elements should be rendered behind
+        polygonOffsetFactor = 1;
+        polygonOffsetUnits = 1;
+      } else {
+        // Foreground elements with subtle progressive offsets
+        polygonOffsetFactor = -(renderOrder + 1) * 0.5;
+        polygonOffsetUnits = -(renderOrder + 1) * 0.5;
+      }
+
       const material = new THREE.MeshPhysicalMaterial({
         color: threeColor,
         roughness: Math.max(0.05, roughness),
@@ -316,10 +389,13 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         transmission,
         side: THREE.DoubleSide,
         polygonOffset: true,
-        polygonOffsetFactor: isHole ? -1 : 1,
-        polygonOffsetUnits: isHole ? -1 : 1,
+        polygonOffsetFactor,
+        polygonOffsetUnits,
         flatShading: false,
         wireframe: false,
+        // Add depth testing improvements
+        depthTest: true,
+        depthWrite: true,
       });
 
       materialsCache.current.set(cacheKey, material);
@@ -390,33 +466,44 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
           position={[0, 0, 0]}
           rotation={[0, Math.PI / 4, 0]}>
           {shapesWithMaterials.map((shapeItem, i) => (
-            <group key={i} renderOrder={shapeItem.renderOrder}>
-              {shapeItem.shapes.map((shape, j) => (
-                <mesh
-                  key={j}
-                  castShadow={castShadow}
-                  receiveShadow={receiveShadow}
-                  renderOrder={shapeItem.renderOrder}
-                  position={[
-                    xOffset,
-                    yOffset,
-                    shapeItem.isHole ? -depth / 4 : -depth / 2,
-                  ]}>
-                  <extrudeGeometry
-                    args={[shape, getExtrudeSettings(shapeItem.isHole)]}
-                  />
-                  <primitive
-                    object={getMaterial(shapeItem.color, shapeItem.isHole)}
-                    attach="material"
-                  />
-                </mesh>
-              ))}
+            <group
+              key={`${shapeItem.originalIndex}-${i}`}
+              renderOrder={shapeItem.renderOrder}>
+              {shapeItem.shapes.map((shape, j) => {
+                // Calculate Z position based on render order to add physical separation
+                // Use minimal but effective separation to maintain visual cohesion
+                const zOffset = shapeItem.isBackground
+                  ? -depth / 2 - 0.02 // Very slight behind positioning
+                  : -depth / 2 + shapeItem.renderOrder * 0.01; // Minimal progressive forward positioning
+
+                return (
+                  <mesh
+                    key={`${shapeItem.originalIndex}-${j}`}
+                    castShadow={castShadow}
+                    receiveShadow={receiveShadow}
+                    renderOrder={shapeItem.renderOrder}
+                    position={[xOffset, yOffset, zOffset]}>
+                    <extrudeGeometry
+                      args={[shape, getExtrudeSettings(shapeItem.isHole)]}
+                    />
+                    <primitive
+                      object={getMaterial(
+                        shapeItem.color,
+                        shapeItem.isHole,
+                        shapeItem.renderOrder,
+                        shapeItem.isBackground
+                      )}
+                      attach="material"
+                    />
+                  </mesh>
+                );
+              })}
             </group>
           ))}
         </group>
       </Center>
     );
-  },
+  }
 );
 
 SVGModel.displayName = "SVGModel";
