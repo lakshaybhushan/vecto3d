@@ -524,45 +524,58 @@ export default function EditPage() {
                     </CardDescription>
                   </div>
                 </CardHeader>
-                <CardContent className="flex-1 overflow-hidden p-4">
-                  <Tabs defaultValue="geometry">
-                    <TabsList className="mb-4 flex w-full justify-between overflow-x-auto">
-                      <TabsTrigger value="geometry" className="flex-1">
-                        Geometry
-                      </TabsTrigger>
-                      <TabsTrigger value="material" className="flex-1">
-                        Material
-                      </TabsTrigger>
-                      <TabsTrigger value="textures" className="flex-1">
-                        Textures
-                      </TabsTrigger>
-                      <TabsTrigger value="environment" className="flex-1">
-                        Environment
-                      </TabsTrigger>
-                      <TabsTrigger value="background" className="flex-1">
-                        Background
-                      </TabsTrigger>
-                    </TabsList>
+                <CardContent className="flex flex-1 flex-col overflow-hidden p-0">
+                  <Tabs
+                    defaultValue="geometry"
+                    className="flex flex-1 flex-col overflow-y-hidden">
+                    <div className="border-b p-4">
+                      <TabsList className="grid w-full grid-cols-5">
+                        <TabsTrigger value="geometry">Geometry</TabsTrigger>
+                        <TabsTrigger value="material">Material</TabsTrigger>
+                        <TabsTrigger value="textures">Textures</TabsTrigger>
+                        <TabsTrigger value="environment">
+                          Environment
+                        </TabsTrigger>
+                        <TabsTrigger value="background">Background</TabsTrigger>
+                      </TabsList>
+                    </div>
 
-                    <TabsContent value="geometry" key="geometry">
-                      <GeometryControls />
-                    </TabsContent>
+                    <div className="flex-1 overflow-y-auto p-4">
+                      <TabsContent
+                        value="geometry"
+                        key="geometry"
+                        className="mt-0">
+                        <GeometryControls />
+                      </TabsContent>
 
-                    <TabsContent value="material" key="material">
-                      <MaterialControls />
-                    </TabsContent>
+                      <TabsContent
+                        value="material"
+                        key="material"
+                        className="mt-0">
+                        <MaterialControls />
+                      </TabsContent>
 
-                    <TabsContent value="textures" key="textures">
-                      <TextureControls />
-                    </TabsContent>
+                      <TabsContent
+                        value="textures"
+                        key="textures"
+                        className="mt-0">
+                        <TextureControls />
+                      </TabsContent>
 
-                    <TabsContent value="environment" key="environment">
-                      <EnvironmentControls />
-                    </TabsContent>
+                      <TabsContent
+                        value="environment"
+                        key="environment"
+                        className="mt-0">
+                        <EnvironmentControls />
+                      </TabsContent>
 
-                    <TabsContent value="background" key="background">
-                      <BackgroundControls />
-                    </TabsContent>
+                      <TabsContent
+                        value="background"
+                        key="background"
+                        className="mt-0">
+                        <BackgroundControls />
+                      </TabsContent>
+                    </div>
                   </Tabs>
                 </CardContent>
               </Card>

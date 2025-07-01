@@ -6,11 +6,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PlusIcon } from "lucide-react";
 import { ENVIRONMENT_PRESETS } from "@/lib/constants";
 import { toast } from "sonner";
-// import { RainbowButton } from "@/components/ui/rainbow-button";
 import { motion } from "framer-motion";
 import { useEditorStore } from "@/lib/store";
 import { Switch } from "@/components/ui/switch";
-import { RainbowButton } from "../ui/rainbow-button";
+import GalaxyButton from "../ui/vibe-button";
 
 export function EnvironmentControls() {
   const useEnvironment = useEditorStore((state) => state.useEnvironment);
@@ -108,110 +107,106 @@ export function EnvironmentControls() {
       </div>
 
       {useEnvironment && (
-        <>
-          <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
-            {ENVIRONMENT_PRESETS.map((preset) => (
-              <div
-                key={preset.name}
-                className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
-                  environmentPreset === preset.name
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-muted-foreground/50"
-                }`}
-                onClick={() => handlePresetChange(preset.name)}>
-                <div className="relative aspect-square w-full p-3">
-                  {/* Clean background with subtle color wash */}
-                  <div
-                    className="absolute inset-3 rounded-md"
-                    style={{
-                      backgroundColor: `${preset.color}15`,
-                    }}
-                  />
-
-                  {/* Central orb representing the environment */}
-                  <div className="relative flex h-full items-center justify-center">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Presets</Label>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+              {ENVIRONMENT_PRESETS.map((preset) => (
+                <div
+                  key={preset.name}
+                  className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                    environmentPreset === preset.name
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-muted-foreground/50"
+                  }`}
+                  onClick={() => handlePresetChange(preset.name)}>
+                  <div className="relative aspect-square w-full p-3">
                     <div
-                      className="relative h-10 w-10 rounded-full border border-white/20 shadow-lg"
+                      className="absolute inset-3 rounded-md"
                       style={{
-                        backgroundColor: preset.color,
-                        boxShadow: `
+                        backgroundColor: `${preset.color}15`,
+                      }}
+                    />
+                    <div className="relative flex h-full items-center justify-center">
+                      <div
+                        className="relative h-10 w-10 rounded-full border border-white/20 shadow-lg"
+                        style={{
+                          backgroundColor: preset.color,
+                          boxShadow: `
                           0 4px 12px ${preset.color}30,
                           inset 0 1px 0 rgba(255,255,255,0.2),
                           inset 0 -1px 0 rgba(0,0,0,0.1)
                         `,
-                      }}>
-                      {/* Subtle highlight */}
-                      <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/30 blur-sm" />
+                        }}>
+                        <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/30 blur-sm" />
+                      </div>
                     </div>
                   </div>
+                  <div className="bg-muted/30 border-t px-3 py-2 text-center">
+                    <span className="text-muted-foreground text-sm font-medium">
+                      {preset.label}
+                    </span>
+                  </div>
                 </div>
+              ))}
 
-                {/* Clean label at bottom */}
-                <div className="bg-muted/30 border-t px-3 py-2 text-center">
-                  <span className="text-muted-foreground text-sm font-medium">
-                    {preset.label}
-                  </span>
-                </div>
+              <div
+                key="custom-preset"
+                className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                  environmentPreset === "custom"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-muted-foreground/50"
+                }`}
+                onClick={() => {
+                  if (customHdriUrl) {
+                    setEnvironmentPreset("custom");
+                  } else {
+                    hdriFileInputRef.current?.click();
+                  }
+                }}>
+                <input
+                  ref={hdriFileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png"
+                  className="hidden"
+                  onChange={handleHdriFileChange}
+                />
+                {customHdriUrl ? (
+                  <>
+                    <div className="relative aspect-square w-full p-3">
+                      <div
+                        className="absolute inset-3 rounded-md bg-cover bg-center"
+                        style={{
+                          backgroundImage: `url(${customHdriUrl})`,
+                        }}
+                      />
+                    </div>
+                    <div className="bg-muted/30 border-t px-3 py-2 text-center">
+                      <span className="text-muted-foreground text-sm font-medium">
+                        Custom
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="relative aspect-square w-full p-3">
+                      <div className="border-muted-foreground/30 bg-muted/20 flex h-full items-center justify-center rounded-md border-2 border-dashed">
+                        <PlusIcon className="text-muted-foreground h-6 w-6" />
+                      </div>
+                    </div>
+                    <div className="bg-muted/30 border-t px-3 py-2 text-center">
+                      <span className="text-muted-foreground text-sm font-medium">
+                        Custom
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
-            ))}
-
-            <div
-              key="custom-preset"
-              className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
-                environmentPreset === "custom"
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-muted-foreground/50"
-              }`}
-              onClick={() => {
-                if (customHdriUrl) {
-                  setEnvironmentPreset("custom");
-                } else {
-                  hdriFileInputRef.current?.click();
-                }
-              }}>
-              <input
-                ref={hdriFileInputRef}
-                type="file"
-                accept="image/jpeg,image/jpg,image/png"
-                className="hidden"
-                onChange={handleHdriFileChange}
-              />
-
-              {customHdriUrl ? (
-                <>
-                  <div className="relative aspect-square w-full p-3">
-                    <div
-                      className="absolute inset-3 rounded-md bg-cover bg-center"
-                      style={{
-                        backgroundImage: `url(${customHdriUrl})`,
-                      }}
-                    />
-                  </div>
-                  <div className="bg-muted/30 border-t px-3 py-2 text-center">
-                    <span className="text-muted-foreground text-sm font-medium">
-                      Custom
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="relative aspect-square w-full p-3">
-                    <div className="border-muted-foreground/30 bg-muted/20 flex h-full items-center justify-center rounded-md border-2 border-dashed">
-                      <PlusIcon className="text-muted-foreground h-6 w-6" />
-                    </div>
-                  </div>
-                  <div className="bg-muted/30 border-t px-3 py-2 text-center">
-                    <span className="text-muted-foreground text-sm font-medium">
-                      Custom
-                    </span>
-                  </div>
-                </>
-              )}
             </div>
           </div>
 
           {environmentPreset === "custom" && customHdriUrl && (
-            <Alert className="bg-muted/50 mb-4">
+            <Alert className="bg-muted/50">
               <AlertDescription className="flex items-center text-xs">
                 <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
                 <div className="flex w-full items-center justify-between">
@@ -229,90 +224,93 @@ export function EnvironmentControls() {
               </AlertDescription>
             </Alert>
           )}
-        </>
-      )}
-      {useEnvironment && (
-        <div className="mt-4 space-y-4 border-t pt-4">
-          <div className="w-full cursor-not-allowed">
-            {environmentPreset === "custom" && customHdriUrl ? (
-              <Button
-                variant="outline"
-                size="lg"
-                disabled={true}
-                className="w-full">
-                Sorry, Vibe Mode is not available with custom images :(
-              </Button>
-            ) : (
-              <RainbowButton
-                className={`w-full py-5 text-base font-medium transition-all`}
-                onClick={() => {
-                  const newValue = !useBloom;
-                  toggleVibeMode(newValue);
-                }}>
-                <span className="ml-1">
-                  {useBloom ? "Disable Vibe Mode" : "Enable Vibe Mode"}
-                </span>
-              </RainbowButton>
+
+          <div className="space-y-4 border-t pt-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Vibe Mode</Label>
+              <div className="w-full cursor-not-allowed">
+                {environmentPreset === "custom" && customHdriUrl ? (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    disabled={true}
+                    className="w-full">
+                    Sorry, Vibe Mode is not available with custom images :(
+                  </Button>
+                ) : (
+                  <GalaxyButton
+                    text={useBloom ? "Disable Vibe Mode" : "Enable Vibe Mode"}
+                    className={`w-full py-5 text-base font-medium transition-all`}
+                    gradientColors={["#FF6B6B", "#4ECDC4", "#45B29D"]}
+                    textColor="#fff"
+                    onClick={() => {
+                      const newValue = !useBloom;
+                      toggleVibeMode(newValue);
+                    }}></GalaxyButton>
+                )}
+              </div>
+            </div>
+
+            {useBloom && (
+              <motion.div
+                className="bg-muted/20 border-primary/20 mt-2 space-y-4 rounded-md border p-4"
+                initial={{ opacity: 0, height: 0, y: -10 }}
+                animate={{ opacity: 1, height: "auto", y: 0 }}
+                exit={{ opacity: 0, height: 0, y: -10 }}
+                transition={{ duration: 0.15 }}>
+                <div className="space-y-4">
+                  <Label
+                    htmlFor="bloomIntensity"
+                    className="flex items-center justify-between">
+                    <span>Bloom Intensity</span>
+                    <span className="text-primary font-mono">
+                      {bloomIntensity.toFixed(2)}
+                    </span>
+                  </Label>
+                  <Slider
+                    id="bloomIntensity"
+                    min={0.1}
+                    max={2.0}
+                    step={0.1}
+                    value={[bloomIntensity]}
+                    onValueChange={(value) => setBloomIntensity(value[0])}
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="bloomMipmapBlur"
+                    checked={bloomMipmapBlur}
+                    onCheckedChange={(checked) =>
+                      setBloomMipmapBlur(checked as boolean)
+                    }
+                  />
+
+                  <Label htmlFor="bloomMipmapBlur">Smooth Bloom</Label>
+                </div>
+
+                <div className="border-primary/10 space-y-2 border-t pt-3">
+                  <Label
+                    htmlFor="modelRotation"
+                    className="flex justify-between">
+                    <span>Rotate Model</span>
+                    <span className="text-primary font-mono">
+                      {(modelRotationY * (180 / Math.PI)).toFixed(0)}°
+                    </span>
+                  </Label>
+                  <Slider
+                    id="modelRotation"
+                    min={0}
+                    max={2 * Math.PI}
+                    step={Math.PI / 12}
+                    value={[modelRotationY]}
+                    onValueChange={(value) => setModelRotationY(value[0])}
+                    className="py-1"
+                  />
+                </div>
+              </motion.div>
             )}
           </div>
-
-          {useBloom && (
-            <motion.div
-              className="bg-muted/20 border-primary/20 mt-2 space-y-4 rounded-md border p-4"
-              initial={{ opacity: 0, height: 0, y: -10 }}
-              animate={{ opacity: 1, height: "auto", y: 0 }}
-              exit={{ opacity: 0, height: 0, y: -10 }}
-              transition={{ duration: 0.15 }}>
-              <div className="space-y-4">
-                <Label
-                  htmlFor="bloomIntensity"
-                  className="flex items-center justify-between">
-                  <span>Bloom Intensity</span>
-                  <span className="text-primary font-mono">
-                    {bloomIntensity.toFixed(2)}
-                  </span>
-                </Label>
-                <Slider
-                  id="bloomIntensity"
-                  min={0.1}
-                  max={2.0}
-                  step={0.1}
-                  value={[bloomIntensity]}
-                  onValueChange={(value) => setBloomIntensity(value[0])}
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="bloomMipmapBlur"
-                  checked={bloomMipmapBlur}
-                  onCheckedChange={(checked) =>
-                    setBloomMipmapBlur(checked as boolean)
-                  }
-                />
-
-                <Label htmlFor="bloomMipmapBlur">Smooth Bloom</Label>
-              </div>
-
-              <div className="border-primary/10 space-y-2 border-t pt-3">
-                <Label htmlFor="modelRotation" className="flex justify-between">
-                  <span>Rotate Model</span>
-                  <span className="text-primary font-mono">
-                    {(modelRotationY * (180 / Math.PI)).toFixed(0)}°
-                  </span>
-                </Label>
-                <Slider
-                  id="modelRotation"
-                  min={0}
-                  max={2 * Math.PI}
-                  step={Math.PI / 12}
-                  value={[modelRotationY]}
-                  onValueChange={(value) => setModelRotationY(value[0])}
-                  className="py-1"
-                />
-              </div>
-            </motion.div>
-          )}
         </div>
       )}
     </div>
