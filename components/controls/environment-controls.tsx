@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useEditorStore } from "@/lib/store";
 import { Switch } from "@/components/ui/switch";
-import GalaxyButton from "../ui/vibe-button";
 
 export function EnvironmentControls() {
   const useEnvironment = useEditorStore((state) => state.useEnvironment);
@@ -88,22 +87,29 @@ export function EnvironmentControls() {
 
   return (
     <div className="space-y-4">
-      <Alert className="bg-muted/50 mb-4">
+      {/* <Alert className="bg-muted/50 mb-4">
         <AlertDescription className="flex items-center text-xs">
           <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
           <p className="text-muted-foreground mt-0.5 text-sm">
             Applies to image exports only.
           </p>
         </AlertDescription>
-      </Alert>
+      </Alert> */}
 
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center justify-between rounded-lg border p-3">
+        <div className="space-y-0.5">
+          <Label htmlFor="useEnvironment" className="text-sm font-medium">
+            Use Environment Lighting
+          </Label>
+          <p className="text-muted-foreground text-xs">
+            Enable environment lighting for the 3D model.
+          </p>
+        </div>
         <Switch
           id="useEnvironment"
           checked={useEnvironment}
           onCheckedChange={(checked) => setUseEnvironment(checked as boolean)}
         />
-        <Label htmlFor="useEnvironment">Use Environment Lighting</Label>
       </div>
 
       {useEnvironment && (
@@ -226,30 +232,34 @@ export function EnvironmentControls() {
           )}
 
           <div className="space-y-4 border-t pt-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Vibe Mode</Label>
-              <div className="w-full cursor-not-allowed">
-                {environmentPreset === "custom" && customHdriUrl ? (
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    disabled={true}
-                    className="w-full">
-                    Sorry, Vibe Mode is not available with custom images :(
-                  </Button>
-                ) : (
-                  <GalaxyButton
-                    text={useBloom ? "Disable Vibe Mode" : "Enable Vibe Mode"}
-                    className={`w-full py-5 text-base font-medium transition-all`}
-                    gradientColors={["#FF6B6B", "#4ECDC4", "#45B29D"]}
-                    textColor="#fff"
-                    onClick={() => {
-                      const newValue = !useBloom;
-                      toggleVibeMode(newValue);
-                    }}></GalaxyButton>
-                )}
+            {environmentPreset === "custom" && customHdriUrl ? (
+              <div className="bg-muted/50 flex items-center justify-between rounded-lg border px-4 py-3">
+                <Label
+                  htmlFor="vibe-mode-disabled"
+                  className="text-muted-foreground">
+                  Vibe Mode
+                </Label>
+                <p className="text-muted-foreground text-xs">
+                  Unavailable with custom images
+                </p>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div className="space-y-0.5">
+                  <Label htmlFor="vibe-mode" className="text-sm font-medium">
+                    Vibe Mode
+                  </Label>
+                  <p className="text-muted-foreground text-xs">
+                    Enable a cinematic bloom effect.
+                  </p>
+                </div>
+                <Switch
+                  id="vibe-mode"
+                  checked={useBloom}
+                  onCheckedChange={toggleVibeMode}
+                />
+              </div>
+            )}
 
             {useBloom && (
               <motion.div

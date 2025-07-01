@@ -77,13 +77,31 @@ export function TextureControls() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
+      {/* <div className="flex items-center justify-between space-x-2">
         <Switch
           id="textureSwitch"
           checked={textureEnabled}
           onCheckedChange={handleTextureToggle}
         />
-        <Label htmlFor="textureSwitch">Enable Textures</Label>
+        <Label htmlFor="textureSwitch" className="text-sm font-medium">
+          Enable Textures
+        </Label>
+      </div> */}
+
+      <div className="flex items-center justify-between rounded-lg border p-3">
+        <div className="space-y-0.5">
+          <Label htmlFor="textureSwitch" className="text-sm font-medium">
+            Enable Textures
+          </Label>
+          <p className="text-muted-foreground text-xs">
+            Enable textures for the 3D model.
+          </p>
+        </div>
+        <Switch
+          id="textureSwitch"
+          checked={textureEnabled}
+          onCheckedChange={handleTextureToggle}
+        />
       </div>
 
       {textureEnabled && (

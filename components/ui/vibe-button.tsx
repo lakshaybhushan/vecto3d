@@ -61,23 +61,23 @@ const VibeButton = ({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
       className={`group relative z-0 overflow-hidden rounded-xl focus:outline-none ${className}`}
-      style={{
-        background: "rgba(17, 24, 39, 0.8)",
-        padding,
-        fontSize,
-        color: textColor,
-      } as React.CSSProperties}>
-      
-    
+      style={
+        {
+          background: "rgba(17, 24, 39, 0.8)",
+          padding,
+          fontSize,
+          color: textColor,
+        } as React.CSSProperties
+      }>
       <div className="absolute inset-0 rounded-xl border border-white/10" />
 
       {isHoldingActionRef.current && (
         <div className="absolute bottom-0 left-0 h-0.5 w-full">
           <div
             className="h-full transition-all duration-[1500ms] ease-linear"
-            style={{ 
+            style={{
               background: gradientStyle,
-              width: "100%"
+              width: "100%",
             }}
           />
         </div>

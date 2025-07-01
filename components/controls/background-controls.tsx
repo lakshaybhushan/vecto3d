@@ -1,6 +1,6 @@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+// import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   SOLID_COLOR_PRESETS,
   DARK_MODE_COLOR,
@@ -87,7 +87,7 @@ export function BackgroundControls() {
 
   return (
     <div className="space-y-4">
-      <Alert className="bg-muted/50 mb-4">
+      {/* <Alert className="bg-muted/50 mb-4">
         <AlertDescription className="flex items-center text-xs">
           <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
           <p className="text-muted-foreground mt-0.5 text-sm">
@@ -95,9 +95,9 @@ export function BackgroundControls() {
             3D models.
           </p>
         </AlertDescription>
-      </Alert>
+      </Alert> */}
 
-      <div className="border-primary/10 space-y-2 border-b pb-4">
+      {/* <div className="border-primary/10 space-y-2 border-b pb-4">
         <div className="flex items-center space-x-2">
           <Switch
             id="transparency-toggle"
@@ -106,6 +106,22 @@ export function BackgroundControls() {
           />
           <Label htmlFor="transparency-toggle">Transparent Background</Label>
         </div>
+      </div> */}
+
+      <div className="flex items-center justify-between rounded-lg border p-3">
+        <div className="space-y-0.5">
+          <Label htmlFor="transparency-toggle" className="text-sm font-medium">
+            Transparent Background
+          </Label>
+          <p className="text-muted-foreground text-xs">
+            Make the background transparent.
+          </p>
+        </div>
+        <Switch
+          id="transparency-toggle"
+          checked={isTransparent}
+          onCheckedChange={handleTransparencyToggle}
+        />
       </div>
 
       {!isTransparent && (
