@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileUploadProps } from "@/lib/types";
 import { toast } from "sonner";
@@ -81,6 +81,85 @@ export function FileUpload({
       toast.error("Please upload an SVG file (.svg)");
     }
   };
+
+  const processSvgContent = (
+    svgData: string,
+    fileName: string = "pasted.svg",
+  ) => {
+    // Validate SVG content
+    if (!isValidSvg(svgData)) {
+      toast.error("Invalid SVG content");
+      return;
+    }
+
+    // Sanitize for safe display
+    const sanitizedSvg = sanitizeSvgForPreview(svgData);
+    if (!sanitizedSvg) {
+      toast.error("SVG content could not be processed safely");
+      return;
+    }
+
+    onFileUpload(svgData, fileName);
+    setSvgContent(sanitizedSvg);
+    if (onIconSelect) onIconSelect("");
+    toast.success("SVG pasted successfully!");
+  };
+
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      // Check if the target is within our component or if no specific element is focused
+      const target = e.target as Element;
+      const isWithinComponent =
+        dropZoneRef.current?.contains(target) ||
+        document.activeElement === document.body;
+
+      if (!isWithinComponent) return;
+
+      const clipboardData = e.clipboardData;
+      if (!clipboardData) return;
+
+      // Try to get SVG content from clipboard
+      const textData = clipboardData.getData("text/plain");
+      const htmlData = clipboardData.getData("text/html");
+
+      // Check if text data contains SVG
+      if (
+        textData &&
+        textData.trim().startsWith("<svg") &&
+        textData.trim().endsWith("</svg>")
+      ) {
+        e.preventDefault();
+        processSvgContent(textData);
+        return;
+      }
+
+      // Check if HTML data contains SVG
+      if (htmlData && htmlData.includes("<svg")) {
+        const svgMatch = htmlData.match(/<svg[^>]*>[\s\S]*?<\/svg>/i);
+        if (svgMatch) {
+          e.preventDefault();
+          processSvgContent(svgMatch[0]);
+          return;
+        }
+      }
+
+      // Check for files in clipboard (for when SVG files are copied)
+      const files = Array.from(clipboardData.files);
+      const svgFile = files.find((file) => file.type === "image/svg+xml");
+      if (svgFile) {
+        e.preventDefault();
+        processFile(svgFile);
+      }
+    };
+
+    // Add event listener
+    document.addEventListener("paste", handlePaste);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener("paste", handlePaste);
+    };
+  }, [onFileUpload, onIconSelect]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
