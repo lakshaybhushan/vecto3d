@@ -3,9 +3,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { ChevronDown, Loader2, Video, FileImage } from "lucide-react";
 import { File, Image } from "lucide-react";
 import { PNG_RESOLUTIONS } from "@/lib/constants";
 import {
@@ -21,17 +22,32 @@ import {
   ThreeDExportIcon,
   ThreeDPrintIcon,
 } from "@/components/ui/icons";
+import { VideoResultModal } from "@/components/modals/video-result-modal";
+import { recordWithToastProgress } from "@/lib/video-recorder";
+import { toast } from "sonner";
 
 interface ExportButtonsProps {
   fileName: string;
   modelGroupRef: React.RefObject<THREE.Group | null>;
+  canvasRef?: React.RefObject<HTMLCanvasElement | null>;
 }
 
-export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
+export function ExportButtons({
+  fileName,
+  modelGroupRef,
+  canvasRef,
+}: ExportButtonsProps) {
   const [isUS, setIsUS] = useState<boolean | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
 
-  const { textureEnabled, texturePreset, textureScale } = useEditorStore();
+  const {
+    textureEnabled,
+    texturePreset,
+    textureScale,
+    autoRotate,
+    setCompletedVideo,
+    setVideoModalOpen,
+  } = useEditorStore();
 
   useEffect(() => {
     const checkLocation = async () => {
@@ -54,6 +70,37 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
     } finally {
       setIsPrinting(false);
     }
+  };
+
+  const handleVideoExport = async (format: "mp4" | "gif", duration: number) => {
+    if (!canvasRef?.current) {
+      console.error("Canvas not available for video export");
+      return;
+    }
+
+    if (!autoRotate) {
+      toast.error(
+        "Please enable auto-rotate in Geometry settings before recording video",
+      );
+      return;
+    }
+
+    await recordWithToastProgress({
+      canvas: canvasRef.current,
+      format,
+      duration,
+      onComplete: (blob) => {
+        setCompletedVideo(blob, format, fileName);
+        setVideoModalOpen(true);
+      },
+      onError: (error) => {
+        console.error("Recording failed:", error);
+      },
+    });
+  };
+
+  const handleNewRecording = (format: "mp4" | "gif", duration: number) => {
+    handleVideoExport(format, duration);
   };
 
   return (
@@ -85,6 +132,72 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
               {resolution.label}
             </DropdownMenuItem>
           ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            size="sm"
+            variant="default"
+            className="flex items-center gap-1">
+            <Video className="h-4 w-4" />
+            <span className="hidden sm:inline">Export Video</span>
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <div className="text-muted-foreground px-2 py-1.5 text-sm font-medium">
+            Record MP4
+          </div>
+          <DropdownMenuItem
+            onSelect={() => handleVideoExport("mp4", 5)}
+            disabled={!canvasRef?.current || !autoRotate}>
+            <Video className="h-4 w-4" />
+            MP4 - 5 seconds
+            {!autoRotate && (
+              <span className="text-muted-foreground ml-auto text-xs">*</span>
+            )}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => handleVideoExport("mp4", 10)}
+            disabled={!canvasRef?.current || !autoRotate}>
+            <Video className="h-4 w-4" />
+            MP4 - 10 seconds
+            {!autoRotate && (
+              <span className="text-muted-foreground ml-auto text-xs">*</span>
+            )}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <div className="text-muted-foreground px-2 py-1.5 text-sm font-medium">
+            Record GIF
+          </div>
+          <DropdownMenuItem
+            onSelect={() => handleVideoExport("gif", 3)}
+            disabled={!canvasRef?.current || !autoRotate}>
+            <FileImage className="h-4 w-4" />
+            GIF - 3 seconds
+            {!autoRotate && (
+              <span className="text-muted-foreground ml-auto text-xs">*</span>
+            )}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => handleVideoExport("gif", 5)}
+            disabled={!canvasRef?.current || !autoRotate}>
+            <FileImage className="h-4 w-4" />
+            GIF - 5 seconds
+            {!autoRotate && (
+              <span className="text-muted-foreground ml-auto text-xs">*</span>
+            )}
+          </DropdownMenuItem>
+          {!autoRotate && (
+            <>
+              <DropdownMenuSeparator />
+              <div className="text-muted-foreground px-2 py-1.5 text-xs">
+                * Enable auto-rotate in Geometry settings
+              </div>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -147,6 +260,8 @@ export function ExportButtons({ fileName, modelGroupRef }: ExportButtonsProps) {
           </span>
         </Button>
       )}
+
+      <VideoResultModal onStartNewRecording={handleNewRecording} />
     </div>
   );
 }

@@ -19,6 +19,7 @@ export interface ModelPreviewProps {
   modelGroupRef: React.RefObject<THREE.Group | null>;
   modelRef: React.RefObject<THREE.Group | null>;
   isMobile: boolean;
+  canvasRef?: React.RefObject<HTMLCanvasElement | null>;
   onLoadStart?: () => void;
   onLoadComplete?: () => void;
   onError?: (error: Error) => void;
@@ -89,8 +90,25 @@ function WebGLContextEvents() {
   return null;
 }
 
+// Component to capture the canvas reference
+function CanvasCapture({
+  canvasRef,
+}: {
+  canvasRef?: React.RefObject<HTMLCanvasElement | null>;
+}) {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    if (canvasRef && gl.domElement) {
+      canvasRef.current = gl.domElement;
+    }
+  }, [gl.domElement, canvasRef]);
+
+  return null;
+}
+
 export const ModelPreview = React.memo<ModelPreviewProps>(
-  ({ svgData, modelGroupRef, modelRef, isMobile }) => {
+  ({ svgData, modelGroupRef, modelRef, isMobile, canvasRef }) => {
     // Use fine-grained selectors for all state
     const depth = useEditorStore((state) => state.depth);
     const modelRotationY = useEditorStore((state) => state.modelRotationY);
@@ -229,6 +247,8 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
           <CustomBackground />
           {/* Attach WebGL context event listeners */}
           <WebGLContextEvents />
+          {/* Capture canvas reference for video recording */}
+          <CanvasCapture canvasRef={canvasRef} />
 
           <ambientLight intensity={0.4} color="#ffffff" />
 

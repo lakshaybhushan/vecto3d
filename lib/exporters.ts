@@ -5,6 +5,7 @@ import { loadThreeModules } from "./three-imports";
 import { TEXTURE_PRESETS } from "./constants";
 import { loadTexture } from "./texture-cache";
 import type { TextureExportState } from "./types";
+import { VideoRecorder, downloadRecording } from "./video-recorder";
 
 export async function prepareMaterialWithTextures(
   material: THREE.MeshPhysicalMaterial,
@@ -650,6 +651,69 @@ export async function exportToGLTF(
   }
 }
 
+export async function exportToVideo(
+  canvas: HTMLCanvasElement,
+  fileName: string,
+  format: "mp4" | "gif",
+  duration: number = 5000,
+  fps: number = 30,
+): Promise<boolean> {
+  try {
+    if (!canvas) {
+      throw new Error("Canvas not found");
+    }
+
+    const recorder = new VideoRecorder(canvas, {
+      format,
+      fps,
+      quality: 0.9,
+    });
+
+    await recorder.start();
+
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        try {
+          const blob = await recorder.stop();
+
+          if (blob) {
+            const extension = format === "mp4" ? "webm" : "gif";
+            downloadRecording(blob, `${fileName}.${extension}`);
+            resolve(true);
+          } else {
+            throw new Error("Failed to generate video blob");
+          }
+        } catch (error) {
+          console.error("Recording error:", error);
+          resolve(false);
+        }
+      }, duration);
+    });
+  } catch (error) {
+    console.error("Export video error:", error);
+    toast.error(`Failed to export ${format.toUpperCase()}: ${error}`);
+    return false;
+  }
+}
+
+export async function exportToMP4(
+  canvas: HTMLCanvasElement,
+  fileName: string,
+  duration: number = 5000,
+  fps: number = 30,
+): Promise<boolean> {
+  return exportToVideo(canvas, fileName, "mp4", duration, fps);
+}
+
+export async function exportToGIF(
+  canvas: HTMLCanvasElement,
+  fileName: string,
+  duration: number = 3000,
+  fps: number = 15,
+): Promise<boolean> {
+  return exportToVideo(canvas, fileName, "gif", duration, fps);
+}
+
 export async function exportToPNG(
   modelGroupRef: React.RefObject<THREE.Group | null>,
   fileName: string,
@@ -721,11 +785,12 @@ export async function exportToPNG(
 }
 
 export async function handleExportWithTextures(
-  format: "stl" | "gltf" | "glb" | "png",
+  format: "stl" | "gltf" | "glb" | "png" | "mp4" | "gif",
   modelGroupRef: React.RefObject<THREE.Group | null>,
   fileName: string,
   resolution: number = 1,
   textureState?: TextureExportState,
+  canvas?: HTMLCanvasElement,
 ): Promise<void> {
   const baseName = fileName.replace(".svg", "");
 
@@ -771,6 +836,22 @@ export async function handleExportWithTextures(
       case "png":
         success = await exportToPNG(modelGroupRef, baseName, resolution);
         break;
+      case "mp4":
+        if (!canvas) {
+          console.error("Canvas not provided for video export");
+          toast.error("Error: Canvas not available for video export");
+          return;
+        }
+        success = await exportToMP4(canvas, baseName);
+        break;
+      case "gif":
+        if (!canvas) {
+          console.error("Canvas not provided for GIF export");
+          toast.error("Error: Canvas not available for GIF export");
+          return;
+        }
+        success = await exportToGIF(canvas, baseName);
+        break;
       default:
         console.error(`Unsupported export format: ${format}`);
         toast.error(`Unsupported export format: ${format}`);
@@ -795,10 +876,11 @@ export async function handleExportWithTextures(
 }
 
 export async function handleExport(
-  format: "stl" | "gltf" | "glb" | "png",
+  format: "stl" | "gltf" | "glb" | "png" | "mp4" | "gif",
   modelGroupRef: React.RefObject<THREE.Group | null>,
   fileName: string,
   resolution: number = 1,
+  canvas?: HTMLCanvasElement,
 ): Promise<void> {
   const baseName = fileName.replace(".svg", "");
 
@@ -813,6 +895,20 @@ export async function handleExport(
 
     if (format === "png") {
       success = await exportToPNG(modelGroupRef, baseName, resolution);
+    } else if (format === "mp4") {
+      if (!canvas) {
+        console.error("Canvas not provided for video export");
+        toast.error("Error: Canvas not available for video export");
+        return;
+      }
+      success = await exportToMP4(canvas, baseName);
+    } else if (format === "gif") {
+      if (!canvas) {
+        console.error("Canvas not provided for GIF export");
+        toast.error("Error: Canvas not available for GIF export");
+        return;
+      }
+      success = await exportToGIF(canvas, baseName);
     } else {
       const modelGroupClone = modelGroupRef.current.clone();
       modelGroupClone.updateMatrixWorld(true);

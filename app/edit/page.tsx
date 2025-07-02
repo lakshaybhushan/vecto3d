@@ -260,6 +260,7 @@ export default function EditPage() {
   const modelGroupRef = useRef<THREE.Group | null>(null);
   const modelRef = useRef<THREE.Group | null>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const router = useRouter();
   const {
@@ -345,6 +346,7 @@ export default function EditPage() {
           modelGroupRef={modelGroupRef}
           modelRef={modelRef}
           isMobile={isMobile}
+          canvasRef={canvasRef}
           onLoadStart={() => useEditorStore.getState().setIsModelLoading(true)}
           onLoadComplete={() =>
             useEditorStore.getState().setIsModelLoading(false)
@@ -390,6 +392,7 @@ export default function EditPage() {
               <ExportButtons
                 fileName={fileName}
                 modelGroupRef={modelGroupRef}
+                canvasRef={canvasRef}
               />
             )}
           </div>

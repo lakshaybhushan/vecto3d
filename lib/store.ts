@@ -57,6 +57,17 @@ interface EditorState {
   bloomIntensity: number;
   bloomMipmapBlur: boolean;
 
+  // Recording Options
+  isRecording: boolean;
+  recordingDuration: number;
+  recordingStartTime: number | null;
+
+  // Video Modal State
+  videoModalOpen: boolean;
+  completedVideoBlob: Blob | null;
+  completedVideoFormat: "mp4" | "gif" | null;
+  completedVideoFileName: string | null;
+
   // Actions
   setSvgData: (data: string | null) => void;
   setFileName: (name: string) => void;
@@ -101,6 +112,19 @@ interface EditorState {
   setUseBloom: (bloom: boolean) => void;
   setBloomIntensity: (intensity: number) => void;
   setBloomMipmapBlur: (blur: boolean) => void;
+
+  setIsRecording: (recording: boolean) => void;
+  setRecordingDuration: (duration: number) => void;
+  setRecordingStartTime: (time: number | null) => void;
+
+  // Video Modal Actions
+  setVideoModalOpen: (open: boolean) => void;
+  setCompletedVideo: (
+    blob: Blob | null,
+    format: "mp4" | "gif" | null,
+    fileName: string | null,
+  ) => void;
+  clearCompletedVideo: () => void;
 
   // Complex Actions
   toggleVibeMode: (newState: boolean) => void;
@@ -153,6 +177,16 @@ export const useEditorStore = create<EditorState>((set) => ({
   bloomIntensity: 1.0,
   bloomMipmapBlur: true,
 
+  isRecording: false,
+  recordingDuration: 0,
+  recordingStartTime: null,
+
+  // Video Modal State
+  videoModalOpen: false,
+  completedVideoBlob: null,
+  completedVideoFormat: null,
+  completedVideoFileName: null,
+
   // Simple Actions
   setSvgData: (data) => set({ svgData: data }),
   setFileName: (name) => set({ fileName: name }),
@@ -199,6 +233,25 @@ export const useEditorStore = create<EditorState>((set) => ({
   setUseBloom: (bloom) => set({ useBloom: bloom }),
   setBloomIntensity: (intensity) => set({ bloomIntensity: intensity }),
   setBloomMipmapBlur: (blur) => set({ bloomMipmapBlur: blur }),
+
+  setIsRecording: (recording) => set({ isRecording: recording }),
+  setRecordingDuration: (duration) => set({ recordingDuration: duration }),
+  setRecordingStartTime: (time) => set({ recordingStartTime: time }),
+
+  // Video Modal Actions
+  setVideoModalOpen: (open) => set({ videoModalOpen: open }),
+  setCompletedVideo: (blob, format, fileName) =>
+    set({
+      completedVideoBlob: blob,
+      completedVideoFormat: format,
+      completedVideoFileName: fileName,
+    }),
+  clearCompletedVideo: () =>
+    set({
+      completedVideoBlob: null,
+      completedVideoFormat: null,
+      completedVideoFileName: null,
+    }),
 
   // Complex Actions
   toggleVibeMode: (newState) =>
