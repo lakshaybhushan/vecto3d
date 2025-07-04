@@ -27,6 +27,28 @@ export const metadata: Metadata = {
       { media: "(prefers-color-scheme: dark)", url: "/logo_dark.svg" },
     ],
   },
+  openGraph: {
+    title: "Vecto3d | Transform Your Vectors in a New Dimension",
+    description: "A super simple tool to convert SVG logos to 3D models",
+    url: "https://vecto3d.xyz/",
+    siteName: "Vecto3d | Transform Your Vectors in a New Dimension",
+    images: [
+      {
+        url: "/opengraph-image-v1.png",
+        width: 1200,
+        height: 675,
+        alt: "Vecto3d - Transform Your Vectors in a New Dimension",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Vecto3d | Transform Your Vectors in a New Dimension",
+    description: "A super simple tool to convert SVG logos to 3D models",
+    images: ["/twitter-image-v1.png"],
+  },
 };
 
 export default function RootLayout({
@@ -36,19 +58,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <meta property="og:image" content="/opengraph-image.png" />
-      <meta property="og:image:type" content="image/png" />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="675" />
-      <meta
-        property="og:site_name"
-        content="Vecto3d | Transform Your Vectors in a New Dimension"
-      />
-      <meta property="og:url" content="https://vecto3d.xyz/" />
-      <meta name="twitter:image" content="/twitter-image.png" />
-      <meta name="twitter:image:type" content="image/png" />
-      <meta name="twitter:image:width" content="1200" />
-      <meta name="twitter:image:height" content="675" />
       <Script
         src="https://cloud.umami.is/script.js"
         defer
