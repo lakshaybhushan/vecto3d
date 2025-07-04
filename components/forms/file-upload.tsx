@@ -149,6 +149,15 @@ export function FileUpload({
       if (svgFile) {
         e.preventDefault();
         processFile(svgFile);
+        return;
+      }
+
+      // If we reach here, check if user pasted something that's not SVG
+      if (textData || htmlData || files.length > 0) {
+        e.preventDefault();
+        toast.error(
+          "Please paste valid SVG content",
+        );
       }
     };
 

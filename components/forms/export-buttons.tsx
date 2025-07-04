@@ -217,7 +217,7 @@ export function ExportButtons({
           <DropdownMenuItem
             onSelect={() => handleExport("stl", modelGroupRef, fileName)}>
             <File className="h-4 w-4" />
-            Export as STL
+            STL
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() =>
@@ -228,7 +228,7 @@ export function ExportButtons({
               })
             }>
             <File className="h-4 w-4" />
-            Export as GLB{textureEnabled ? " + Textures" : ""}
+            GLB{textureEnabled ? " + Textures" : ""}
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() =>
@@ -239,7 +239,7 @@ export function ExportButtons({
               })
             }>
             <File className="h-4 w-4" />
-            Export as GLTF{textureEnabled ? " + Textures" : ""}
+            GLTF{textureEnabled ? " + Textures" : ""}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
