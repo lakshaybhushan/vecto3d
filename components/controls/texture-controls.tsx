@@ -5,6 +5,7 @@ import { TEXTURE_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { toast } from "sonner";
 
 export function TextureControls() {
   const textureEnabled = useEditorStore((state) => state.textureEnabled);
@@ -21,6 +22,9 @@ export function TextureControls() {
 
     if (enabled && useEnvironment) {
       setUseEnvironment(false);
+      toast.info("Environment lighting disabled to prevent texture conflicts", {
+        duration: 2500,
+      });
     }
   };
 

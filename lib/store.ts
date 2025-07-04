@@ -269,7 +269,6 @@ export const useEditorStore = create<EditorState>((set) => ({
         userSelectedBackground: newState ? true : state.userSelectedBackground,
         backgroundColor: newState ? "#000000" : state.backgroundColor,
         solidColorPreset: newState ? "custom" : state.solidColorPreset,
-        autoRotate: newState ? false : state.autoRotate,
       };
 
       if (newState) {
