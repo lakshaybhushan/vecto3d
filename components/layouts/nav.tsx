@@ -30,7 +30,7 @@ export default function Nav() {
 
   return (
     <motion.header
-      className="flex w-full items-center justify-between px-8 py-4"
+      className="flex w-full items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-8"
       variants={navigationVariants}
       initial="initial"
       animate="animate"
@@ -39,11 +39,11 @@ export default function Nav() {
         className="flex items-center space-x-2"
         variants={staggeredItemVariants}
         style={{ willChange: "transform" }}>
-        <Logo className="text-primary h-8 w-8" />
+        <Logo className="text-primary h-7 w-7 sm:h-8 sm:w-8" />
       </motion.div>
 
       <motion.div
-        className="flex items-center space-x-3"
+        className="flex items-center space-x-2 sm:space-x-3"
         variants={staggeredContainerVariants}
         initial="initial"
         animate="animate"
@@ -61,18 +61,18 @@ export default function Nav() {
             href="https://github.com/lakshaybhushan/vecto3d"
             target="_blank"
             rel="noopener noreferrer">
-            <Button className="flex h-8 w-fit items-center gap-1 rounded-sm">
-              <Star size={16} />
+            <Button className="flex h-7 w-fit items-center gap-1 rounded-sm text-xs sm:h-8 sm:text-sm">
+              <Star size={14} />
               <AnimatedNumber
                 value={stars}
-                className="inline-flex items-center font-mono text-[13px]"
+                className="inline-flex items-center font-mono text-[11px] sm:text-[13px]"
                 springOptions={{
                   bounce: 0,
                   duration: 2400,
                 }}
               />
               <span className="mr-0.5 hidden sm:inline">Stars on GitHub</span>
-              <GitHubIcon size={16} />
+              <GitHubIcon size={14} />
             </Button>
           </Link>
         </motion.div>

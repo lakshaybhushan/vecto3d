@@ -144,7 +144,7 @@ export default function Home() {
       </AnimatePresence>
 
       <motion.div
-        className="flex flex-1 flex-col items-center justify-center px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 lg:px-12"
+        className="flex flex-1 flex-col items-center justify-center px-3 py-2 sm:px-4 sm:py-3 md:px-8 md:py-4 lg:px-12"
         variants={staggeredContainerVariants}
         initial="initial"
         animate="animate"
@@ -154,7 +154,7 @@ export default function Home() {
           variants={titleContainerVariants}
           initial="initial"
           animate="animate">
-          <h1 className="text-primary leading-tighter font-serif text-5xl tracking-tight md:text-6xl">
+          <h1 className="text-primary leading-tighter font-serif text-4xl tracking-tight sm:text-5xl md:text-6xl">
             <motion.span
               variants={titleSpanVariants}
               style={{
@@ -196,7 +196,7 @@ export default function Home() {
                 onIconSelect={handleIconSelect}
               />
               <motion.p
-                className="text-muted-foreground mt-1 mb-2 text-center text-xs sm:mt-2 sm:mb-3 sm:text-sm md:text-base"
+                className="text-muted-foreground mt-1 mb-2 text-center text-xs leading-tight sm:mt-2 sm:mb-3 sm:text-sm md:text-base"
                 variants={helpTextVariants}
                 initial="initial"
                 animate="animate">

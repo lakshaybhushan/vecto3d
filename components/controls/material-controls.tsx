@@ -92,7 +92,7 @@ export function MaterialControls() {
     <div className="space-y-4">
       <p className="text-sm font-medium">Select your material of choice</p>
 
-      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-4">
         {MATERIAL_PRESETS.map((preset) => {
           const materialStyle = getMaterialStyle(preset);
 
@@ -112,13 +112,10 @@ export function MaterialControls() {
               }}
               type="button">
               <div className="relative aspect-[4/3] w-full p-2">
-                {/* Clean background */}
                 <div className="bg-muted/5 absolute inset-2 rounded-md" />
 
-                {/* Material sample */}
                 <div className="relative flex h-full items-center justify-center">
-                  <div className="h-12 w-12 rounded-full" style={materialStyle}>
-                    {/* Additional effects for specific materials */}
+                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full" style={materialStyle}>
                     {preset.name === "brushed-metal" && (
                       <div
                         className="absolute inset-0 rounded-full"
@@ -130,27 +127,26 @@ export function MaterialControls() {
                     )}
 
                     {preset.name === "polished-metal" && (
-                      <div className="absolute top-2 left-2 h-4 w-4 rounded-full bg-white/70 blur-sm" />
+                      <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-white/70 blur-sm" />
                     )}
 
                     {(preset.name === "clear-glass" ||
                       preset.name === "frosted-glass") && (
                       <>
-                        <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/80" />
-                        <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-black/15" />
+                        <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-white/80" />
+                        <div className="absolute right-1.5 bottom-1.5 sm:right-2 sm:bottom-2 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-black/15" />
                       </>
                     )}
 
                     {preset.name === "glossy-plastic" && (
-                      <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/90" />
+                      <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-white/90" />
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Clean label at bottom */}
-              <div className="bg-muted/30 border-t px-2 py-2">
-                <span className="text-muted-foreground text-sm font-medium">
+              <div className="bg-muted/30 border-t px-2 py-1.5 sm:py-2">
+                <span className="text-muted-foreground text-xs sm:text-sm font-medium">
                   {preset.label}
                 </span>
               </div>

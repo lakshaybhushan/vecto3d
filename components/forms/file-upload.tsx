@@ -261,7 +261,7 @@ export function FileUpload({
         <CardContent className="p-0">
           <div
             ref={dropZoneRef}
-            className={`relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg px-4 py-3 transition-all duration-500 sm:min-h-[220px] md:min-h-[260px] lg:min-h-[300px] ${
+            className={`relative flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-lg px-3 py-3 transition-all duration-500 sm:min-h-[200px] sm:px-4 md:min-h-[260px] lg:min-h-[300px] ${
               isDragging
                 ? "border-primary bg-primary/10 border-2 border-dashed"
                 : "border-border hover:bg-muted/30 border-2 border-dashed"
@@ -287,8 +287,7 @@ export function FileUpload({
                 {svgContent ? (
                   <div className="relative z-10 flex items-center justify-center">
                     <div
-                      className="bg-muted relative z-10 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border-2 p-2.5 shadow-lg sm:h-16 sm:w-16 sm:p-3 md:h-18 md:w-18"
-                      // Safe to use dangerouslySetInnerHTML here as svgContent is sanitized
+                      className="bg-muted relative z-10 flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border-2 p-2 shadow-lg sm:h-14 sm:w-14 sm:p-2.5 md:h-16 md:w-16 md:p-3"
                       dangerouslySetInnerHTML={{
                         __html: svgContent
                           .replace(/width="[^"]*"/, 'width="100%"')
@@ -303,12 +302,12 @@ export function FileUpload({
                 ) : (
                   <div>
                     <div
-                      className={`relative z-10 rounded-xl border-2 p-2.5 shadow-lg sm:p-3 ${
+                      className={`relative z-10 rounded-xl border-2 p-2 shadow-lg sm:p-2.5 md:p-3 ${
                         isDragging
                           ? "border-primary bg-primary-foreground"
                           : "border-border bg-muted"
                       }`}>
-                      <AsteriskIcon size={36} />
+                      <AsteriskIcon size={28} className="sm:w-8 sm:h-8 md:w-9 md:h-9" />
                     </div>
                   </div>
                 )}
@@ -316,12 +315,12 @@ export function FileUpload({
 
               <div className="w-full text-center">
                 <div className={isDragging ? "hidden" : "block"}>
-                  <p className="text-sm font-medium sm:text-base">
+                  <p className="text-sm font-medium leading-tight sm:text-base">
                     {fileName
                       ? fileName
                       : "Click this space / Drop Your SVG File Here"}
                   </p>
-                  <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
+                  <p className="text-muted-foreground mt-1 text-xs leading-tight sm:text-sm">
                     {svgContent || selectedIcon
                       ? "Let's make it 3D!"
                       : "And see the magic happen!"}
@@ -334,15 +333,15 @@ export function FileUpload({
                     <div className="h-px w-full border border-dashed"></div>
                   </div>
                   <div className="w-full space-y-2 sm:space-y-3">
-                    <p className="text-xs sm:text-sm">
+                    <p className="text-xs leading-tight sm:text-sm">
                       Select any of the below
                     </p>
-                    <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:flex md:flex-wrap md:justify-center md:gap-3">
+                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 md:flex md:flex-wrap md:justify-center md:gap-3">
                       {exampleIcons.map((icon) => (
                         <div key={icon.name}>
                           <Button
                             variant="secondary"
-                            className={`flex h-auto w-full flex-col items-center justify-center gap-1 rounded-xl p-2 transition-transform duration-300 ease-out sm:gap-1.5 sm:p-2.5 md:w-[72px] md:p-3 ${
+                            className={`flex h-auto w-full flex-col items-center justify-center gap-1 rounded-lg p-2 transition-transform duration-300 ease-out sm:gap-1.5 sm:p-2.5 sm:rounded-xl md:w-[72px] md:p-3 ${
                               selectedIcon === icon.name
                                 ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground border-primary/20 border transition-all duration-100 ease-out"
                                 : "bg-secondary text-foreground hover:bg-secondary/60 hover:text-foreground border transition-all duration-100 ease-out"
@@ -351,8 +350,8 @@ export function FileUpload({
                               e.stopPropagation();
                               handleIconSelect(icon.name);
                             }}>
-                            <icon.component size={24} />
-                            <span className="text-[9px] font-medium whitespace-nowrap sm:text-[10px]">
+                            <icon.component size={20} className="sm:w-6 sm:h-6" />
+                            <span className="text-[8px] font-medium whitespace-nowrap leading-tight sm:text-[9px] md:text-[10px]">
                               {icon.name}
                             </span>
                           </Button>

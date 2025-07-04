@@ -375,18 +375,19 @@ export default function EditPage() {
       <VibeModeManager />
 
       <header className="bg-background/80 sticky top-0 z-20 w-full border-b border-dashed backdrop-blur-xs">
-        <div className="flex items-center justify-between px-8 py-4">
+        <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
+              className="h-8 px-2 sm:h-9 sm:px-3"
               onClick={handleBackToHome}
               aria-label="Back to home">
-              <ChevronLeft className="-ml-1 h-4 w-4" />
+              <ChevronLeft className="-ml-1 h-3 w-3 sm:h-4 sm:w-4" />
               <span className="-ml-0.5 hidden sm:inline">Home</span>
             </Button>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <ModeToggle />
             {svgData && (
               <ExportButtons
@@ -399,7 +400,7 @@ export default function EditPage() {
         </div>
       </header>
 
-      <div className="flex-1 px-8 py-8">
+      <div className="flex-1 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
         {isMobile && !continueOnMobile ? (
           <EditorMobileWarning
             onContinue={handleContinueOnMobile}
@@ -408,12 +409,12 @@ export default function EditPage() {
         ) : (
           <div
             key="editor-content"
-            className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            <div className="col relative order-first h-[60dvh] overflow-hidden lg:order-last lg:col-span-7 lg:h-[calc(100vh-8rem)]">
+            className="grid grid-cols-1 gap-4 sm:gap-6 lg:gap-8 lg:grid-cols-12">
+            <div className="col relative order-first h-[50dvh] overflow-hidden sm:h-[60dvh] lg:order-last lg:col-span-7 lg:h-[calc(100vh-8rem)]">
               <Card className="flex h-full w-full flex-col overflow-hidden border">
-                <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 backdrop-blur-xs [.border-b]:pb-4">
+                <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-3 sm:p-4 backdrop-blur-xs [.border-b]:pb-4">
                   <div>
-                    <CardTitle className="text-xl font-medium">
+                    <CardTitle className="text-lg sm:text-xl font-medium">
                       Preview
                     </CardTitle>
                     <CardDescription className="mt-1 text-xs">
@@ -425,18 +426,19 @@ export default function EditPage() {
                     </CardDescription>
                   </div>
                   <TooltipProvider>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1 sm:gap-2">
                       <Tooltip delayDuration={100}>
                         <TooltipTrigger asChild>
                           <Button
                             variant="outline"
                             size="icon"
+                            className="h-8 w-8 sm:h-10 sm:w-10"
                             onClick={() => {
                               resetEditor();
                               toast.success("Editor settings reset to default");
                             }}
                             aria-label="Reset editor settings">
-                            <RotateCcw className="h-4 w-4" />
+                            <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent
@@ -452,6 +454,7 @@ export default function EditPage() {
                           <Button
                             variant="outline"
                             size="icon"
+                            className="h-8 w-8 sm:h-10 sm:w-10"
                             onClick={() => {
                               if (isFullscreen) {
                                 document.exitFullscreen();
@@ -465,9 +468,9 @@ export default function EditPage() {
                                 : "Enter fullscreen"
                             }>
                             {isFullscreen ? (
-                              <Minimize2 className="h-4 w-4" />
+                              <Minimize2 className="h-3 w-3 sm:h-4 sm:w-4" />
                             ) : (
-                              <Maximize2 className="h-4 w-4" />
+                              <Maximize2 className="h-3 w-3 sm:h-4 sm:w-4" />
                             )}
                           </Button>
                         </TooltipTrigger>
@@ -515,11 +518,11 @@ export default function EditPage() {
                 </div>
               </Card>
             </div>
-            <div className="order-last space-y-6 lg:order-first lg:col-span-5">
+            <div className="order-last space-y-4 sm:space-y-6 lg:order-first lg:col-span-5">
               <Card className="flex w-full flex-col overflow-hidden border md:max-h-[60dvh] lg:max-h-[calc(100vh-8rem)]">
-                <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 pb-4 backdrop-blur-xs [.border-b]:pb-4">
+                <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-3 pb-3 sm:p-4 sm:pb-4 backdrop-blur-xs [.border-b]:pb-4">
                   <div>
-                    <CardTitle className="text-xl font-medium">
+                    <CardTitle className="text-lg sm:text-xl font-medium">
                       Customize
                     </CardTitle>
                     <CardDescription className="mt-1 truncate text-xs">
@@ -531,19 +534,46 @@ export default function EditPage() {
                   <Tabs
                     defaultValue="geometry"
                     className="flex flex-1 flex-col overflow-y-hidden">
-                    <div className="border-b p-4">
-                      <TabsList className="grid w-full grid-cols-5">
-                        <TabsTrigger value="geometry">Geometry</TabsTrigger>
-                        <TabsTrigger value="material">Material</TabsTrigger>
-                        <TabsTrigger value="textures">Textures</TabsTrigger>
-                        <TabsTrigger value="environment">
-                          Environment
-                        </TabsTrigger>
-                        <TabsTrigger value="background">Background</TabsTrigger>
+                    <div className="border-b p-3 sm:p-4">
+                      <TabsList className="w-full lg:grid lg:grid-cols-5">
+                        <div className="flex w-full overflow-x-auto lg:contents">
+                          <div className="flex gap-1 lg:contents">
+                            <TabsTrigger 
+                              value="geometry" 
+                              className="flex-shrink-0 text-xs px-2 py-1.5 sm:text-sm sm:px-3 sm:py-2 lg:flex-shrink lg:text-sm lg:px-4 lg:py-2"
+                            >
+                              Geometry
+                            </TabsTrigger>
+                            <TabsTrigger 
+                              value="material"
+                              className="flex-shrink-0 text-xs px-2 py-1.5 sm:text-sm sm:px-3 sm:py-2 lg:flex-shrink lg:text-sm lg:px-4 lg:py-2"
+                            >
+                              Material
+                            </TabsTrigger>
+                            <TabsTrigger 
+                              value="textures"
+                              className="flex-shrink-0 text-xs px-2 py-1.5 sm:text-sm sm:px-3 sm:py-2 lg:flex-shrink lg:text-sm lg:px-4 lg:py-2"
+                            >
+                              Textures
+                            </TabsTrigger>
+                            <TabsTrigger 
+                              value="environment"
+                              className="flex-shrink-0 text-xs px-2 py-1.5 sm:text-sm sm:px-3 sm:py-2 lg:flex-shrink lg:text-sm lg:px-4 lg:py-2"
+                            >
+                              Environment
+                            </TabsTrigger>
+                            <TabsTrigger 
+                              value="background"
+                              className="flex-shrink-0 text-xs px-2 py-1.5 sm:text-sm sm:px-3 sm:py-2 lg:flex-shrink lg:text-sm lg:px-4 lg:py-2"
+                            >
+                              Background
+                            </TabsTrigger>
+                          </div>
+                        </div>
                       </TabsList>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4">
+                    <div className="flex-1 overflow-y-auto p-3 sm:p-4">
                       <TabsContent
                         value="geometry"
                         key="geometry"

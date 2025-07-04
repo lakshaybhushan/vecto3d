@@ -65,6 +65,19 @@ const fragmentShader = `
 
   void main() {
     vec2 uv = vUv * 3.5;
+    // Adjust UV coordinates based on aspect ratio to prevent stretching on mobile
+    float aspectRatio = iResolution.x / iResolution.y;
+    
+    // Scale UV coordinates differently based on aspect ratio
+    if (aspectRatio < 1.0) {
+      // Portrait mode (mobile) - adjust to prevent vertical stretching
+      uv.y *= aspectRatio;
+      uv.x *= 1.0 + (1.0 - aspectRatio) * 0.5;
+    } else {
+      // Landscape mode - adjust for wide screens
+      uv.x /= aspectRatio * 0.8;
+    }
+    
     float shade = pattern(uv);
     
     if (isDark > 0.5) {

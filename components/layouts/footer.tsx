@@ -12,13 +12,13 @@ import {
 export default function Footer() {
   return (
     <motion.footer
-      className="w-full px-8 py-4"
+      className="w-full px-4 py-3 sm:px-6 sm:py-4 lg:px-8"
       variants={footerVariants}
       initial="initial"
       animate="animate"
       style={{ willChange: "transform" }}>
       <motion.div
-        className="text-muted-foreground flex flex-col items-center justify-between text-sm md:flex-row"
+        className="text-muted-foreground flex flex-col items-center justify-between text-xs sm:text-sm md:flex-row"
         variants={staggeredContainerVariants}
         initial="initial"
         animate="animate"
@@ -41,7 +41,7 @@ export default function Footer() {
         </motion.div>
 
         <motion.div
-          className="mt-2 flex items-center gap-1 md:mt-0"
+          className="mt-1.5 flex items-center gap-1 sm:mt-2 md:mt-0"
           variants={staggeredItemVariants}
           style={{ willChange: "transform" }}>
           Made for vibes by{" "}
