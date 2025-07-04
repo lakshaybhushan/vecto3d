@@ -14,7 +14,6 @@ import { Download, Video, FileImage, RotateCcw } from "lucide-react";
 import { downloadRecording } from "@/lib/video-recorder";
 import { useEditorStore } from "@/lib/store";
 import { toast } from "sonner";
-import Image from "next/image";
 
 interface VideoResultModalProps {
   onStartNewRecording: (format: "mp4" | "gif", duration: number) => void;
@@ -114,8 +113,7 @@ export function VideoResultModal({
               <CardContent className="p-4">
                 <div className="bg-muted aspect-square overflow-hidden rounded-lg">
                   {completedVideoFormat === "gif" ? (
-                    <Image
-                      unoptimized
+                    <img
                       src={previewUrl}
                       alt="Recorded GIF preview"
                       className="h-full w-full object-cover"
