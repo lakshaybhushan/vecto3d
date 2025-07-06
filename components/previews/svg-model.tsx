@@ -216,7 +216,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
 
             return {
               shapes: processedShapes,
-              color: customColor || path.color,
+              color: path.color,
               renderOrder: index,
               isHole: false,
             };
@@ -231,7 +231,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         renderOrder: number;
         isHole: boolean;
       }>;
-    }, [paths, customColor, spread]);
+    }, [paths, spread]);
 
     // Clean material creation function
     const createMaterial = useCallback(
@@ -514,7 +514,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
                   <MaterializedMesh
                     key={`${materialKey}-${i}-${j}`}
                     shape={shape}
-                    color={shapeItem.color}
+                    color={customColor || shapeItem.color}
                     isHole={shapeItem.isHole}
                     extrudeSettings={getExtrudeSettings(shapeItem.isHole)}
                     position={[

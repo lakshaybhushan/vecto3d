@@ -4,7 +4,6 @@ import { Geist_Mono, Instrument_Serif } from "next/font/google";
 import LocalFont from "next/font/local";
 import { ThemeProvider } from "@/components/layouts/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import Script from "next/script";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
@@ -28,13 +27,35 @@ const clashGrotesk = LocalFont({
 });
 
 export const metadata: Metadata = {
-  title: "Vecto3d - Convert SVGs to 3D",
+  title: "Vecto3d — Convert SVGs to 3D",
   description: "A super simple tool to convert SVG logos to 3D models",
   icons: {
     icon: [
       { media: "(prefers-color-scheme: light)", url: "/logo_light.svg" },
       { media: "(prefers-color-scheme: dark)", url: "/logo_dark.svg" },
     ],
+  },
+  openGraph: {
+    title: "Vecto3d — Convert SVGs to 3D",
+    description: "A super simple tool to convert SVG logos to 3D models",
+    url: "https://vecto3d.xyz/",
+    siteName: "Vecto3d — Convert SVGs to 3D",
+    images: [
+      {
+        url: "/opengraph-image-v1.png",
+        width: 1200,
+        height: 675,
+        alt: "Vecto3d — Convert SVGs to 3D",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Vecto3d — Convert SVGs to 3D",
+    description: "A super simple tool to convert SVG logos to 3D models",
+    images: ["/twitter-image-v1.png"],
   },
 };
 
@@ -45,24 +66,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <meta property="og:image" content="/opengraph-image.png" />
-      <meta property="og:image:type" content="image/png" />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="675" />
-      <meta
-        property="og:site_name"
-        content="Vecto3d | Transform Your Vectors in a New Dimension"
-      />
-      <meta property="og:url" content="https://vecto3d.xyz/" />
-      <meta name="twitter:image" content="/twitter-image.png" />
-      <meta name="twitter:image:type" content="image/png" />
-      <meta name="twitter:image:width" content="1200" />
-      <meta name="twitter:image:height" content="675" />
-      <Script
-        src="https://cloud.umami.is/script.js"
-        defer
-        data-website-id="237f1de7-ab04-44dd-a7b4-6b0b819b7991"
-      />
+      <head>
+      <script
+          crossOrigin="anonymous"
+          src="//unpkg.com/react-scan/dist/auto.global.js"
+        />
+        <script
+          src="https://cloud.umami.is/script.js"
+          defer
+          data-website-id="237f1de7-ab04-44dd-a7b4-6b0b819b7991"
+        />
+      </head>
       <body
         className={cn(
           clashGrotesk.className,
