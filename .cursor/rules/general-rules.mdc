@@ -1,0 +1,49 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Vecto3d General Rules
+
+## Environment
+- Project: `react`, `typescript`, `three.js`, `@react-three/fiber`, `@react-three/drei`, `@react-three/postprocessing`.
+- Framework: `tailwindcss`, `shadcn`, `next.js`
+- Package Manager: `bun`
+
+## General folder structure
+```
+vecto3d/
+├── public/                 # Static assets
+├── app/                    # Next.js App Router
+│   └──edit/                # SVG editor route
+├── components/             # React components
+│   ├── ui/                 # UI components
+│   └── controls/           # Control panel components
+├── lib/                    # Libraries and utilities
+├── hooks/                  # Custom React hooks
+├── styles/                 # Styles CSS
+└── ...config files         # e.g., next.config.ts, tsconfig.json, package.json...
+```
+### State Management
+- Apps use a combination of local state (React hooks) and global state (stores)
+- Stores are defined in `lib/store.ts`
+- Stores are implemented using a state management library (Zustand)
+### Component Organization
+- Shared UI components from `@/components/ui/` follow shadcn patterns
+- Custom hooks from `@/hooks/` provide reusable functionality
+
+**DO NOT USE useEffect and useState for everything.**
+
+**DO NOT RUN THE SERVER ON YOUR OWN ASK ME TO SPIN UP THE SERVER**
+
+⚠️ Install Packages: `bun add {package_name}`
+
+### Custom Components
+These are custom implementations (not vanilla shadcn):
+- `file-upload`

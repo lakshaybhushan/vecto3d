@@ -11,7 +11,7 @@
 
 </p>
 
-![GithubBanner](./app/opengraph-image.png)
+![GithubBanner](./public/opengraph-image-v1.png)
 
 A super simple tool to convert your simple SVGs, mostly logos, to 3D models.
 Check it out at [https://vecto3d.xyz](https://vecto3d.xyz)
