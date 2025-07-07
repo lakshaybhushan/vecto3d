@@ -1,40 +1,12 @@
-import React, { useCallback, useRef, useState, useEffect } from "react";
+import React, {
+  useCallback,
+  useRef,
+  useState,
+  useEffect,
+  useLayoutEffect,
+} from "react";
 import { HexColorPicker } from "react-colorful";
 import { createPortal } from "react-dom";
-
-const useClickOutside = (
-  ref: React.RefObject<HTMLElement>,
-  handler: (event: MouseEvent | TouchEvent) => void,
-) => {
-  useEffect(() => {
-    let startedInside = false;
-    let startedWhenMounted = false;
-
-    const listener = (event: MouseEvent | TouchEvent) => {
-      if (startedInside || !startedWhenMounted) return;
-      if (!ref.current || ref.current.contains(event.target as Node)) return;
-
-      handler(event);
-    };
-
-    const validateEventStart = (event: MouseEvent | TouchEvent) => {
-      startedWhenMounted = ref.current !== null;
-      startedInside = ref.current && ref.current.contains(event.target as Node);
-    };
-
-    document.addEventListener("mousedown", validateEventStart);
-    document.addEventListener("touchstart", validateEventStart);
-    document.addEventListener("click", listener);
-
-    return () => {
-      document.removeEventListener("mousedown", validateEventStart);
-      document.removeEventListener("touchstart", validateEventStart);
-      document.removeEventListener("click", listener);
-    };
-  }, [ref, handler]);
-};
-
-export default useClickOutside;
 
 interface PopoverPickerProps {
   color: string;
@@ -48,16 +20,34 @@ export const PopoverPicker = ({ color, onChange }: PopoverPickerProps) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const openPopover = useCallback(() => {
-    if (triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      setPosition({ x: rect.left, y: rect.bottom + 12 });
-    }
     setIsOpen(true);
   }, []);
 
   const closePopover = useCallback(() => {
     setIsOpen(false);
   }, []);
+
+  useLayoutEffect(() => {
+    if (isOpen && triggerRef.current && popoverRef.current) {
+      const triggerRect = triggerRef.current.getBoundingClientRect();
+      const popoverRect = popoverRef.current.getBoundingClientRect();
+
+      let newY = triggerRect.bottom + 12;
+      if (newY + popoverRect.height > window.innerHeight) {
+        newY = triggerRect.top - popoverRect.height - 12;
+      }
+
+      let newX = triggerRect.left;
+      if (newX + popoverRect.width > window.innerWidth) {
+        newX = window.innerWidth - popoverRect.width - 12;
+      }
+
+      if (newY < 12) newY = 12;
+      if (newX < 12) newX = 12;
+
+      setPosition({ x: newX, y: newY });
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
