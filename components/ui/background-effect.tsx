@@ -14,7 +14,7 @@ import { memoryManager } from "@/lib/memory-manager";
 
 const vertexShader = `
   varying vec2 vUv;
-  
+
   void main() {
     vUv = uv;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -26,8 +26,8 @@ const fragmentShader = `
   uniform vec2 iResolution;
   uniform float isDark;
   varying vec2 vUv;
-  
-  float rand(vec2 n) { 
+
+  float rand(vec2 n) {
     return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
   }
 
@@ -64,15 +64,19 @@ const fragmentShader = `
   }
 
   void main() {
-    vec2 uv = vUv * 3.5;
+    // Correct UV scaling based on screen aspect ratio to prevent stretching on narrow/wide viewports
+    float aspect = iResolution.x / iResolution.y;
+    vec2 uv = vUv;
+    uv.x *= aspect;
+    uv *= 3.5;
     float shade = pattern(uv);
-    
+
     if (isDark > 0.5) {
       // Dark mode: more black
       shade = 1.0 - shade;
       shade = pow(shade, 2.2);
       shade = shade * 0.25;
-      
+
       float variation = noise(vUv * 12.0) * 0.05;
       shade = max(0.0, shade + variation);
       shade = min(shade, 0.35);
@@ -80,13 +84,13 @@ const fragmentShader = `
       // Light mode: very white with subtle but visible patterns
       shade = pow(shade, 1.2);
       shade = shade * 0.2 + 0.8; // Much whiter: 80% base + 20% variation
-      
+
       // Add visible but subtle texture variation
       float variation = noise(vUv * 8.0) * 0.08;
       shade = shade + variation;
       shade = max(0.75, min(shade, 1.0)); // Keep it very bright (75-100%)
     }
-    
+
     gl_FragColor = vec4(shade, shade, shade, 1.0);
   }
 `;

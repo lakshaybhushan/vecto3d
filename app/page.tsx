@@ -150,7 +150,7 @@ export default function Home() {
         animate="animate"
         style={{ minHeight: 0 }}>
         <motion.div
-          className="mb-2 text-center sm:mb-3 md:mb-6"
+          className="md:mb-6 mb-4 text-center"
           variants={titleContainerVariants}
           initial="initial"
           animate="animate">
@@ -196,7 +196,7 @@ export default function Home() {
                 onIconSelect={handleIconSelect}
               />
               <motion.p
-                className="text-muted-foreground mt-1 mb-2 text-center text-xs sm:mt-2 sm:mb-3 sm:text-sm md:text-base"
+                className="text-muted-foreground mt-2 mb-2 text-center text-sm text-balance sm:mt-2 sm:mb-3 sm:text-sm md:text-base"
                 variants={helpTextVariants}
                 initial="initial"
                 animate="animate">
@@ -207,7 +207,7 @@ export default function Home() {
 
             <motion.div
               ref={continueButtonSectionRef}
-              className="mt-2 flex items-center justify-center sm:mt-3 md:mt-4">
+              className="mt-5 flex items-center justify-center">
               <AnimatePresence mode="wait">
                 {svgData && (
                   <motion.div
@@ -225,7 +225,7 @@ export default function Home() {
                       exit="exit"
                       layout>
                       <RainbowButton
-                        className="mx-auto w-full max-w-[16rem] rounded-md py-3 text-sm sm:py-4 sm:text-base md:py-5"
+                        className="mx-auto w-full max-w-[16rem] rounded-md py-5"
                         onClick={handleContinue}
                         disabled={isLoading}>
                         {isLoading ? "Processing..." : "Continue to Editor"}

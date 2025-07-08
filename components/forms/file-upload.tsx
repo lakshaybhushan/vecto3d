@@ -289,7 +289,7 @@ export function FileUpload({
               onChange={handleFileChange}
             />
 
-            <div className="flex h-full flex-col items-center justify-center">
+            <div className="flex h-full flex-col items-center justify-center w-full">
               <div className="relative mb-2 flex h-fit items-center justify-center sm:mb-3">
                 {svgContent ? (
                   <div className="relative z-10 flex items-center justify-center">
@@ -344,12 +344,12 @@ export function FileUpload({
                     <p className="text-xs sm:text-sm">
                       Select any of the below
                     </p>
-                    <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:flex md:flex-wrap md:justify-center md:gap-3">
+                    <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:justify-center md:gap-3 px-2 pt-2 md:p-0">
                       {exampleIcons.map((icon) => (
                         <div key={icon.name}>
                           <Button
                             variant="secondary"
-                            className={`flex h-auto w-full flex-col items-center justify-center gap-1 rounded-xl p-2 transition-transform duration-300 ease-out sm:gap-1.5 sm:p-2.5 md:w-[72px] md:p-3 ${
+                            className={`flex h-16 w-full flex-col items-center justify-center gap-1 rounded-xl p-2 transition-transform duration-300 ease-out sm:gap-2 sm:p-2.5 md:w-[72px] md:p-3 ${
                               selectedIcon === icon.name
                                 ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground border-primary/20 border transition-all duration-100 ease-out"
                                 : "bg-secondary text-foreground hover:bg-secondary/60 hover:text-foreground border transition-all duration-100 ease-out"
