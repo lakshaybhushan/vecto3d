@@ -5,10 +5,9 @@
 - [x] fix the low res image exports
 - [x] new vibe mode button
 - [ ] add animations on toggle
-- [ ] all new mobile redesign
+- [ ] all new mobile redesign - (50%)
 - [ ] homepage bg doesn't scale well on mobile
 - [-] separate layers bug fix
 - [ ] new textures
 - [ ] add lighting controls (all axis)
 - [x] export as video/gif maybe?
-- [ ] ai support for vector to 3d generation?

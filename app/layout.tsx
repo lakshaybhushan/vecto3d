@@ -1,3 +1,4 @@
+import "@/lib/polyfills";
 import type React from "react";
 import "@/styles/globals.css";
 import { Geist_Mono, Instrument_Serif } from "next/font/google";

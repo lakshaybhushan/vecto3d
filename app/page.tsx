@@ -3,7 +3,33 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileUpload } from "@/components/forms/file-upload";
+import dynamic from "next/dynamic";
+
+const FileUpload = dynamic(
+  () =>
+    import("@/components/forms/file-upload").then((mod) => ({
+      default: mod.FileUpload,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="bg-card flex h-[200px] w-full flex-col items-center justify-center rounded-lg border-2 border-dashed sm:h-[220px] md:h-[260px] lg:h-[300px]">
+        <div className="flex max-w-xs flex-col items-center gap-4 px-4 text-center">
+          <div className="relative h-14 w-14">
+            <div className="bg-background/20 absolute inset-0 animate-pulse rounded-full"></div>
+            <div className="bg-background/40 absolute inset-4 animate-pulse rounded-full [animation-delay:200ms]"></div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Loading file upload...</p>
+            <p className="text-muted-foreground text-xs">
+              Initializing component
+            </p>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+);
 import { MobileWarning } from "@/components/modals/mobile-warning";
 import { useMobileDetection } from "@/hooks/use-mobile-detection";
 import { RainbowButton } from "@/components/ui/rainbow-button";
@@ -150,7 +176,7 @@ export default function Home() {
         animate="animate"
         style={{ minHeight: 0 }}>
         <motion.div
-          className="md:mb-6 mb-4 text-center"
+          className="mb-4 text-center md:mb-6"
           variants={titleContainerVariants}
           initial="initial"
           animate="animate">

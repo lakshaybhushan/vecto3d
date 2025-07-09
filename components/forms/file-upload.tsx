@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileUploadProps } from "@/lib/types";
 import { toast } from "sonner";
@@ -51,61 +51,72 @@ export function FileUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
-  const processFile = (file: File) => {
-    if (file && file.type === "image/svg+xml") {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          const svgData = event.target.result as string;
+  const processFile = useCallback(
+    (file: File) => {
+      if (typeof window === "undefined") {
+        return;
+      }
 
-          // Validate SVG content
-          if (!isValidSvg(svgData)) {
-            toast.error("Invalid SVG file format");
-            return;
+      if (file && file.type === "image/svg+xml") {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            const svgData = event.target.result as string;
+
+            // Validate SVG content
+            if (!isValidSvg(svgData)) {
+              toast.error("Invalid SVG file format");
+              return;
+            }
+
+            // Sanitize for safe display
+            const sanitizedSvg = sanitizeSvgForPreview(svgData);
+            if (!sanitizedSvg) {
+              toast.error("SVG file could not be processed safely");
+              return;
+            }
+
+            onFileUpload(svgData, file.name);
+            setSvgContent(sanitizedSvg);
+            if (onIconSelect) onIconSelect("");
           }
+        };
+        reader.readAsText(file);
+      } else if (file) {
+        toast.error("Please upload an SVG file (.svg)");
+      }
+    },
+    [onFileUpload, onIconSelect],
+  );
 
-          // Sanitize for safe display
-          const sanitizedSvg = sanitizeSvgForPreview(svgData);
-          if (!sanitizedSvg) {
-            toast.error("SVG file could not be processed safely");
-            return;
-          }
+  const processSvgContent = useCallback(
+    (svgData: string, fileName: string = "pasted.svg") => {
+      // Validate SVG content
+      if (!isValidSvg(svgData)) {
+        toast.error("Invalid SVG content");
+        return;
+      }
 
-          onFileUpload(svgData, file.name);
-          setSvgContent(sanitizedSvg);
-          if (onIconSelect) onIconSelect("");
-        }
-      };
-      reader.readAsText(file);
-    } else if (file) {
-      toast.error("Please upload an SVG file (.svg)");
-    }
-  };
+      // Sanitize for safe display
+      const sanitizedSvg = sanitizeSvgForPreview(svgData);
+      if (!sanitizedSvg) {
+        toast.error("SVG content could not be processed safely");
+        return;
+      }
 
-  const processSvgContent = (
-    svgData: string,
-    fileName: string = "pasted.svg",
-  ) => {
-    // Validate SVG content
-    if (!isValidSvg(svgData)) {
-      toast.error("Invalid SVG content");
-      return;
-    }
-
-    // Sanitize for safe display
-    const sanitizedSvg = sanitizeSvgForPreview(svgData);
-    if (!sanitizedSvg) {
-      toast.error("SVG content could not be processed safely");
-      return;
-    }
-
-    onFileUpload(svgData, fileName);
-    setSvgContent(sanitizedSvg);
-    if (onIconSelect) onIconSelect("");
-    toast.success("SVG pasted successfully!");
-  };
+      onFileUpload(svgData, fileName);
+      setSvgContent(sanitizedSvg);
+      if (onIconSelect) onIconSelect("");
+      toast.success("SVG pasted successfully!");
+    },
+    [onFileUpload, onIconSelect],
+  );
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     const handlePaste = (e: ClipboardEvent) => {
       // Check if the target is within our component or if no specific element is focused
       const target = e.target as Element;
@@ -166,7 +177,7 @@ export function FileUpload({
     return () => {
       document.removeEventListener("paste", handlePaste);
     };
-  }, [onFileUpload, onIconSelect, processSvgContent]);
+  }, [processFile, processSvgContent]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -289,7 +300,7 @@ export function FileUpload({
               onChange={handleFileChange}
             />
 
-            <div className="flex h-full flex-col items-center justify-center w-full">
+            <div className="flex h-full w-full flex-col items-center justify-center">
               <div className="relative mb-2 flex h-fit items-center justify-center sm:mb-3">
                 {svgContent ? (
                   <div className="relative z-10 flex items-center justify-center">
@@ -344,7 +355,7 @@ export function FileUpload({
                     <p className="text-xs sm:text-sm">
                       Select any of the below
                     </p>
-                    <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:justify-center md:gap-3 px-2 pt-2 md:p-0">
+                    <div className="grid grid-cols-3 gap-2 px-2 pt-2 md:flex md:flex-wrap md:justify-center md:gap-3 md:p-0">
                       {exampleIcons.map((icon) => (
                         <div key={icon.name}>
                           <Button
