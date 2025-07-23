@@ -30,7 +30,6 @@ const FileUpload = dynamic(
     ),
   },
 );
-import { MobileWarning } from "@/components/modals/mobile-warning";
 import { useMobileDetection } from "@/hooks/use-mobile-detection";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import Footer from "@/components/layouts/footer";
@@ -59,8 +58,7 @@ export default function Home() {
   const [selectedIcon, setSelectedIcon] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const { isMobile, continueOnMobile, handleContinueOnMobile } =
-    useMobileDetection();
+  const { isMobile } = useMobileDetection();
 
   const continueButtonSectionRef = useRef<HTMLDivElement>(null);
 
@@ -69,7 +67,7 @@ export default function Home() {
   }, []);
 
   const scrollToContinueButton = () => {
-    if (continueButtonSectionRef.current) {
+    if (!isMobile && continueButtonSectionRef.current) {
       continueButtonSectionRef.current.scrollIntoView({
         behavior: "smooth",
         block: "center",
@@ -109,10 +107,6 @@ export default function Home() {
         sessionStorage.removeItem("vecto3d_fileName");
         setSvgData(svgData);
         setFileName(fileName);
-
-        if (isMobile) {
-          localStorage.setItem("continueOnMobile", "true");
-        }
 
         const animationSpeed = 2;
         const baseDuration = 2.7;
@@ -170,17 +164,18 @@ export default function Home() {
       </AnimatePresence>
 
       <motion.div
-        className="flex flex-1 flex-col items-center justify-center px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 lg:px-12"
+        className={`flex flex-1 flex-col items-center justify-center ${isMobile ? "px-4 py-2" : "px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 lg:px-12"} overflow-hidden`}
         variants={staggeredContainerVariants}
         initial="initial"
         animate="animate"
         style={{ minHeight: 0 }}>
         <motion.div
-          className="mb-4 text-center md:mb-6"
+          className={`${isMobile ? "mb-2" : "mb-4 md:mb-6"} flex-shrink-0 text-center`}
           variants={titleContainerVariants}
           initial="initial"
           animate="animate">
-          <h1 className="text-primary leading-tighter font-serif text-5xl tracking-tight md:text-6xl">
+          <h1
+            className={`text-primary leading-tighter font-serif tracking-tight ${isMobile ? "text-4xl" : "text-5xl md:text-6xl"}`}>
             <motion.span
               variants={titleSpanVariants}
               style={{
@@ -200,71 +195,62 @@ export default function Home() {
           </h1>
         </motion.div>
 
-        {isMobile && !continueOnMobile ? (
+        <motion.div
+          className="mx-auto flex w-fit flex-shrink-0 flex-col items-center"
+          variants={staggeredItemVariants}>
           <motion.div
-            className="w-full max-w-md flex-shrink-0"
-            variants={staggeredItemVariants}>
-            <MobileWarning onContinue={handleContinueOnMobile} />
-          </motion.div>
-        ) : (
-          <motion.div
-            className="mx-auto w-fit flex-shrink-0"
-            variants={staggeredItemVariants}>
-            <motion.div
-              className="w-full"
-              variants={fileUploadVariants}
+            className="w-full"
+            variants={fileUploadVariants}
+            initial="initial"
+            animate="animate">
+            <FileUpload
+              onFileUpload={handleFileUpload}
+              fileName={fileName}
+              selectedIcon={selectedIcon}
+              onIconSelect={handleIconSelect}
+            />
+            <motion.p
+              className={`text-muted-foreground text-center text-balance ${isMobile ? "mt-1 mb-1 text-xs" : "mt-2 mb-2 text-sm sm:mt-2 sm:mb-3 sm:text-sm md:text-base"}`}
+              variants={helpTextVariants}
               initial="initial"
               animate="animate">
-              <FileUpload
-                onFileUpload={handleFileUpload}
-                fileName={fileName}
-                selectedIcon={selectedIcon}
-                onIconSelect={handleIconSelect}
-              />
-              <motion.p
-                className="text-muted-foreground mt-2 mb-2 text-center text-sm text-balance sm:mt-2 sm:mb-3 sm:text-sm md:text-base"
-                variants={helpTextVariants}
-                initial="initial"
-                animate="animate">
-                Works best with SVGs having simple geometry and transparent
-                background
-              </motion.p>
-            </motion.div>
+              Works best with SVGs having simple geometry and transparent
+              background
+            </motion.p>
+          </motion.div>
 
-            <motion.div
-              ref={continueButtonSectionRef}
-              className="mt-5 flex items-center justify-center">
-              <AnimatePresence mode="wait">
-                {svgData && (
+          <motion.div
+            ref={continueButtonSectionRef}
+            className={`${isMobile ? "mt-3" : "mt-5"} flex items-center justify-center`}>
+            <AnimatePresence mode="wait">
+              {svgData && (
+                <motion.div
+                  className="flex w-full justify-center overflow-hidden"
+                  variants={continueButtonContainerVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  layout>
                   <motion.div
-                    className="flex w-full justify-center overflow-hidden"
-                    variants={continueButtonContainerVariants}
+                    className="flex w-full max-w-sm"
+                    variants={continueButtonVariants}
                     initial="initial"
                     animate="animate"
                     exit="exit"
                     layout>
-                    <motion.div
-                      className="flex w-full max-w-sm"
-                      variants={continueButtonVariants}
-                      initial="initial"
-                      animate="animate"
-                      exit="exit"
-                      layout>
-                      <RainbowButton
-                        className="mx-auto w-full max-w-[16rem] rounded-md py-5"
-                        onClick={handleContinue}
-                        disabled={isLoading}>
-                        {isLoading ? "Processing..." : "Continue to Editor"}
-                      </RainbowButton>
-                    </motion.div>
+                    <RainbowButton
+                      className="mx-auto w-full max-w-[16rem] rounded-md py-5"
+                      onClick={handleContinue}
+                      disabled={isLoading}>
+                      {isLoading ? "Processing..." : "Continue to Editor"}
+                    </RainbowButton>
                   </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
-        )}
+        </motion.div>
       </motion.div>
-
       <motion.div className="flex-shrink-0" variants={staggeredItemVariants}>
         <Footer />
       </motion.div>

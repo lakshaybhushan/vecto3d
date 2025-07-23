@@ -216,7 +216,10 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
     return (
       <Canvas
         shadows
-        camera={{ position: [0, 0, 150], fov: 50 }}
+        camera={{
+          position: isMobile ? [0, 20, 180] : [0, 0, 150],
+          fov: isMobile ? 65 : 50,
+        }}
         dpr={
           typeof window !== "undefined" ? window?.devicePixelRatio || 1.5 : 1.5
         }
@@ -286,6 +289,7 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
               castShadow={false}
               isHollowSvg={isHollowSvg}
               spread={0}
+              isMobile={isMobile}
               ref={modelRef}
               // Texture settings
               textureEnabled={textureEnabled}
@@ -300,8 +304,8 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
         <OrbitControls
           autoRotate={autoRotate}
           autoRotateSpeed={autoRotateSpeed}
-          minDistance={50}
-          maxDistance={400}
+          minDistance={isMobile ? 80 : 50}
+          maxDistance={isMobile ? 500 : 400}
           enablePan={true}
           enableZoom={true}
           enableRotate={true}

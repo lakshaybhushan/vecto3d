@@ -116,26 +116,22 @@ export function EnvironmentControls() {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">Presets</Label>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+            <div className="space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
               {ENVIRONMENT_PRESETS.map((preset) => (
                 <div
                   key={preset.name}
-                  className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                  className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:w-auto ${
                     environmentPreset === preset.name
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-muted-foreground/50"
                   }`}
                   onClick={() => handlePresetChange(preset.name)}>
-                  <div className="relative aspect-square w-full p-3">
-                    <div
-                      className="absolute inset-3 rounded-md"
-                      style={{
-                        backgroundColor: `${preset.color}15`,
-                      }}
-                    />
-                    <div className="relative flex h-full items-center justify-center">
+                  <div className="relative flex items-center p-3 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5 md:p-3">
+                    <div className="bg-muted/5 absolute inset-3 rounded-md sm:inset-1.5 md:inset-3" />
+
+                    <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
                       <div
-                        className="relative h-10 w-10 rounded-full border border-white/20 shadow-lg"
+                        className="relative h-12 w-12 rounded-full border border-white/20 shadow-lg sm:h-8 sm:w-8 md:h-10 md:w-10"
                         style={{
                           backgroundColor: preset.color,
                           boxShadow: `
@@ -144,21 +140,22 @@ export function EnvironmentControls() {
                           inset 0 -1px 0 rgba(0,0,0,0.1)
                         `,
                         }}>
-                        <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/30 blur-sm" />
+                        <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/30 blur-sm sm:top-1.5 sm:left-1.5 sm:h-2 sm:w-2 md:top-2 md:left-2 md:h-3 md:w-3" />
                       </div>
                     </div>
-                  </div>
-                  <div className="bg-muted/30 border-t px-3 py-2 text-center">
-                    <span className="text-muted-foreground text-sm font-medium">
-                      {preset.label}
-                    </span>
+
+                    <div className="sm:bg-muted/30 flex-1 text-left sm:border-t sm:px-1.5 sm:py-1.5 sm:text-center md:px-3 md:py-2">
+                      <span className="text-muted-foreground text-sm font-medium sm:text-[10px] md:text-sm">
+                        {preset.label}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
 
               <div
                 key="custom-preset"
-                className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:w-auto ${
                   environmentPreset === "custom"
                     ? "border-primary bg-primary/5"
                     : "border-border hover:border-muted-foreground/50"
@@ -178,34 +175,40 @@ export function EnvironmentControls() {
                   onChange={handleHdriFileChange}
                 />
                 {customHdriUrl ? (
-                  <>
-                    <div className="relative aspect-square w-full p-3">
+                  <div className="relative flex items-center p-3 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5 md:p-3">
+                    <div className="bg-muted/20 absolute inset-3 rounded-md sm:inset-1.5 md:inset-3" />
+
+                    <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
                       <div
-                        className="absolute inset-3 rounded-md bg-cover bg-center"
+                        className="h-12 w-12 rounded-md border border-white/20 bg-cover bg-center shadow-sm sm:h-full sm:w-full"
                         style={{
                           backgroundImage: `url(${customHdriUrl})`,
                         }}
                       />
                     </div>
-                    <div className="bg-muted/30 border-t px-3 py-2 text-center">
-                      <span className="text-muted-foreground text-sm font-medium">
+
+                    <div className="sm:bg-muted/30 flex-1 text-left sm:border-t sm:px-1.5 sm:py-1.5 sm:text-center md:px-3 md:py-2">
+                      <span className="text-muted-foreground text-sm font-medium sm:text-[10px] md:text-sm">
                         Custom
                       </span>
                     </div>
-                  </>
+                  </div>
                 ) : (
-                  <>
-                    <div className="relative aspect-square w-full p-3">
-                      <div className="border-muted-foreground/30 bg-muted/20 flex h-full items-center justify-center rounded-md border-2 border-dashed">
-                        <PlusIcon className="text-muted-foreground h-6 w-6" />
+                  <div className="relative flex items-center p-3 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5 md:p-3">
+                    <div className="bg-muted/5 absolute inset-3 rounded-md sm:inset-1.5 md:inset-3" />
+
+                    <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
+                      <div className="border-muted-foreground/30 bg-muted/20 flex h-12 w-12 items-center justify-center rounded-md border-2 border-dashed sm:h-full sm:w-full">
+                        <PlusIcon className="text-muted-foreground h-6 w-6 sm:h-4 sm:w-4 md:h-6 md:w-6" />
                       </div>
                     </div>
-                    <div className="bg-muted/30 border-t px-3 py-2 text-center">
-                      <span className="text-muted-foreground text-sm font-medium">
+
+                    <div className="sm:bg-muted/30 flex-1 text-left sm:border-t sm:px-1.5 sm:py-1.5 sm:text-center md:px-3 md:py-2">
+                      <span className="text-muted-foreground text-sm font-medium sm:text-[10px] md:text-sm">
                         Custom
                       </span>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </div>

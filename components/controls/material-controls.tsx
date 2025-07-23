@@ -92,14 +92,14 @@ export function MaterialControls() {
     <div className="space-y-4">
       <p className="text-sm font-medium">Select your material of choice</p>
 
-      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mb-4 space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-4 md:space-y-0">
         {MATERIAL_PRESETS.map((preset) => {
           const materialStyle = getMaterialStyle(preset);
 
           return (
             <button
               key={preset.name}
-              className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+              className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:w-auto ${
                 materialPreset === preset.name
                   ? "border-primary bg-primary/5"
                   : "border-border hover:border-muted-foreground/50"
@@ -111,14 +111,13 @@ export function MaterialControls() {
                 }
               }}
               type="button">
-              <div className="relative aspect-[4/3] w-full p-2">
-                {/* Clean background */}
-                <div className="bg-muted/5 absolute inset-2 rounded-md" />
+              <div className="relative flex items-center p-3 sm:aspect-[4/3] sm:flex-col sm:justify-center sm:p-1.5 md:p-2">
+                <div className="bg-muted/5 absolute inset-3 rounded-md sm:inset-1.5 md:inset-2" />
 
-                {/* Material sample */}
-                <div className="relative flex h-full items-center justify-center">
-                  <div className="h-12 w-12 rounded-full" style={materialStyle}>
-                    {/* Additional effects for specific materials */}
+                <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
+                  <div
+                    className="h-12 w-12 rounded-full sm:h-10 sm:w-10 md:h-12 md:w-12"
+                    style={materialStyle}>
                     {preset.name === "brushed-metal" && (
                       <div
                         className="absolute inset-0 rounded-full"
@@ -130,29 +129,28 @@ export function MaterialControls() {
                     )}
 
                     {preset.name === "polished-metal" && (
-                      <div className="absolute top-2 left-2 h-4 w-4 rounded-full bg-white/70 blur-sm" />
+                      <div className="absolute top-2 left-2 h-3.5 w-3.5 rounded-full bg-white/70 blur-sm sm:top-1.5 sm:left-1.5 sm:h-3 sm:w-3 md:top-2 md:left-2 md:h-4 md:w-4" />
                     )}
 
                     {(preset.name === "clear-glass" ||
                       preset.name === "frosted-glass") && (
                       <>
-                        <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/80" />
-                        <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-black/15" />
+                        <div className="absolute top-2 left-2 h-2.5 w-2.5 rounded-full bg-white/80 sm:top-1.5 sm:left-1.5 sm:h-2 sm:w-2 md:top-2 md:left-2 md:h-3 md:w-3" />
+                        <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-black/15 sm:right-1.5 sm:bottom-1.5 sm:h-1.5 sm:w-1.5 md:right-2 md:bottom-2 md:h-2 md:w-2" />
                       </>
                     )}
 
                     {preset.name === "glossy-plastic" && (
-                      <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/90" />
+                      <div className="absolute top-2 left-2 h-2.5 w-2.5 rounded-full bg-white/90 sm:top-1.5 sm:left-1.5 sm:h-2 sm:w-2 md:top-2 md:left-2 md:h-3 md:w-3" />
                     )}
                   </div>
                 </div>
-              </div>
 
-              {/* Clean label at bottom */}
-              <div className="bg-muted/30 border-t px-2 py-2">
-                <span className="text-muted-foreground text-sm font-medium">
-                  {preset.label}
-                </span>
+                <div className="sm:bg-muted/30 flex-1 text-left sm:border-t sm:px-1.5 sm:py-1.5 sm:text-center md:px-2 md:py-2">
+                  <span className="text-muted-foreground text-sm font-medium sm:text-[10px] md:text-sm">
+                    {preset.label}
+                  </span>
+                </div>
               </div>
             </button>
           );

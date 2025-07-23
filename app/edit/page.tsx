@@ -9,7 +9,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Maximize2, Minimize2, ChevronLeft, RotateCcw } from "lucide-react";
+import {
+  Maximize2,
+  Minimize2,
+  ChevronLeft,
+  RotateCcw,
+  Box,
+  Palette,
+  Image,
+  Mountain,
+  Monitor,
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type * as THREE from "three";
 import { useRouter } from "next/navigation";
@@ -31,7 +41,6 @@ import { TextureControls } from "@/components/controls/texture-controls";
 import { EnvironmentControls } from "@/components/controls/environment-controls";
 import { BackgroundControls } from "@/components/controls/background-controls";
 import { ExportButtons } from "@/components/forms/export-buttons";
-import { EditorMobileWarning } from "@/components/modals/mobile-warning";
 
 import { useDebounce } from "@/hooks/use-debounce";
 import { useMobileDetection } from "@/hooks/use-mobile-detection";
@@ -245,8 +254,59 @@ const VibeModeManager = memo(() => {
 
 VibeModeManager.displayName = "VibeModeManager";
 
+const MobileTabBar = memo(
+  ({
+    activeTab,
+    onTabChange,
+  }: {
+    activeTab: string;
+    onTabChange: (tab: string) => void;
+  }) => {
+    const tabs = [
+      { id: "geometry", label: "Geometry", icon: Box },
+      { id: "material", label: "Material", icon: Palette },
+      { id: "textures", label: "Textures", icon: Image },
+      { id: "environment", label: "Environment", icon: Mountain },
+      { id: "background", label: "Background", icon: Monitor },
+    ];
+
+    return (
+      <div className="bg-background/98 border-border/50 flex-shrink-0 border-t backdrop-blur-xl md:hidden">
+        <div className="pb-safe flex items-center justify-around px-1 py-2">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+
+            return (
+              <button
+                key={tab.id}
+                onClick={() => onTabChange(tab.id)}
+                className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 ${
+                  isActive
+                    ? "text-primary"
+                    : "text-muted-foreground/70 hover:text-foreground"
+                }`}>
+                <Icon className={isActive ? "h-6 w-6" : "h-5 w-5"} />
+                <span
+                  className={`text-[9px] leading-none font-medium ${
+                    isActive ? "text-primary" : "text-muted-foreground/60"
+                  }`}>
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  },
+);
+
+MobileTabBar.displayName = "MobileTabBar";
+
 export default function EditPage() {
   const [isClientMounted, setIsClientMounted] = useState(false);
+  const [activeMobileTab, setActiveMobileTab] = useState("geometry");
   const svgData = useEditorStore((state) => state.svgData);
   const fileName = useEditorStore((state) => state.fileName);
   const isModelLoading = useEditorStore((state) => state.isModelLoading);
@@ -263,12 +323,7 @@ export default function EditPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const router = useRouter();
-  const {
-    isMobile,
-    continueOnMobile,
-    handleContinueOnMobile,
-    clearMobilePreference,
-  } = useMobileDetection();
+  const { isMobile, clearMobilePreference } = useMobileDetection();
 
   // Initialize texture preloader
   useTexturePreloader(true);
@@ -367,15 +422,23 @@ export default function EditPage() {
   }
 
   return (
-    <main className="bg-background relative flex h-screen w-full flex-col lg:overflow-hidden">
+    <main className="bg-background relative flex h-screen w-full flex-col overflow-hidden">
       {/* Include the separated logic components */}
       <SvgProcessingLogic />
       <BackgroundThemeManager />
       <HdriCleanupManager />
       <VibeModeManager />
 
-      <header className="bg-background/80 sticky top-0 z-20 w-full border-b border-dashed backdrop-blur-xs">
-        <div className="flex items-center justify-between px-8 py-4">
+      <header
+        className={`bg-background/80 z-20 w-full border-b border-dashed backdrop-blur-xs ${
+          isMobile
+            ? "bg-background/95 flex-shrink-0 backdrop-blur-xl"
+            : "sticky top-0"
+        }`}>
+        <div
+          className={`flex items-center justify-between ${
+            isMobile ? "p-4" : "px-4 py-3 md:px-6 md:py-4 xl:px-8"
+          }`}>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -385,8 +448,70 @@ export default function EditPage() {
               <ChevronLeft className="-ml-1 h-4 w-4" />
               <span className="-ml-0.5 hidden sm:inline">Home</span>
             </Button>
+            {isMobile && (
+              <div className="ml-2">
+                <h1 className="text-lg font-medium">Preview</h1>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
+            {isMobile && (
+              <TooltipProvider>
+                <div className="flex gap-2">
+                  <Tooltip delayDuration={100}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          resetEditor();
+                          toast.success("Editor settings reset to default");
+                        }}
+                        aria-label="Reset editor settings">
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="bottom"
+                      align="center"
+                      sideOffset={10}
+                      className="px-4 text-sm">
+                      Reset all settings
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip delayDuration={100}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          if (isFullscreen) {
+                            document.exitFullscreen();
+                          } else if (previewContainerRef.current) {
+                            previewContainerRef.current.requestFullscreen();
+                          }
+                        }}
+                        aria-label={
+                          isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
+                        }>
+                        {isFullscreen ? (
+                          <Minimize2 className="h-4 w-4" />
+                        ) : (
+                          <Maximize2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="bottom"
+                      align="center"
+                      sideOffset={10}
+                      className="px-4 text-sm">
+                      Full Screen
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
+            )}
             <ModeToggle />
             {svgData && (
               <ExportButtons
@@ -399,18 +524,17 @@ export default function EditPage() {
         </div>
       </header>
 
-      <div className="flex-1 px-8 py-8">
-        {isMobile && !continueOnMobile ? (
-          <EditorMobileWarning
-            onContinue={handleContinueOnMobile}
-            onReturn={handleBackToHome}
-          />
-        ) : (
+      <div
+        className={`flex-1 ${isMobile ? "flex flex-col overflow-hidden" : "px-4 py-4 md:px-6 md:py-6 xl:px-8 xl:py-8"}`}>
+        <div
+          key="editor-content"
+          className={`grid grid-cols-1 ${isMobile ? "flex-1 overflow-hidden" : "gap-6 md:gap-8"} xl:grid-cols-12`}>
+          {/* Mobile: Show preview or controls based on screen */}
           <div
-            key="editor-content"
-            className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            <div className="col relative order-first h-[60dvh] overflow-hidden lg:order-last lg:col-span-7 lg:h-[calc(100vh-8rem)]">
-              <Card className="flex h-full w-full flex-col overflow-hidden border">
+            className={`col relative ${isMobile ? "order-first flex-1 overflow-hidden" : "order-first xl:order-last"} ${isMobile ? "" : "h-[70dvh]"} overflow-hidden xl:order-last xl:col-span-7 xl:h-[calc(100vh-8rem)] ${isMobile ? "md:block" : ""}`}>
+            <Card
+              className={`flex h-full w-full flex-col overflow-hidden ${isMobile ? "rounded-none border-0" : "border"}`}>
+              {!isMobile && (
                 <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 backdrop-blur-xs [.border-b]:pb-4">
                   <div>
                     <CardTitle className="text-xl font-medium">
@@ -482,110 +606,137 @@ export default function EditPage() {
                     </div>
                   </TooltipProvider>
                 </CardHeader>
+              )}
 
-                <div className="relative grow" ref={previewContainerRef}>
-                  {renderModelPreview()}
-                  {isFullscreen && (
-                    <div className="pointer-events-none absolute inset-0">
-                      <TooltipProvider>
-                        <Tooltip delayDuration={100}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              size="icon"
-                              variant={"ghost"}
-                              onClick={() => document.exitFullscreen()}
-                              aria-label="Exit fullscreen"
-                              className="hover:bg-background/80 pointer-events-auto absolute top-6 right-6 bg-transparent backdrop-blur-xs">
-                              <Minimize2 className="h-4 w-4" />
-                              <span className="sr-only">Exit fullscreen</span>
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="left"
-                            align="center"
-                            sideOffset={10}
-                            className="z-[99999] px-4 text-sm"
-                            container={previewContainerRef.current}>
-                            Exit fullscreen
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </div>
-            <div className="order-last space-y-6 lg:order-first lg:col-span-5">
-              <Card className="flex w-full flex-col overflow-hidden border md:max-h-[60dvh] lg:max-h-[calc(100vh-8rem)]">
-                <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 pb-4 backdrop-blur-xs [.border-b]:pb-4">
-                  <div>
-                    <CardTitle className="text-xl font-medium">
-                      Customize
-                    </CardTitle>
-                    <CardDescription className="mt-1 truncate text-xs">
-                      {fileName || "Loading..."}
-                    </CardDescription>
+              <div className="relative grow" ref={previewContainerRef}>
+                {renderModelPreview()}
+                {isFullscreen && (
+                  <div className="pointer-events-none absolute inset-0">
+                    <TooltipProvider>
+                      <Tooltip delayDuration={100}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant={"ghost"}
+                            onClick={() => document.exitFullscreen()}
+                            aria-label="Exit fullscreen"
+                            className="hover:bg-background/80 pointer-events-auto absolute top-6 right-6 bg-transparent backdrop-blur-xs">
+                            <Minimize2 className="h-4 w-4" />
+                            <span className="sr-only">Exit fullscreen</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="left"
+                          align="center"
+                          sideOffset={10}
+                          className="z-[99999] px-4 text-sm"
+                          container={previewContainerRef.current}>
+                          Exit fullscreen
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col overflow-hidden p-0">
-                  <Tabs
-                    defaultValue="geometry"
-                    className="flex flex-1 flex-col overflow-y-hidden">
-                    <div className="border-b p-4">
-                      <TabsList className="grid w-full grid-cols-5">
-                        <TabsTrigger value="geometry">Geometry</TabsTrigger>
-                        <TabsTrigger value="material">Material</TabsTrigger>
-                        <TabsTrigger value="textures">Textures</TabsTrigger>
-                        <TabsTrigger value="environment">
-                          Environment
-                        </TabsTrigger>
-                        <TabsTrigger value="background">Background</TabsTrigger>
-                      </TabsList>
-                    </div>
+                )}
+              </div>
+            </Card>
+          </div>
 
-                    <div className="flex-1 overflow-y-auto p-4">
-                      <TabsContent
-                        value="geometry"
-                        key="geometry"
-                        className="mt-0">
-                        <GeometryControls />
-                      </TabsContent>
+          {/* Desktop Controls */}
+          <div className="order-last hidden space-y-6 md:block xl:order-first xl:col-span-5">
+            <Card className="flex max-h-[50dvh] w-full flex-col overflow-hidden border lg:max-h-[55dvh] xl:max-h-[calc(100vh-8rem)]">
+              <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 pb-4 backdrop-blur-xs [.border-b]:pb-4">
+                <div>
+                  <CardTitle className="text-xl font-medium">
+                    Customize
+                  </CardTitle>
+                  <CardDescription className="mt-1 truncate text-xs">
+                    {fileName || "Loading..."}
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col overflow-hidden p-0">
+                <Tabs
+                  defaultValue="geometry"
+                  className="flex flex-1 flex-col overflow-y-hidden">
+                  <div className="border-b p-4">
+                    <TabsList className="grid w-full grid-cols-5 text-xs">
+                      <TabsTrigger value="geometry" className="text-sm">
+                        Geometry
+                      </TabsTrigger>
+                      <TabsTrigger value="material" className="text-sm">
+                        Material
+                      </TabsTrigger>
+                      <TabsTrigger value="textures" className="text-sm">
+                        Textures
+                      </TabsTrigger>
+                      <TabsTrigger value="environment" className="text-sm">
+                        Environment
+                      </TabsTrigger>
+                      <TabsTrigger value="background" className="text-sm">
+                        Background
+                      </TabsTrigger>
+                    </TabsList>
+                  </div>
 
-                      <TabsContent
-                        value="material"
-                        key="material"
-                        className="mt-0">
-                        <MaterialControls />
-                      </TabsContent>
+                  <div className="flex-1 overflow-y-auto p-4">
+                    <TabsContent
+                      value="geometry"
+                      key="geometry"
+                      className="mt-0">
+                      <GeometryControls />
+                    </TabsContent>
 
-                      <TabsContent
-                        value="textures"
-                        key="textures"
-                        className="mt-0">
-                        <TextureControls />
-                      </TabsContent>
+                    <TabsContent
+                      value="material"
+                      key="material"
+                      className="mt-0">
+                      <MaterialControls />
+                    </TabsContent>
 
-                      <TabsContent
-                        value="environment"
-                        key="environment"
-                        className="mt-0">
-                        <EnvironmentControls />
-                      </TabsContent>
+                    <TabsContent
+                      value="textures"
+                      key="textures"
+                      className="mt-0">
+                      <TextureControls />
+                    </TabsContent>
 
-                      <TabsContent
-                        value="background"
-                        key="background"
-                        className="mt-0">
-                        <BackgroundControls />
-                      </TabsContent>
-                    </div>
-                  </Tabs>
-                </CardContent>
-              </Card>
+                    <TabsContent
+                      value="environment"
+                      key="environment"
+                      className="mt-0">
+                      <EnvironmentControls />
+                    </TabsContent>
+
+                    <TabsContent
+                      value="background"
+                      key="background"
+                      className="mt-0">
+                      <BackgroundControls />
+                    </TabsContent>
+                  </div>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Mobile Controls Sheet */}
+        {isMobile && (
+          <div className="bg-background/98 border-border/50 flex-shrink-0 border-t backdrop-blur-xl">
+            <div className="pb-safe h-[30vh] overflow-y-auto p-3">
+              {activeMobileTab === "geometry" && <GeometryControls />}
+              {activeMobileTab === "material" && <MaterialControls />}
+              {activeMobileTab === "textures" && <TextureControls />}
+              {activeMobileTab === "environment" && <EnvironmentControls />}
+              {activeMobileTab === "background" && <BackgroundControls />}
             </div>
           </div>
         )}
       </div>
+      <MobileTabBar
+        activeTab={activeMobileTab}
+        onTabChange={setActiveMobileTab}
+      />
     </main>
   );
 }

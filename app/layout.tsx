@@ -68,11 +68,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script
+        {/* <script
           crossOrigin="anonymous"
           src="//unpkg.com/react-scan/dist/auto.global.js"
           defer
-        />
+        /> */}
         <script
           src="https://cloud.umami.is/script.js"
           defer

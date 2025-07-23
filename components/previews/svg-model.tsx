@@ -33,6 +33,7 @@ interface SVGModelProps {
   castShadow?: boolean;
   isHollowSvg?: boolean;
   spread?: number;
+  isMobile?: boolean;
   // Texture properties
   textureEnabled?: boolean;
   texturePreset?: string;
@@ -113,6 +114,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       receiveShadow = true,
       castShadow = true,
       spread = 0,
+      isMobile = false,
       // Texture properties
       textureEnabled = false,
       texturePreset = "oak",
@@ -438,8 +440,9 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
 
     const scale = useMemo(() => {
       if (dimensions.width === 0 || dimensions.height === 0) return 1;
-      return 100 / Math.max(dimensions.width, dimensions.height);
-    }, [dimensions]);
+      const baseScale = 100 / Math.max(dimensions.width, dimensions.height);
+      return isMobile ? baseScale * 0.7 : baseScale;
+    }, [dimensions, isMobile]);
 
     // Create a stable key for material changes
     const materialKey = useMemo(() => {
@@ -503,7 +506,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         <group
           ref={groupRef}
           scale={[scale, -scale, scale]}
-          position={[0, 0, 0]}
+          position={isMobile ? [0, 5, 0] : [0, 0, 0]}
           rotation={[0, Math.PI / 4, 0]}>
           {geometryData.map((shapeItem, i) => (
             <group key={i} renderOrder={shapeItem.renderOrder}>

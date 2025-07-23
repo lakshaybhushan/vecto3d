@@ -54,3 +54,24 @@ export function useMobileDetection(breakpoint = 768) {
     clearMobilePreference,
   };
 }
+
+/**
+ * Hook to detect Safari browser
+ * @returns boolean indicating if the browser is Safari
+ */
+export function useSafariDetection() {
+  const [isSafari, setIsSafari] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userAgent = window.navigator.userAgent;
+      const isSafariBrowser =
+        /Safari/.test(userAgent) &&
+        !/Chrome/.test(userAgent) &&
+        !/Edge/.test(userAgent);
+      setIsSafari(isSafariBrowser);
+    }
+  }, []);
+
+  return isSafari;
+}

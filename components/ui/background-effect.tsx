@@ -11,6 +11,7 @@ import {
 } from "@/lib/motion-variants";
 import * as THREE from "three";
 import { memoryManager } from "@/lib/memory-manager";
+import { useSafariDetection } from "@/hooks/use-mobile-detection";
 
 const vertexShader = `
   varying vec2 vUv;
@@ -177,6 +178,7 @@ export default function BackgroundEffect() {
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const isSafari = useSafariDetection();
 
   useEffect(() => {
     setMounted(true);
@@ -205,6 +207,18 @@ export default function BackgroundEffect() {
             duration: 0.5,
           },
         }}
+      />
+    );
+  }
+
+  // Hide background effect on Safari to prevent resize issues
+  if (isSafari) {
+    return (
+      <motion.div
+        className="bg-background pointer-events-none fixed inset-0 -z-10"
+        variants={backgroundVariants}
+        initial="initial"
+        animate="animate"
       />
     );
   }

@@ -128,11 +128,11 @@ export function BackgroundControls() {
         <div className="space-y-4 pt-2">
           <Label>Background Color</Label>
 
-          <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+          <div className="mb-4 space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
             {SOLID_COLOR_PRESETS.map((preset) => (
               <button
                 key={preset.name}
-                className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:w-auto ${
                   solidColorPreset === preset.name
                     ? "border-primary bg-primary/5"
                     : "border-border hover:border-muted-foreground/50"
@@ -146,23 +146,23 @@ export function BackgroundControls() {
                   }
                 }}
                 type="button">
-                <div className="relative aspect-[4/3] w-full p-2">
-                  <div className="bg-muted/5 absolute inset-2 rounded-md" />
+                <div className="relative flex items-center p-3 sm:aspect-[4/3] sm:flex-col sm:justify-center sm:p-1.5 md:p-2">
+                  <div className="bg-muted/5 absolute inset-3 rounded-md sm:inset-1.5 md:inset-2" />
 
-                  <div className="relative flex h-full items-center justify-center">
+                  <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
                     <div
-                      className="h-14 w-14 rounded-full border border-white/20 shadow-lg"
+                      className="h-12 w-12 rounded-full border border-white/20 shadow-lg sm:h-10 sm:w-10 md:h-14 md:w-14"
                       style={{
                         background: preset.color,
                       }}
                     />
                   </div>
-                </div>
 
-                <div className="bg-muted/30 border-t px-2 py-2">
-                  <span className="text-muted-foreground text-sm font-medium">
-                    {preset.label}
-                  </span>
+                  <div className="sm:bg-muted/30 flex-1 text-left sm:border-t sm:px-1.5 sm:py-1.5 sm:text-center md:px-2 md:py-2">
+                    <span className="text-muted-foreground text-sm font-medium sm:text-[10px] md:text-sm">
+                      {preset.label}
+                    </span>
+                  </div>
                 </div>
               </button>
             ))}

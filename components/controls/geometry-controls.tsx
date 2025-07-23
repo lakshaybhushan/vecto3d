@@ -97,11 +97,11 @@ export function GeometryControls() {
 
       <div className="space-y-4 pt-2">
         <Label htmlFor="bevelPreset">Bevel Style</Label>
-        <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <div className="mb-4 space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
           {BEVEL_PRESETS.map((preset) => (
             <button
               key={preset.name}
-              className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+              className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:w-auto ${
                 bevelPreset === preset.name
                   ? "border-primary bg-primary/5"
                   : "border-border hover:border-muted-foreground/50"
@@ -113,12 +113,12 @@ export function GeometryControls() {
                 }
               }}
               type="button">
-              <div className="relative aspect-[4/3] w-full p-2">
-                <div className="bg-muted/5 absolute inset-2 rounded-md" />
+              <div className="relative flex items-center p-3 sm:aspect-[4/3] sm:flex-col sm:justify-center sm:p-1.5 md:p-2">
+                <div className="bg-muted/5 absolute inset-3 rounded-md sm:inset-1.5 md:inset-2" />
 
-                <div className="relative flex h-full items-center justify-center">
+                <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
                   <div
-                    className="relative h-14 w-14 overflow-hidden rounded-md"
+                    className="relative h-12 w-12 overflow-hidden rounded-md sm:h-10 sm:w-10 md:h-14 md:w-14"
                     style={{
                       backgroundColor: "var(--input)",
                       border: "1px solid hsl(var(--primary)/0.4)",
@@ -126,7 +126,7 @@ export function GeometryControls() {
                     }}>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div
-                        className="bg-primary/40 from-primary/40 to-primary/20 relative h-10 w-10 bg-gradient-to-tl"
+                        className="bg-primary/40 from-primary/40 to-primary/20 relative h-9 w-9 bg-gradient-to-tl sm:h-7 sm:w-7 md:h-10 md:w-10"
                         style={{
                           position: "absolute",
                           bottom: "-1px",
@@ -140,10 +140,10 @@ export function GeometryControls() {
                       />
                       {preset.name === "custom" && (
                         <div
-                          className="absolute h-3 w-3"
+                          className="absolute h-2.5 w-2.5 sm:h-2 sm:w-2 md:h-3 md:w-3"
                           style={{
-                            right: "8px",
-                            top: "8px",
+                            right: "6px",
+                            top: "6px",
                           }}>
                           <div
                             className="bg-primary/40 from-primary/40 to-primary/20 relative h-full w-full rounded-full bg-gradient-to-tl"
@@ -157,12 +157,12 @@ export function GeometryControls() {
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-muted/30 border-t px-2 py-2">
-                <span className="text-muted-foreground text-sm font-medium">
-                  {preset.label}
-                </span>
+                <div className="sm:bg-muted/30 flex-1 text-left sm:border-t sm:px-1.5 sm:py-1.5 sm:text-center md:px-2 md:py-2">
+                  <span className="text-muted-foreground text-sm font-medium sm:text-[10px] md:text-sm">
+                    {preset.label}
+                  </span>
+                </div>
               </div>
             </button>
           ))}
