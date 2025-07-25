@@ -12,6 +12,12 @@ import { Input } from "@/components/ui/input";
 import { PopoverPicker } from "../ui/color-picker";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function BackgroundControls() {
   const backgroundColor = useEditorStore((state) => state.backgroundColor);
@@ -87,27 +93,6 @@ export function BackgroundControls() {
 
   return (
     <div className="space-y-4">
-      {/* <Alert className="bg-muted/50 mb-4">
-        <AlertDescription className="flex items-center text-xs">
-          <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
-          <p className="text-muted-foreground mt-0.5 text-sm">
-            Applies to <span className="text-primary">image exports</span>, not
-            3D models.
-          </p>
-        </AlertDescription>
-      </Alert> */}
-
-      {/* <div className="border-primary/10 space-y-2 border-b pb-4">
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="transparency-toggle"
-            checked={isTransparent}
-            onCheckedChange={handleTransparencyToggle}
-          />
-          <Label htmlFor="transparency-toggle">Transparent Background</Label>
-        </div>
-      </div> */}
-
       <div className="flex items-center justify-between rounded-lg border p-3">
         <div className="space-y-0.5">
           <Label htmlFor="transparency-toggle" className="text-sm font-medium">
@@ -130,41 +115,49 @@ export function BackgroundControls() {
 
           <div className="mb-4 space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
             {SOLID_COLOR_PRESETS.map((preset) => (
-              <button
-                key={preset.name}
-                className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:w-auto ${
-                  solidColorPreset === preset.name
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-muted-foreground/50"
-                }`}
-                onClick={() =>
-                  handleBackgroundChange(preset.color, preset.name)
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    handleBackgroundChange(preset.color, preset.name);
-                  }
-                }}
-                type="button">
-                <div className="relative flex items-center p-3 sm:aspect-[4/3] sm:flex-col sm:justify-center sm:p-1.5 md:p-2">
-                  <div className="bg-muted/5 absolute inset-3 rounded-md sm:inset-1.5 md:inset-2" />
-
-                  <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
-                    <div
-                      className="h-12 w-12 rounded-full border border-white/20 shadow-lg sm:h-10 sm:w-10 md:h-14 md:w-14"
-                      style={{
-                        background: preset.color,
+              <TooltipProvider key={preset.name}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                        solidColorPreset === preset.name
+                          ? "bg-secondary"
+                          : "hover:bg-secondary/50 hover:border-secondary"
+                      }`}
+                      onClick={() =>
+                        handleBackgroundChange(preset.color, preset.name)
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          handleBackgroundChange(preset.color, preset.name);
+                        }
                       }}
-                    />
-                  </div>
+                      type="button">
+                      <div className="relative flex items-center p-2 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5">
+                        <div className="bg-muted/5 absolute inset-2 rounded-md sm:inset-1.5" />
 
-                  <div className="sm:bg-muted/30 flex-1 text-left sm:border-t sm:px-1.5 sm:py-1.5 sm:text-center md:px-2 md:py-2">
-                    <span className="text-muted-foreground text-sm font-medium sm:text-[10px] md:text-sm">
-                      {preset.label}
-                    </span>
-                  </div>
-                </div>
-              </button>
+                        <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
+                          <div
+                            className="h-12 w-12 rounded-full border border-white/20 shadow-lg sm:h-14 sm:w-14"
+                            style={{
+                              background: preset.color,
+                            }}
+                          />
+                        </div>
+
+                        <div className="flex-1 text-left sm:hidden">
+                          <span className="text-muted-foreground text-sm font-medium">
+                            {preset.label}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="hidden sm:block">
+                    <p>{preset.label}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             ))}
           </div>
 

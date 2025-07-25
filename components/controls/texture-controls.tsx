@@ -6,6 +6,12 @@ import { useEditorStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function TextureControls() {
   const textureEnabled = useEditorStore((state) => state.textureEnabled);
@@ -115,30 +121,38 @@ export function TextureControls() {
               <div key={category} className="space-y-3">
                 <div className="space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
                   {textures.map((texture) => (
-                    <div
-                      key={texture.name}
-                      className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:w-auto ${
-                        texturePreset === texture.name
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-muted-foreground/50"
-                      }`}
-                      onClick={() => setTexturePreset(texture.name)}>
-                      <div className="relative flex items-center p-3 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5 md:p-3">
-                        <div className="bg-muted/20 absolute inset-3 rounded-md sm:inset-1.5 md:inset-3" />
+                    <TooltipProvider key={texture.name}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div
+                            className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                              texturePreset === texture.name
+                                ? "bg-secondary"
+                                : "hover:bg-secondary/50 hover:border-secondary"
+                            }`}
+                            onClick={() => setTexturePreset(texture.name)}>
+                            <div className="relative flex items-center p-2 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5">
+                              <div className="bg-muted/20 absolute inset-2 rounded-md sm:inset-1.5" />
 
-                        <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
-                          <div className="h-12 w-12 overflow-hidden rounded-md sm:h-full sm:w-full">
-                            {getTexturePreview(texture)}
+                              <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
+                                <div className="h-12 w-12 overflow-hidden rounded-md sm:h-14 sm:w-14">
+                                  {getTexturePreview(texture)}
+                                </div>
+                              </div>
+
+                              <div className="flex-1 text-left sm:hidden">
+                                <span className="text-muted-foreground text-sm font-medium">
+                                  {texture.label}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-
-                        <div className="sm:bg-muted/30 flex-1 text-left sm:border-t sm:px-1.5 sm:py-1.5 sm:text-center md:px-3 md:py-2">
-                          <span className="text-muted-foreground text-sm font-medium sm:text-[10px] md:text-xs">
-                            {texture.label}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="hidden sm:block">
+                          <p>{texture.label}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   ))}
                 </div>
               </div>

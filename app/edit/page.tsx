@@ -21,6 +21,11 @@ import {
   Monitor,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 import type * as THREE from "three";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";

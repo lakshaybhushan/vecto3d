@@ -9,6 +9,12 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useEditorStore } from "@/lib/store";
 import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function EnvironmentControls() {
   const useEnvironment = useEditorStore((state) => state.useEnvironment);
@@ -118,99 +124,126 @@ export function EnvironmentControls() {
             <Label className="text-sm font-medium">Presets</Label>
             <div className="space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
               {ENVIRONMENT_PRESETS.map((preset) => (
-                <div
-                  key={preset.name}
-                  className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:w-auto ${
-                    environmentPreset === preset.name
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-muted-foreground/50"
-                  }`}
-                  onClick={() => handlePresetChange(preset.name)}>
-                  <div className="relative flex items-center p-3 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5 md:p-3">
-                    <div className="bg-muted/5 absolute inset-3 rounded-md sm:inset-1.5 md:inset-3" />
-
-                    <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
+                <TooltipProvider key={preset.name}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
                       <div
-                        className="relative h-12 w-12 rounded-full border border-white/20 shadow-lg sm:h-8 sm:w-8 md:h-10 md:w-10"
-                        style={{
-                          backgroundColor: preset.color,
-                          boxShadow: `
-                          0 4px 12px ${preset.color}30,
-                          inset 0 1px 0 rgba(255,255,255,0.2),
-                          inset 0 -1px 0 rgba(0,0,0,0.1)
-                        `,
-                        }}>
-                        <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/30 blur-sm sm:top-1.5 sm:left-1.5 sm:h-2 sm:w-2 md:top-2 md:left-2 md:h-3 md:w-3" />
-                      </div>
-                    </div>
+                        className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                          environmentPreset === preset.name
+                            ? "bg-secondary"
+                            : "hover:bg-secondary/50 hover:border-secondary"
+                        }`}
+                        onClick={() => handlePresetChange(preset.name)}>
+                        <div className="relative flex items-center p-2 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5">
+                          <div className="bg-muted/5 absolute inset-2 rounded-md sm:inset-1.5" />
 
-                    <div className="sm:bg-muted/30 flex-1 text-left sm:border-t sm:px-1.5 sm:py-1.5 sm:text-center md:px-3 md:py-2">
-                      <span className="text-muted-foreground text-sm font-medium sm:text-[10px] md:text-sm">
-                        {preset.label}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                          <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
+                            <div
+                              className="relative h-12 w-12 rounded-full border border-white/20 shadow-lg sm:h-14 sm:w-14"
+                              style={{
+                                background: `radial-gradient(circle at 30% 30%, ${preset.color}40 0%, ${preset.color}80 25%, ${preset.color} 60%, ${preset.color.replace("#", "#").slice(0, 4)}${preset.color.slice(4)}CC 85%, ${preset.color.replace("#", "#").slice(0, 4)}${preset.color.slice(4)}AA 100%)`,
+                                boxShadow: `
+                                0 6px 20px ${preset.color}25,
+                                inset 0 2px 0 rgba(255,255,255,0.3),
+                                inset 0 -1px 0 rgba(0,0,0,0.15)
+                              `,
+                              }}>
+                              <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/40 blur-[1px] sm:top-2.5 sm:left-2.5 sm:h-3.5 sm:w-3.5" />
+                              <div className="absolute top-2.5 left-2.5 h-1.5 w-1.5 rounded-full bg-white/80 sm:top-3 sm:left-3 sm:h-2 sm:w-2" />
+                              {/* Environment-specific effects */}
+                              {preset.name === "sunset" && (
+                                <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-orange-300/60 blur-[1px] sm:right-2.5 sm:bottom-2.5 sm:h-2.5 sm:w-2.5" />
+                              )}
+                              {preset.name === "studio" && (
+                                <div className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-white/60 sm:top-3 sm:right-3 sm:h-2 sm:w-2" />
+                              )}
+                              {preset.name === "dawn" && (
+                                <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-pink-300/50 blur-[1px] sm:right-2.5 sm:bottom-2.5 sm:h-2.5 sm:w-2.5" />
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex-1 text-left sm:hidden">
+                            <span className="text-muted-foreground text-sm font-medium">
+                              {preset.label}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="hidden sm:block">
+                      <p>{preset.label}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               ))}
 
-              <div
-                key="custom-preset"
-                className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:w-auto ${
-                  environmentPreset === "custom"
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-muted-foreground/50"
-                }`}
-                onClick={() => {
-                  if (customHdriUrl) {
-                    setEnvironmentPreset("custom");
-                  } else {
-                    hdriFileInputRef.current?.click();
-                  }
-                }}>
-                <input
-                  ref={hdriFileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png"
-                  className="hidden"
-                  onChange={handleHdriFileChange}
-                />
-                {customHdriUrl ? (
-                  <div className="relative flex items-center p-3 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5 md:p-3">
-                    <div className="bg-muted/20 absolute inset-3 rounded-md sm:inset-1.5 md:inset-3" />
-
-                    <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
-                      <div
-                        className="h-12 w-12 rounded-md border border-white/20 bg-cover bg-center shadow-sm sm:h-full sm:w-full"
-                        style={{
-                          backgroundImage: `url(${customHdriUrl})`,
-                        }}
+              <TooltipProvider key="custom-preset">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                        environmentPreset === "custom"
+                          ? "bg-secondary"
+                          : "hover:bg-secondary/50 hover:border-secondary"
+                      }`}
+                      onClick={() => {
+                        if (customHdriUrl) {
+                          setEnvironmentPreset("custom");
+                        } else {
+                          hdriFileInputRef.current?.click();
+                        }
+                      }}>
+                      <input
+                        ref={hdriFileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png"
+                        className="hidden"
+                        onChange={handleHdriFileChange}
                       />
-                    </div>
+                      {customHdriUrl ? (
+                        <div className="relative flex items-center p-2 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5">
+                          <div className="bg-muted/20 absolute inset-2 rounded-md sm:inset-1.5" />
 
-                    <div className="sm:bg-muted/30 flex-1 text-left sm:border-t sm:px-1.5 sm:py-1.5 sm:text-center md:px-3 md:py-2">
-                      <span className="text-muted-foreground text-sm font-medium sm:text-[10px] md:text-sm">
-                        Custom
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative flex items-center p-3 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5 md:p-3">
-                    <div className="bg-muted/5 absolute inset-3 rounded-md sm:inset-1.5 md:inset-3" />
+                          <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
+                            <div
+                              className="h-12 w-12 rounded-full border border-white/20 bg-cover bg-center shadow-sm sm:h-14 sm:w-14"
+                              style={{
+                                backgroundImage: `url(${customHdriUrl})`,
+                              }}
+                            />
+                          </div>
 
-                    <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
-                      <div className="border-muted-foreground/30 bg-muted/20 flex h-12 w-12 items-center justify-center rounded-md border-2 border-dashed sm:h-full sm:w-full">
-                        <PlusIcon className="text-muted-foreground h-6 w-6 sm:h-4 sm:w-4 md:h-6 md:w-6" />
-                      </div>
-                    </div>
+                          <div className="flex-1 text-left sm:hidden">
+                            <span className="text-muted-foreground text-sm font-medium">
+                              Custom
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative flex items-center p-2 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5">
+                          <div className="bg-muted/5 absolute inset-2 rounded-md sm:inset-1.5" />
 
-                    <div className="sm:bg-muted/30 flex-1 text-left sm:border-t sm:px-1.5 sm:py-1.5 sm:text-center md:px-3 md:py-2">
-                      <span className="text-muted-foreground text-sm font-medium sm:text-[10px] md:text-sm">
-                        Custom
-                      </span>
+                          <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
+                            <div className="border-muted-foreground/30 bg-muted/20 flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed sm:h-14 sm:w-14">
+                              <PlusIcon className="text-muted-foreground h-6 w-6 sm:h-8 sm:w-8" />
+                            </div>
+                          </div>
+
+                          <div className="flex-1 text-left sm:hidden">
+                            <span className="text-muted-foreground text-sm font-medium">
+                              Custom
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
-              </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="hidden sm:block">
+                    <p>Custom</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
 
