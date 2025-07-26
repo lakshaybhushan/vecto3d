@@ -3,6 +3,12 @@ import { Slider } from "@/components/ui/slider";
 import { BEVEL_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
 import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const MIN_ACTUAL_DEPTH = 0.01;
 const MAX_ACTUAL_DEPTH = 50;
@@ -97,70 +103,82 @@ export function GeometryControls() {
 
       <div className="space-y-4 pt-2">
         <Label htmlFor="bevelPreset">Bevel Style</Label>
-        <div className="space-y-2">
+        <div className="mb-4 space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
           {BEVEL_PRESETS.map((preset) => (
-            <button
-              key={preset.name}
-              className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
-                bevelPreset === preset.name
-                  ? "bg-secondary border-primary/50"
-                  : "hover:bg-secondary/50 hover:border-secondary"
-              }`}
-              onClick={() => applyBevelPreset(preset.name)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  applyBevelPreset(preset.name);
-                }
-              }}
-              type="button">
-              <div className="flex items-center p-3">
-                <div className="relative mr-4 flex items-center justify-center">
-                  <div
-                    className="relative h-12 w-12 overflow-hidden rounded-md"
-                    style={{
-                      backgroundColor: "var(--input)",
-                      border: "1px solid hsl(var(--primary)/0.4)",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-                    }}>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div
-                        className="bg-primary/40 from-primary/40 to-primary/20 relative h-9 w-9 bg-gradient-to-tl"
-                        style={{
-                          position: "absolute",
-                          bottom: "-1px",
-                          left: "-1px",
-                          borderTopRightRadius:
-                            preset.previewStyle?.borderRadius || "0px",
-                          boxShadow:
-                            preset.previewStyle?.boxShadow ||
-                            "inset 2px -2px 4px rgba(255,255,255,0.4)",
-                        }}
-                      />
-                      {preset.name === "custom" && (
-                        <div
-                          className="absolute h-2.5 w-2.5"
-                          style={{
-                            right: "6px",
-                            top: "6px",
-                          }}>
-                          <div
-                            className="bg-primary/40 from-primary/40 to-primary/20 relative h-full w-full rounded-full bg-gradient-to-tl"
-                            style={{
-                              boxShadow:
-                                "inset 1px 1px 3px rgba(255,255,255,0.6), 0 1px 3px rgba(0,0,0,0.1)",
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+            <TooltipProvider key={preset.name}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                      bevelPreset === preset.name
+                        ? "bg-secondary"
+                        : "hover:bg-secondary/50 hover:border-secondary"
+                    }`}
+                    onClick={() => applyBevelPreset(preset.name)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        applyBevelPreset(preset.name);
+                      }
+                    }}
+                    type="button">
+                    <div className="relative flex items-center p-1.5 sm:aspect-square sm:flex-col sm:justify-center sm:p-1">
+                      <div className="bg-muted/5 absolute inset-1.5 rounded-md sm:inset-1" />
 
-                <div className="flex-1 text-left">
-                  <span className="text-sm font-medium">{preset.label}</span>
-                </div>
-              </div>
-            </button>
+                      <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
+                        <div
+                          className="relative h-12 w-12 overflow-hidden rounded-md sm:h-14 sm:w-14"
+                          style={{
+                            backgroundColor: "var(--input)",
+                            border: "1px solid hsl(var(--primary)/0.4)",
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                          }}>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div
+                              className="bg-primary/40 from-primary/40 to-primary/20 relative h-9 w-9 bg-gradient-to-tl sm:h-10 sm:w-10"
+                              style={{
+                                position: "absolute",
+                                bottom: "-1px",
+                                left: "-1px",
+                                borderTopRightRadius:
+                                  preset.previewStyle?.borderRadius || "0px",
+                                boxShadow:
+                                  preset.previewStyle?.boxShadow ||
+                                  "inset 2px -2px 4px rgba(255,255,255,0.4)",
+                              }}
+                            />
+                            {preset.name === "custom" && (
+                              <div
+                                className="absolute h-2.5 w-2.5 sm:h-3 sm:w-3"
+                                style={{
+                                  right: "6px",
+                                  top: "6px",
+                                }}>
+                                <div
+                                  className="bg-primary/40 from-primary/40 to-primary/20 relative h-full w-full rounded-full bg-gradient-to-tl"
+                                  style={{
+                                    boxShadow:
+                                      "inset 1px 1px 3px rgba(255,255,255,0.6), 0 1px 3px rgba(0,0,0,0.1)",
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex-1 text-left sm:hidden">
+                        <span className="text-muted-foreground text-sm font-medium">
+                          {preset.label}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="hidden sm:block">
+                  <p>{preset.label}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           ))}
         </div>
 
