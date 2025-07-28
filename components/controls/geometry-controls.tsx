@@ -148,18 +148,25 @@ export function GeometryControls() {
                             />
                             {preset.name === "custom" && (
                               <div
-                                className="absolute h-2.5 w-2.5 sm:h-3 sm:w-3"
+                                className="absolute"
                                 style={{
-                                  right: "6px",
-                                  top: "6px",
+                                  right: "7px",
+                                  top: "9px",
                                 }}>
-                                <div
-                                  className="bg-primary/40 from-primary/40 to-primary/20 relative h-full w-full rounded-full bg-gradient-to-tl"
-                                  style={{
-                                    boxShadow:
-                                      "inset 1px 1px 3px rgba(255,255,255,0.6), 0 1px 3px rgba(0,0,0,0.1)",
-                                  }}
-                                />
+                                <div className="bg-primary/40 from-primary/40 to-primary/20 dark:bg-primary/40 dark:from-primary/40 dark:to-primary/20 flex h-3 w-3 items-center justify-center rounded-full">
+                                  <svg
+                                    width="10"
+                                    height="10"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="dark:text-primary text-secondary">
+                                    <path d="M12 5v14M5 12h14" />
+                                  </svg>
+                                </div>
                               </div>
                             )}
                           </div>
