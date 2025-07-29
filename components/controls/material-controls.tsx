@@ -89,14 +89,14 @@ export function MaterialControls() {
     <div className="space-y-4">
       <p className="text-sm font-medium">Select your material of choice</p>
 
-      <div className="mb-4 space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
+      <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-5">
         {MATERIAL_PRESETS.map((preset) => {
           const materialStyle = getMaterialStyle(preset);
 
           return (
             <button
               key={preset.name}
-              className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+              className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                 materialPreset === preset.name
                   ? "bg-secondary"
                   : "hover:bg-secondary/50 hover:border-secondary"
@@ -112,9 +112,7 @@ export function MaterialControls() {
                 <div className="bg-muted/5 absolute inset-0 rounded-md" />
 
                 <div className="relative flex flex-1 items-center justify-center">
-                  <div
-                    className="h-12 w-12 rounded-full sm:h-14 sm:w-14"
-                    style={materialStyle}>
+                  <div className="h-14 w-14 rounded-full" style={materialStyle}>
                     {preset.name === "brushed-metal" && (
                       <div
                         className="absolute inset-0 rounded-full opacity-60"
@@ -127,33 +125,33 @@ export function MaterialControls() {
 
                     {preset.name === "polished-metal" && (
                       <>
-                        <div className="absolute top-2 left-2 h-4 w-4 rounded-full bg-white/90 blur-[2px] sm:top-2.5 sm:left-2.5 sm:h-5 sm:w-5" />
-                        <div className="absolute top-2.5 left-2.5 h-2 w-2 rounded-full bg-white sm:top-3 sm:left-3 sm:h-2.5 sm:w-2.5" />
+                        <div className="absolute top-2 left-2 h-4 w-4 rounded-full bg-white/90 blur-[2px]" />
+                        <div className="absolute top-2.5 left-2.5 h-2 w-2 rounded-full bg-white" />
                       </>
                     )}
 
                     {(preset.name === "clear-glass" ||
                       preset.name === "frosted-glass") && (
                       <>
-                        <div className="absolute top-2 left-2 h-5 w-5 rounded-full bg-white/80 blur-[3px] sm:top-2.5 sm:left-2.5 sm:h-6 sm:w-6" />
-                        <div className="absolute top-3 left-3 h-2 w-2 rounded-full bg-white sm:top-3.5 sm:left-3.5 sm:h-2.5 sm:w-2.5" />
-                        <div className="absolute right-3 bottom-3 h-1.5 w-1.5 rounded-full bg-black/15 sm:right-3.5 sm:bottom-3.5 sm:h-2 sm:w-2" />
+                        <div className="absolute top-2 left-2 h-5 w-5 rounded-full bg-white/80 blur-[3px]" />
+                        <div className="absolute top-3 left-3 h-2 w-2 rounded-full bg-white" />
+                        <div className="absolute right-3 bottom-3 h-1.5 w-1.5 rounded-full bg-black/15" />
                       </>
                     )}
 
                     {preset.name === "glossy-plastic" && (
                       <>
-                        <div className="absolute top-2 left-2 h-4 w-4 rounded-full bg-white/80 blur-[1px] sm:top-2.5 sm:left-2.5 sm:h-5 sm:w-5" />
-                        <div className="absolute top-2.5 left-2.5 h-2.5 w-2.5 rounded-full bg-white/95 sm:top-3 sm:left-3 sm:h-3.5 sm:w-3.5" />
+                        <div className="absolute top-2 left-2 h-4 w-4 rounded-full bg-white/80 blur-[1px]" />
+                        <div className="absolute top-2.5 left-2.5 h-2.5 w-2.5 rounded-full bg-white/95" />
                       </>
                     )}
 
                     {preset.name === "matte-plastic" && (
-                      <div className="absolute top-3 left-3 h-2.5 w-2.5 rounded-full bg-white/50 blur-[1px] sm:top-3.5 sm:left-3.5 sm:h-3 sm:w-3" />
+                      <div className="absolute top-3 left-3 h-2.5 w-2.5 rounded-full bg-white/50 blur-[1px]" />
                     )}
 
                     {preset.name === "matte-metal" && (
-                      <div className="absolute top-3 left-3 h-3 w-3 rounded-full bg-white/40 blur-[1px] sm:top-3.5 sm:left-3.5 sm:h-3.5 sm:w-3.5" />
+                      <div className="absolute top-3 left-3 h-3 w-3 rounded-full bg-white/40 blur-[1px]" />
                     )}
                   </div>
                 </div>

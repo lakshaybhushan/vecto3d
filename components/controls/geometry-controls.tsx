@@ -97,11 +97,11 @@ export function GeometryControls() {
 
       <div className="space-y-4 pt-2">
         <Label htmlFor="bevelPreset">Bevel Style</Label>
-        <div className="mb-4 space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
+        <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-5">
           {BEVEL_PRESETS.map((preset) => (
             <button
               key={preset.name}
-              className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+              className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                 bevelPreset === preset.name
                   ? "bg-secondary"
                   : "hover:bg-secondary/50 hover:border-secondary"
@@ -116,9 +116,9 @@ export function GeometryControls() {
               <div className="relative flex h-full flex-col">
                 <div className="bg-muted/5 absolute inset-0 rounded-md" />
 
-                <div className="relative flex flex-1 items-center justify-center">
+                <div className="relative flex flex-1 items-center justify-center py-3">
                   <div
-                    className="relative h-12 w-12 overflow-hidden rounded-md sm:h-14 sm:w-14"
+                    className="relative h-14 w-14 overflow-hidden rounded-md"
                     style={{
                       backgroundColor: "var(--input)",
                       border: "1px solid hsl(var(--primary)/0.4)",
@@ -126,7 +126,7 @@ export function GeometryControls() {
                     }}>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div
-                        className="bg-primary/40 from-primary/40 to-primary/20 relative h-9 w-9 bg-gradient-to-tl sm:h-10 sm:w-10"
+                        className="bg-primary/40 from-primary/40 to-primary/20 relative h-10 w-10 bg-gradient-to-tl"
                         style={{
                           position: "absolute",
                           bottom: "-1px",

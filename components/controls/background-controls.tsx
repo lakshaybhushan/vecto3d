@@ -105,11 +105,11 @@ export function BackgroundControls() {
         <div className="space-y-4 pt-2">
           <Label>Background Color</Label>
 
-          <div className="mb-4 space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
+          <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-5">
             {SOLID_COLOR_PRESETS.map((preset) => (
               <button
                 key={preset.name}
-                className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                   solidColorPreset === preset.name
                     ? "bg-secondary"
                     : "hover:bg-secondary/50 hover:border-secondary"
@@ -128,7 +128,7 @@ export function BackgroundControls() {
 
                   <div className="relative flex flex-1 items-center justify-center">
                     <div
-                      className="h-12 w-12 rounded-full border border-white/20 shadow-lg sm:h-14 sm:w-14"
+                      className="h-14 w-14 rounded-full border border-white/20 shadow-lg"
                       style={{
                         background: preset.color,
                       }}

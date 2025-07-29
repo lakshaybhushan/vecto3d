@@ -102,11 +102,11 @@ export function TextureControls() {
           <div className="space-y-6">
             {Object.entries(texturesByCategory).map(([category, textures]) => (
               <div key={category} className="space-y-3">
-                <div className="space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
                   {textures.map((texture) => (
                     <button
                       key={texture.name}
-                      className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                      className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                         texturePreset === texture.name
                           ? "bg-secondary"
                           : "hover:bg-secondary/50 hover:border-secondary"
@@ -122,7 +122,7 @@ export function TextureControls() {
                         <div className="bg-muted/20 absolute inset-0 rounded-md" />
 
                         <div className="relative flex flex-1 items-center justify-center">
-                          <div className="h-12 w-12 overflow-hidden rounded-md sm:h-14 sm:w-14">
+                          <div className="h-14 w-14 overflow-hidden rounded-md">
                             {getTexturePreview(texture)}
                           </div>
                         </div>

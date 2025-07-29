@@ -107,11 +107,11 @@ export function EnvironmentControls() {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">Presets</Label>
-            <div className="space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               {ENVIRONMENT_PRESETS.map((preset) => (
                 <button
                   key={preset.name}
-                  className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                  className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                     environmentPreset === preset.name
                       ? "bg-secondary"
                       : "hover:bg-secondary/50 hover:border-secondary"
@@ -128,7 +128,7 @@ export function EnvironmentControls() {
 
                     <div className="relative flex flex-1 items-center justify-center">
                       <div
-                        className="relative h-12 w-12 rounded-full border border-white/20 shadow-lg sm:h-14 sm:w-14"
+                        className="relative h-14 w-14 rounded-full border border-white/20 shadow-lg"
                         style={{
                           background: `radial-gradient(circle at 30% 30%, ${preset.color}40 0%, ${preset.color}80 25%, ${preset.color} 60%, ${preset.color.replace("#", "#").slice(0, 4)}${preset.color.slice(4)}CC 85%, ${preset.color.replace("#", "#").slice(0, 4)}${preset.color.slice(4)}AA 100%)`,
                           boxShadow: `
@@ -137,16 +137,16 @@ export function EnvironmentControls() {
                             inset 0 -1px 0 rgba(0,0,0,0.15)
                           `,
                         }}>
-                        <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/40 blur-[1px] sm:top-2.5 sm:left-2.5 sm:h-3.5 sm:w-3.5" />
-                        <div className="absolute top-2.5 left-2.5 h-1.5 w-1.5 rounded-full bg-white/80 sm:top-3 sm:left-3 sm:h-2 sm:w-2" />
+                        <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/40 blur-[1px]" />
+                        <div className="absolute top-2.5 left-2.5 h-1.5 w-1.5 rounded-full bg-white/80" />
                         {preset.name === "sunset" && (
-                          <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-orange-300/60 blur-[1px] sm:right-2.5 sm:bottom-2.5 sm:h-2.5 sm:w-2.5" />
+                          <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-orange-300/60 blur-[1px]" />
                         )}
                         {preset.name === "studio" && (
-                          <div className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-white/60 sm:top-3 sm:right-3 sm:h-2 sm:w-2" />
+                          <div className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-white/60" />
                         )}
                         {preset.name === "dawn" && (
-                          <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-pink-300/50 blur-[1px] sm:right-2.5 sm:bottom-2.5 sm:h-2.5 sm:w-2.5" />
+                          <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-pink-300/50 blur-[1px]" />
                         )}
                       </div>
                     </div>
