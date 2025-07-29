@@ -6,12 +6,6 @@ import { useEditorStore } from "@/lib/store";
 import { Input } from "@/components/ui/input";
 import { PopoverPicker } from "@/components/ui/color-picker";
 import type { MaterialPreset } from "@/lib/types";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export function MaterialControls() {
   const materialPreset = useEditorStore((state) => state.materialPreset);
@@ -100,86 +94,77 @@ export function MaterialControls() {
           const materialStyle = getMaterialStyle(preset);
 
           return (
-            <TooltipProvider key={preset.name}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
-                      materialPreset === preset.name
-                        ? "bg-secondary"
-                        : "hover:bg-secondary/50 hover:border-secondary"
-                    }`}
-                    onClick={() => loadPreset(preset)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        loadPreset(preset);
-                      }
-                    }}
-                    type="button">
-                    <div className="relative flex items-center p-2 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5">
-                      <div className="bg-muted/5 absolute inset-2 rounded-md sm:inset-1.5" />
+            <button
+              key={preset.name}
+              className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                materialPreset === preset.name
+                  ? "bg-secondary"
+                  : "hover:bg-secondary/50 hover:border-secondary"
+              }`}
+              onClick={() => loadPreset(preset)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  loadPreset(preset);
+                }
+              }}
+              type="button">
+              <div className="relative flex h-full flex-col">
+                <div className="bg-muted/5 absolute inset-0 rounded-md" />
 
-                      <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
-                        <div
-                          className="h-12 w-12 rounded-full sm:h-14 sm:w-14"
-                          style={materialStyle}>
-                          {/* Enhanced realistic material effects */}
-                          {preset.name === "brushed-metal" && (
-                            <div
-                              className="absolute inset-0 rounded-full opacity-60"
-                              style={{
-                                background: `repeating-linear-gradient(45deg, transparent, transparent 1px, rgba(255,255,255,0.2) 1px, rgba(255,255,255,0.2) 2px, transparent 2px, transparent 3px)`,
-                                mixBlendMode: "overlay",
-                              }}
-                            />
-                          )}
+                <div className="relative flex flex-1 items-center justify-center">
+                  <div
+                    className="h-12 w-12 rounded-full sm:h-14 sm:w-14"
+                    style={materialStyle}>
+                    {preset.name === "brushed-metal" && (
+                      <div
+                        className="absolute inset-0 rounded-full opacity-60"
+                        style={{
+                          background: `repeating-linear-gradient(45deg, transparent, transparent 1px, rgba(255,255,255,0.2) 1px, rgba(255,255,255,0.2) 2px, transparent 2px, transparent 3px)`,
+                          mixBlendMode: "overlay",
+                        }}
+                      />
+                    )}
 
-                          {preset.name === "polished-metal" && (
-                            <>
-                              <div className="absolute top-2 left-2 h-4 w-4 rounded-full bg-white/90 blur-[2px] sm:top-2.5 sm:left-2.5 sm:h-5 sm:w-5" />
-                              <div className="absolute top-2.5 left-2.5 h-2 w-2 rounded-full bg-white sm:top-3 sm:left-3 sm:h-2.5 sm:w-2.5" />
-                            </>
-                          )}
+                    {preset.name === "polished-metal" && (
+                      <>
+                        <div className="absolute top-2 left-2 h-4 w-4 rounded-full bg-white/90 blur-[2px] sm:top-2.5 sm:left-2.5 sm:h-5 sm:w-5" />
+                        <div className="absolute top-2.5 left-2.5 h-2 w-2 rounded-full bg-white sm:top-3 sm:left-3 sm:h-2.5 sm:w-2.5" />
+                      </>
+                    )}
 
-                          {(preset.name === "clear-glass" ||
-                            preset.name === "frosted-glass") && (
-                            <>
-                              <div className="absolute top-2 left-2 h-5 w-5 rounded-full bg-white/80 blur-[3px] sm:top-2.5 sm:left-2.5 sm:h-6 sm:w-6" />
-                              <div className="absolute top-3 left-3 h-2 w-2 rounded-full bg-white sm:top-3.5 sm:left-3.5 sm:h-2.5 sm:w-2.5" />
-                              <div className="absolute right-3 bottom-3 h-1.5 w-1.5 rounded-full bg-black/15 sm:right-3.5 sm:bottom-3.5 sm:h-2 sm:w-2" />
-                            </>
-                          )}
+                    {(preset.name === "clear-glass" ||
+                      preset.name === "frosted-glass") && (
+                      <>
+                        <div className="absolute top-2 left-2 h-5 w-5 rounded-full bg-white/80 blur-[3px] sm:top-2.5 sm:left-2.5 sm:h-6 sm:w-6" />
+                        <div className="absolute top-3 left-3 h-2 w-2 rounded-full bg-white sm:top-3.5 sm:left-3.5 sm:h-2.5 sm:w-2.5" />
+                        <div className="absolute right-3 bottom-3 h-1.5 w-1.5 rounded-full bg-black/15 sm:right-3.5 sm:bottom-3.5 sm:h-2 sm:w-2" />
+                      </>
+                    )}
 
-                          {preset.name === "glossy-plastic" && (
-                            <>
-                              <div className="absolute top-2 left-2 h-4 w-4 rounded-full bg-white/80 blur-[1px] sm:top-2.5 sm:left-2.5 sm:h-5 sm:w-5" />
-                              <div className="absolute top-2.5 left-2.5 h-2.5 w-2.5 rounded-full bg-white/95 sm:top-3 sm:left-3 sm:h-3.5 sm:w-3.5" />
-                            </>
-                          )}
+                    {preset.name === "glossy-plastic" && (
+                      <>
+                        <div className="absolute top-2 left-2 h-4 w-4 rounded-full bg-white/80 blur-[1px] sm:top-2.5 sm:left-2.5 sm:h-5 sm:w-5" />
+                        <div className="absolute top-2.5 left-2.5 h-2.5 w-2.5 rounded-full bg-white/95 sm:top-3 sm:left-3 sm:h-3.5 sm:w-3.5" />
+                      </>
+                    )}
 
-                          {preset.name === "matte-plastic" && (
-                            <div className="absolute top-3 left-3 h-2.5 w-2.5 rounded-full bg-white/50 blur-[1px] sm:top-3.5 sm:left-3.5 sm:h-3 sm:w-3" />
-                          )}
+                    {preset.name === "matte-plastic" && (
+                      <div className="absolute top-3 left-3 h-2.5 w-2.5 rounded-full bg-white/50 blur-[1px] sm:top-3.5 sm:left-3.5 sm:h-3 sm:w-3" />
+                    )}
 
-                          {preset.name === "matte-metal" && (
-                            <div className="absolute top-3 left-3 h-3 w-3 rounded-full bg-white/40 blur-[1px] sm:top-3.5 sm:left-3.5 sm:h-3.5 sm:w-3.5" />
-                          )}
-                        </div>
-                      </div>
+                    {preset.name === "matte-metal" && (
+                      <div className="absolute top-3 left-3 h-3 w-3 rounded-full bg-white/40 blur-[1px] sm:top-3.5 sm:left-3.5 sm:h-3.5 sm:w-3.5" />
+                    )}
+                  </div>
+                </div>
 
-                      <div className="flex-1 text-left sm:hidden">
-                        <span className="text-muted-foreground text-sm font-medium">
-                          {preset.label}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="hidden sm:block">
-                  <p>{preset.label}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                <div className="bg-primary/10 px-2 py-1.5 text-center">
+                  <p className="text-foreground text-xs leading-tight font-medium">
+                    {preset.label}
+                  </p>
+                </div>
+              </div>
+            </button>
           );
         })}
       </div>

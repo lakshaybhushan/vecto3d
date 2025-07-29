@@ -6,12 +6,6 @@ import { useEditorStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { toast } from "sonner";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export function TextureControls() {
   const textureEnabled = useEditorStore((state) => state.textureEnabled);
@@ -87,17 +81,6 @@ export function TextureControls() {
 
   return (
     <div className="space-y-4">
-      {/* <div className="flex items-center justify-between space-x-2">
-        <Switch
-          id="textureSwitch"
-          checked={textureEnabled}
-          onCheckedChange={handleTextureToggle}
-        />
-        <Label htmlFor="textureSwitch" className="text-sm font-medium">
-          Enable Textures
-        </Label>
-      </div> */}
-
       <div className="flex items-center justify-between rounded-lg border p-3">
         <div className="space-y-0.5">
           <Label htmlFor="textureSwitch" className="text-sm font-medium">
@@ -121,38 +104,36 @@ export function TextureControls() {
               <div key={category} className="space-y-3">
                 <div className="space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
                   {textures.map((texture) => (
-                    <TooltipProvider key={texture.name}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div
-                            className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
-                              texturePreset === texture.name
-                                ? "bg-secondary"
-                                : "hover:bg-secondary/50 hover:border-secondary"
-                            }`}
-                            onClick={() => setTexturePreset(texture.name)}>
-                            <div className="relative flex items-center p-2 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5">
-                              <div className="bg-muted/20 absolute inset-2 rounded-md sm:inset-1.5" />
+                    <button
+                      key={texture.name}
+                      className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                        texturePreset === texture.name
+                          ? "bg-secondary"
+                          : "hover:bg-secondary/50 hover:border-secondary"
+                      }`}
+                      onClick={() => setTexturePreset(texture.name)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          setTexturePreset(texture.name);
+                        }
+                      }}
+                      type="button">
+                      <div className="relative flex h-full flex-col">
+                        <div className="bg-muted/20 absolute inset-0 rounded-md" />
 
-                              <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
-                                <div className="h-12 w-12 overflow-hidden rounded-md sm:h-14 sm:w-14">
-                                  {getTexturePreview(texture)}
-                                </div>
-                              </div>
-
-                              <div className="flex-1 text-left sm:hidden">
-                                <span className="text-muted-foreground text-sm font-medium">
-                                  {texture.label}
-                                </span>
-                              </div>
-                            </div>
+                        <div className="relative flex flex-1 items-center justify-center">
+                          <div className="h-12 w-12 overflow-hidden rounded-md sm:h-14 sm:w-14">
+                            {getTexturePreview(texture)}
                           </div>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="hidden sm:block">
-                          <p>{texture.label}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                        </div>
+
+                        <div className="bg-primary/10 px-2 py-1.5 text-center">
+                          <p className="text-foreground text-xs leading-tight font-medium">
+                            {texture.label}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
                   ))}
                 </div>
               </div>

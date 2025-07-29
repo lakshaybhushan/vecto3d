@@ -1,6 +1,5 @@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-// import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   SOLID_COLOR_PRESETS,
   DARK_MODE_COLOR,
@@ -12,12 +11,6 @@ import { Input } from "@/components/ui/input";
 import { PopoverPicker } from "../ui/color-picker";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export function BackgroundControls() {
   const backgroundColor = useEditorStore((state) => state.backgroundColor);
@@ -35,7 +28,6 @@ export function BackgroundControls() {
   const { theme } = useTheme();
 
   const [isTransparent, setIsTransparent] = useState(() => {
-    // Only check transparency for 8-character hex colors (with alpha) or "transparent" keyword
     return (
       (backgroundColor.length === 9 && backgroundColor.endsWith("00")) ||
       backgroundColor === "transparent"
@@ -115,49 +107,41 @@ export function BackgroundControls() {
 
           <div className="mb-4 space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
             {SOLID_COLOR_PRESETS.map((preset) => (
-              <TooltipProvider key={preset.name}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
-                        solidColorPreset === preset.name
-                          ? "bg-secondary"
-                          : "hover:bg-secondary/50 hover:border-secondary"
-                      }`}
-                      onClick={() =>
-                        handleBackgroundChange(preset.color, preset.name)
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          handleBackgroundChange(preset.color, preset.name);
-                        }
+              <button
+                key={preset.name}
+                className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                  solidColorPreset === preset.name
+                    ? "bg-secondary"
+                    : "hover:bg-secondary/50 hover:border-secondary"
+                }`}
+                onClick={() =>
+                  handleBackgroundChange(preset.color, preset.name)
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    handleBackgroundChange(preset.color, preset.name);
+                  }
+                }}
+                type="button">
+                <div className="relative flex h-full flex-col">
+                  <div className="bg-muted/5 absolute inset-0 rounded-md" />
+
+                  <div className="relative flex flex-1 items-center justify-center">
+                    <div
+                      className="h-12 w-12 rounded-full border border-white/20 shadow-lg sm:h-14 sm:w-14"
+                      style={{
+                        background: preset.color,
                       }}
-                      type="button">
-                      <div className="relative flex items-center p-2 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5">
-                        <div className="bg-muted/5 absolute inset-2 rounded-md sm:inset-1.5" />
+                    />
+                  </div>
 
-                        <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
-                          <div
-                            className="h-12 w-12 rounded-full border border-white/20 shadow-lg sm:h-14 sm:w-14"
-                            style={{
-                              background: preset.color,
-                            }}
-                          />
-                        </div>
-
-                        <div className="flex-1 text-left sm:hidden">
-                          <span className="text-muted-foreground text-sm font-medium">
-                            {preset.label}
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="hidden sm:block">
-                    <p>{preset.label}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                  <div className="bg-primary/10 px-2 py-1.5 text-center">
+                    <p className="text-foreground text-xs leading-tight font-medium">
+                      {preset.label}
+                    </p>
+                  </div>
+                </div>
+              </button>
             ))}
           </div>
 

@@ -9,12 +9,6 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useEditorStore } from "@/lib/store";
 import { Switch } from "@/components/ui/switch";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export function EnvironmentControls() {
   const useEnvironment = useEditorStore((state) => state.useEnvironment);
@@ -93,15 +87,6 @@ export function EnvironmentControls() {
 
   return (
     <div className="space-y-4">
-      {/* <Alert className="bg-muted/50 mb-4">
-        <AlertDescription className="flex items-center text-xs">
-          <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
-          <p className="text-muted-foreground mt-0.5 text-sm">
-            Applies to image exports only.
-          </p>
-        </AlertDescription>
-      </Alert> */}
-
       <div className="flex items-center justify-between rounded-lg border p-3">
         <div className="space-y-0.5">
           <Label htmlFor="useEnvironment" className="text-sm font-medium">
@@ -124,126 +109,125 @@ export function EnvironmentControls() {
             <Label className="text-sm font-medium">Presets</Label>
             <div className="space-y-2 sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-5 md:space-y-0">
               {ENVIRONMENT_PRESETS.map((preset) => (
-                <TooltipProvider key={preset.name}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                <button
+                  key={preset.name}
+                  className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                    environmentPreset === preset.name
+                      ? "bg-secondary"
+                      : "hover:bg-secondary/50 hover:border-secondary"
+                  }`}
+                  onClick={() => handlePresetChange(preset.name)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      handlePresetChange(preset.name);
+                    }
+                  }}
+                  type="button">
+                  <div className="relative flex h-full flex-col">
+                    <div className="bg-muted/5 absolute inset-0 rounded-md" />
+
+                    <div className="relative flex flex-1 items-center justify-center">
                       <div
-                        className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
-                          environmentPreset === preset.name
-                            ? "bg-secondary"
-                            : "hover:bg-secondary/50 hover:border-secondary"
-                        }`}
-                        onClick={() => handlePresetChange(preset.name)}>
-                        <div className="relative flex items-center p-2 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5">
-                          <div className="bg-muted/5 absolute inset-2 rounded-md sm:inset-1.5" />
-
-                          <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
-                            <div
-                              className="relative h-12 w-12 rounded-full border border-white/20 shadow-lg sm:h-14 sm:w-14"
-                              style={{
-                                background: `radial-gradient(circle at 30% 30%, ${preset.color}40 0%, ${preset.color}80 25%, ${preset.color} 60%, ${preset.color.replace("#", "#").slice(0, 4)}${preset.color.slice(4)}CC 85%, ${preset.color.replace("#", "#").slice(0, 4)}${preset.color.slice(4)}AA 100%)`,
-                                boxShadow: `
-                                0 6px 20px ${preset.color}25,
-                                inset 0 2px 0 rgba(255,255,255,0.3),
-                                inset 0 -1px 0 rgba(0,0,0,0.15)
-                              `,
-                              }}>
-                              <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/40 blur-[1px] sm:top-2.5 sm:left-2.5 sm:h-3.5 sm:w-3.5" />
-                              <div className="absolute top-2.5 left-2.5 h-1.5 w-1.5 rounded-full bg-white/80 sm:top-3 sm:left-3 sm:h-2 sm:w-2" />
-                              {/* Environment-specific effects */}
-                              {preset.name === "sunset" && (
-                                <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-orange-300/60 blur-[1px] sm:right-2.5 sm:bottom-2.5 sm:h-2.5 sm:w-2.5" />
-                              )}
-                              {preset.name === "studio" && (
-                                <div className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-white/60 sm:top-3 sm:right-3 sm:h-2 sm:w-2" />
-                              )}
-                              {preset.name === "dawn" && (
-                                <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-pink-300/50 blur-[1px] sm:right-2.5 sm:bottom-2.5 sm:h-2.5 sm:w-2.5" />
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex-1 text-left sm:hidden">
-                            <span className="text-muted-foreground text-sm font-medium">
-                              {preset.label}
-                            </span>
-                          </div>
-                        </div>
+                        className="relative h-12 w-12 rounded-full border border-white/20 shadow-lg sm:h-14 sm:w-14"
+                        style={{
+                          background: `radial-gradient(circle at 30% 30%, ${preset.color}40 0%, ${preset.color}80 25%, ${preset.color} 60%, ${preset.color.replace("#", "#").slice(0, 4)}${preset.color.slice(4)}CC 85%, ${preset.color.replace("#", "#").slice(0, 4)}${preset.color.slice(4)}AA 100%)`,
+                          boxShadow: `
+                            0 6px 20px ${preset.color}25,
+                            inset 0 2px 0 rgba(255,255,255,0.3),
+                            inset 0 -1px 0 rgba(0,0,0,0.15)
+                          `,
+                        }}>
+                        <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/40 blur-[1px] sm:top-2.5 sm:left-2.5 sm:h-3.5 sm:w-3.5" />
+                        <div className="absolute top-2.5 left-2.5 h-1.5 w-1.5 rounded-full bg-white/80 sm:top-3 sm:left-3 sm:h-2 sm:w-2" />
+                        {preset.name === "sunset" && (
+                          <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-orange-300/60 blur-[1px] sm:right-2.5 sm:bottom-2.5 sm:h-2.5 sm:w-2.5" />
+                        )}
+                        {preset.name === "studio" && (
+                          <div className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-white/60 sm:top-3 sm:right-3 sm:h-2 sm:w-2" />
+                        )}
+                        {preset.name === "dawn" && (
+                          <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-pink-300/50 blur-[1px] sm:right-2.5 sm:bottom-2.5 sm:h-2.5 sm:w-2.5" />
+                        )}
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="hidden sm:block">
-                      <p>{preset.label}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                    </div>
+
+                    <div className="bg-primary/10 px-2 py-1.5 text-center">
+                      <p className="text-foreground text-xs leading-tight font-medium">
+                        {preset.label}
+                      </p>
+                    </div>
+                  </div>
+                </button>
               ))}
 
-              <TooltipProvider key="custom-preset">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div
-                      className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
-                        environmentPreset === "custom"
-                          ? "bg-secondary"
-                          : "hover:bg-secondary/50 hover:border-secondary"
-                      }`}
-                      onClick={() => {
-                        if (customHdriUrl) {
-                          setEnvironmentPreset("custom");
-                        } else {
-                          hdriFileInputRef.current?.click();
-                        }
-                      }}>
-                      <input
-                        ref={hdriFileInputRef}
-                        type="file"
-                        accept="image/jpeg,image/jpg,image/png"
-                        className="hidden"
-                        onChange={handleHdriFileChange}
+              <button
+                key="custom-preset"
+                className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                  environmentPreset === "custom"
+                    ? "bg-secondary"
+                    : "hover:bg-secondary/50 hover:border-secondary"
+                }`}
+                onClick={() => {
+                  if (customHdriUrl) {
+                    setEnvironmentPreset("custom");
+                  } else {
+                    hdriFileInputRef.current?.click();
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    if (customHdriUrl) {
+                      setEnvironmentPreset("custom");
+                    } else {
+                      hdriFileInputRef.current?.click();
+                    }
+                  }
+                }}
+                type="button">
+                <input
+                  ref={hdriFileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png"
+                  className="hidden"
+                  onChange={handleHdriFileChange}
+                />
+                {customHdriUrl ? (
+                  <div className="relative flex h-full flex-col">
+                    <div className="bg-muted/20 absolute inset-0 rounded-md" />
+
+                    <div className="relative flex flex-1 items-center justify-center">
+                      <div
+                        className="h-12 w-12 rounded-full border border-white/20 bg-cover bg-center shadow-sm sm:h-14 sm:w-14"
+                        style={{
+                          backgroundImage: `url(${customHdriUrl})`,
+                        }}
                       />
-                      {customHdriUrl ? (
-                        <div className="relative flex items-center p-2 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5">
-                          <div className="bg-muted/20 absolute inset-2 rounded-md sm:inset-1.5" />
-
-                          <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
-                            <div
-                              className="h-12 w-12 rounded-full border border-white/20 bg-cover bg-center shadow-sm sm:h-14 sm:w-14"
-                              style={{
-                                backgroundImage: `url(${customHdriUrl})`,
-                              }}
-                            />
-                          </div>
-
-                          <div className="flex-1 text-left sm:hidden">
-                            <span className="text-muted-foreground text-sm font-medium">
-                              Custom
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="relative flex items-center p-2 sm:aspect-square sm:flex-col sm:justify-center sm:p-1.5">
-                          <div className="bg-muted/5 absolute inset-2 rounded-md sm:inset-1.5" />
-
-                          <div className="relative mr-3 flex h-full items-center justify-center sm:mr-0">
-                            <div className="border-muted-foreground/30 bg-muted/20 flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed sm:h-14 sm:w-14">
-                              <PlusIcon className="text-muted-foreground h-6 w-6 sm:h-8 sm:w-8" />
-                            </div>
-                          </div>
-
-                          <div className="flex-1 text-left sm:hidden">
-                            <span className="text-muted-foreground text-sm font-medium">
-                              Custom
-                            </span>
-                          </div>
-                        </div>
-                      )}
                     </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="hidden sm:block">
-                    <p>Custom</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+
+                    <div className="bg-primary/10 px-2 py-1.5 text-center">
+                      <p className="text-foreground text-xs leading-tight font-medium">
+                        Custom
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative flex h-full flex-col">
+                    <div className="bg-muted/5 absolute inset-0 rounded-md" />
+
+                    <div className="relative flex flex-1 items-center justify-center">
+                      <div className="border-muted-foreground/30 bg-muted/20 flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed sm:h-14 sm:w-14">
+                        <PlusIcon className="text-muted-foreground h-6 w-6 sm:h-8 sm:w-8" />
+                      </div>
+                    </div>
+
+                    <div className="bg-primary/10 px-2 py-1.5 text-center">
+                      <p className="text-foreground text-xs leading-tight font-medium">
+                        Custom
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </button>
             </div>
           </div>
 
