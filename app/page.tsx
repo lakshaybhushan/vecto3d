@@ -164,18 +164,26 @@ export default function Home() {
       </AnimatePresence>
 
       <motion.div
-        className={`flex flex-1 flex-col items-center justify-center ${isMobile ? "px-4 py-2" : "px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 lg:px-12"} overflow-hidden`}
+        className={`flex flex-1 flex-col items-center justify-center ${
+          isMobile
+            ? "gap-6 px-4 py-6"
+            : "px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 lg:px-12"
+        } overflow-hidden`}
         variants={staggeredContainerVariants}
         initial="initial"
         animate="animate"
         style={{ minHeight: 0 }}>
         <motion.div
-          className={`${isMobile ? "mb-2" : "mb-4 md:mb-6"} flex-shrink-0 text-center`}
+          className={`${
+            isMobile ? "mb-2" : "mb-4 md:mb-6"
+          } flex-shrink-0 text-center`}
           variants={titleContainerVariants}
           initial="initial"
           animate="animate">
           <h1
-            className={`text-primary leading-tighter font-serif tracking-tight ${isMobile ? "text-4xl" : "text-5xl md:text-6xl"}`}>
+            className={`text-primary leading-tighter font-serif tracking-tight ${
+              isMobile ? "text-4xl sm:text-5xl" : "text-5xl md:text-6xl"
+            }`}>
             <motion.span
               variants={titleSpanVariants}
               style={{
@@ -210,7 +218,11 @@ export default function Home() {
               onIconSelect={handleIconSelect}
             />
             <motion.p
-              className={`text-muted-foreground text-center text-balance ${isMobile ? "mt-1 mb-1 text-xs" : "mt-2 mb-2 text-sm sm:mt-2 sm:mb-3 sm:text-sm md:text-base"}`}
+              className={`text-muted-foreground text-center text-balance ${
+                isMobile
+                  ? "mt-3 mb-3 text-sm"
+                  : "mt-2 mb-2 text-sm sm:mt-2 sm:mb-3 sm:text-sm md:text-base"
+              }`}
               variants={helpTextVariants}
               initial="initial"
               animate="animate">
@@ -221,7 +233,9 @@ export default function Home() {
 
           <motion.div
             ref={continueButtonSectionRef}
-            className={`${isMobile ? "mt-3" : "mt-5"} flex items-center justify-center`}>
+            className={`${
+              isMobile ? "mt-6" : "mt-5"
+            } flex items-center justify-center`}>
             <AnimatePresence mode="wait">
               {svgData && (
                 <motion.div
@@ -239,7 +253,7 @@ export default function Home() {
                     exit="exit"
                     layout>
                     <RainbowButton
-                      className="mx-auto w-full max-w-[16rem] rounded-md py-5"
+                      className="mx-auto w-full max-w-[16rem] rounded-md py-4"
                       onClick={handleContinue}
                       disabled={isLoading}>
                       {isLoading ? "Processing..." : "Continue to Editor"}

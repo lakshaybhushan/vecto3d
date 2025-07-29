@@ -176,15 +176,38 @@ function BackgroundShader({ isDark }: { isDark: boolean }) {
 
 export default function BackgroundEffect() {
   const [mounted, setMounted] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(0);
   const { resolvedTheme } = useTheme();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const isSafari = useSafariDetection();
+  // Removing Safari detection since we want the effect on all browsers
 
   useEffect(() => {
     setMounted(true);
+
+    const updateViewportHeight = () => {
+      // Get the actual visible height on iOS Safari
+      const vh = window.innerHeight;
+      setViewportHeight(vh);
+      // Also set CSS custom property for potential use
+      document.documentElement.style.setProperty("--vh", `${vh * 0.01}px`);
+    };
+
+    if (typeof window !== "undefined") {
+      updateViewportHeight();
+      window.addEventListener("resize", updateViewportHeight);
+      window.addEventListener("orientationchange", updateViewportHeight);
+
+      // Additional timeout for iOS Safari
+      setTimeout(updateViewportHeight, 100);
+    }
+
     const canvas = canvasRef.current;
 
     return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("resize", updateViewportHeight);
+        window.removeEventListener("orientationchange", updateViewportHeight);
+      }
       if (canvas) {
         const gl = canvas.getContext("webgl") || canvas.getContext("webgl2");
         if (gl && gl.getExtension("WEBGL_lose_context")) {
@@ -211,26 +234,19 @@ export default function BackgroundEffect() {
     );
   }
 
-  // Hide background effect on Safari to prevent resize issues
-  if (isSafari) {
-    return (
-      <motion.div
-        className="bg-background pointer-events-none fixed inset-0 -z-10"
-        variants={backgroundVariants}
-        initial="initial"
-        animate="animate"
-      />
-    );
-  }
-
   return (
     <motion.div
       className="pointer-events-none fixed inset-0 -z-10"
       style={{
-        height: "100vh",
+        height: viewportHeight > 0 ? `${viewportHeight}px` : "100vh",
+        minHeight: "100vh",
         width: "100vw",
+        position: "fixed",
         top: 0,
         left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: "hidden",
       }}
       variants={backgroundVariants}
       initial="initial"
@@ -239,7 +255,13 @@ export default function BackgroundEffect() {
         variants={backgroundCanvasVariants}
         initial="initial"
         animate="animate"
-        className="h-full w-full">
+        className="h-full w-full"
+        style={{
+          position: "absolute",
+          inset: 0,
+          height: "100%",
+          width: "100%",
+        }}>
         <Canvas
           ref={canvasRef}
           camera={{ position: [0, 0, 1], fov: 75, near: 0.1, far: 1000 }}
