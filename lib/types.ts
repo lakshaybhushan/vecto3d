@@ -8,12 +8,14 @@ export interface TexturePreset {
   diffuseMap: string;
   normalMap?: string;
   roughnessMap?: string;
+  displacementMap?: string;
   aoMap?: string;
   previewImage?: string;
   repeat: { x: number; y: number };
   roughnessAdjust?: number;
   metalnessAdjust?: number;
   bumpScale?: number;
+  displacementScale?: number;
 }
 
 // Material presets interface

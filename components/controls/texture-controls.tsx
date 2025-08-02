@@ -3,7 +3,6 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { TEXTURE_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { toast } from "sonner";
 
@@ -14,6 +13,8 @@ export function TextureControls() {
   const setTexturePreset = useEditorStore((state) => state.setTexturePreset);
   const textureScale = useEditorStore((state) => state.textureScale);
   const setTextureScale = useEditorStore((state) => state.setTextureScale);
+  const textureDepth = useEditorStore((state) => state.textureDepth);
+  const setTextureDepth = useEditorStore((state) => state.setTextureDepth);
   const useEnvironment = useEditorStore((state) => state.useEnvironment);
   const setUseEnvironment = useEditorStore((state) => state.setUseEnvironment);
 
@@ -132,13 +133,13 @@ export function TextureControls() {
           </div>
 
           <div className="space-y-4 border-t pt-4">
-            <div className="space-y-4 pt-2">
+            <div className="space-y-4">
               <Label>Texture Scale</Label>
               <div className="grid grid-cols-2 gap-4 pb-2">
                 <div className="space-y-2">
                   <Label
                     htmlFor="textureScaleX"
-                    className="flex justify-between text-xs">
+                    className="flex justify-between text-sm">
                     <span>X Scale</span>
                     <span className="text-primary font-mono">
                       {textureScale.x.toFixed(0)}x
@@ -158,7 +159,7 @@ export function TextureControls() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="textureScaleY"
-                    className="flex justify-between text-xs">
+                    className="flex justify-between text-sm">
                     <span>Y Scale</span>
                     <span className="text-primary font-mono">
                       {textureScale.y.toFixed(0)}x
@@ -173,6 +174,27 @@ export function TextureControls() {
                     onValueChange={(value) =>
                       setTextureScale({ ...textureScale, y: value[0] })
                     }
+                  />
+                </div>
+              </div>
+
+              <div className="border-t pt-2">
+                <div className="space-y-4 py-2">
+                  <Label
+                    htmlFor="textureDepth"
+                    className="flex justify-between">
+                    <span>Texture Depth</span>
+                    <span className="text-primary font-mono">
+                      {textureDepth.toFixed(0)}%
+                    </span>
+                  </Label>
+                  <Slider
+                    id="textureDepth"
+                    min={0}
+                    max={500}
+                    step={25}
+                    value={[textureDepth]}
+                    onValueChange={(value) => setTextureDepth(value[0])}
                   />
                 </div>
               </div>

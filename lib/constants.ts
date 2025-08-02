@@ -216,7 +216,7 @@ export const TEXTURE_PRESETS: TexturePreset[] = [
     repeat: { x: 2, y: 2 },
     roughnessAdjust: 1.0,
     metalnessAdjust: 0.0,
-    bumpScale: 0.02,
+    bumpScale: 0.05,
   },
   {
     name: "pine",
@@ -229,7 +229,7 @@ export const TEXTURE_PRESETS: TexturePreset[] = [
     repeat: { x: 3, y: 3 },
     roughnessAdjust: 1.0,
     metalnessAdjust: 0.0,
-    bumpScale: 0.025,
+    bumpScale: 0.06,
   },
   {
     name: "bark",
@@ -242,7 +242,7 @@ export const TEXTURE_PRESETS: TexturePreset[] = [
     repeat: { x: 4, y: 4 },
     roughnessAdjust: 1.0,
     metalnessAdjust: 0.0,
-    bumpScale: 0.03,
+    bumpScale: 0.08,
   },
   {
     name: "denim",
@@ -255,7 +255,7 @@ export const TEXTURE_PRESETS: TexturePreset[] = [
     repeat: { x: 4, y: 4 },
     roughnessAdjust: 1.0,
     metalnessAdjust: 0.0,
-    bumpScale: 0.025,
+    bumpScale: 0.06,
   },
   {
     name: "leather",
@@ -268,6 +268,6 @@ export const TEXTURE_PRESETS: TexturePreset[] = [
     repeat: { x: 3, y: 3 },
     roughnessAdjust: 1.0,
     metalnessAdjust: 0.0,
-    bumpScale: 0.02,
+    bumpScale: 0.05,
   },
 ];

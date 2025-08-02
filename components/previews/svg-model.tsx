@@ -38,6 +38,7 @@ interface SVGModelProps {
   textureEnabled?: boolean;
   texturePreset?: string;
   textureScale?: { x: number; y: number };
+  textureDepth?: number;
   onLoadStart?: () => void;
   onLoadComplete?: () => void;
   onError?: (error: Error) => void;
@@ -119,6 +120,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       textureEnabled = false,
       texturePreset = "oak",
       textureScale = { x: 1, y: 1 },
+      textureDepth = 100,
       onLoadStart,
       onLoadComplete,
       onError,
@@ -212,9 +214,17 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         .map((path, index) => {
           try {
             const shapes = SVGLoader.createShapes(path);
-            const processedShapes = shapes.map((shape) =>
-              applySpread(shape, false, spread),
+            console.log(
+              `📐 Created ${shapes.length} shapes from path ${index}`,
             );
+
+            const processedShapes = shapes.map((shape, shapeIndex) => {
+              const processed = applySpread(shape, false, spread);
+              console.log(
+                `   Shape ${shapeIndex}: ${processed.getPoints().length} points`,
+              );
+              return processed;
+            });
 
             return {
               shapes: processedShapes,
@@ -297,6 +307,12 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
           typeof window !== "undefined"
         ) {
           try {
+            // Debug logging
+            if (typeof window !== "undefined" && window.console) {
+              console.log(
+                `Loading textures for preset: ${currentTexturePreset.name}, depth: ${textureDepth}%`,
+              );
+            }
             const textureOptions = {
               wrapS: THREE.RepeatWrapping,
               wrapT: THREE.RepeatWrapping,
@@ -321,32 +337,95 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
 
             // Load normal map if available
             if (currentTexturePreset.normalMap) {
-              const normalTexture = await loadTexture(
-                currentTexturePreset.normalMap,
-                textureOptions,
+              console.log(
+                `🔍 Attempting to load normal map from: ${currentTexturePreset.normalMap}`,
               );
-              materialProps.normalMap = normalTexture;
-              materialProps.normalScale = new THREE.Vector2(
-                currentTexturePreset?.bumpScale || 0.02,
-                currentTexturePreset?.bumpScale || 0.02,
+
+              // Test if the URL is accessible
+              fetch(currentTexturePreset.normalMap, { method: "HEAD" })
+                .then((response) => {
+                  if (response.ok) {
+                    console.log(
+                      `✅ Normal map URL is accessible: ${response.status}`,
+                    );
+                  } else {
+                    console.error(
+                      `❌ Normal map URL returned: ${response.status}`,
+                    );
+                  }
+                })
+                .catch((err) =>
+                  console.error(`❌ Failed to fetch normal map:`, err),
+                );
+              try {
+                const normalTexture = await loadTexture(
+                  currentTexturePreset.normalMap,
+                  {
+                    ...textureOptions,
+                    colorSpace: THREE.NoColorSpace, // Normal maps should not use color space conversion
+                  },
+                );
+                console.log(
+                  `✅ Normal texture loaded successfully:`,
+                  normalTexture,
+                );
+                materialProps.normalMap = normalTexture;
+                const depthFactor = (textureDepth ?? 100) / 100;
+                // More aggressive scaling to ensure visibility
+                const scaledBumpScale =
+                  (currentTexturePreset?.bumpScale || 0.05) * depthFactor * 3.0;
+                materialProps.normalScale = new THREE.Vector2(
+                  scaledBumpScale,
+                  scaledBumpScale,
+                );
+
+                console.log(`🎯 Normal map applied:`);
+                console.log(`   - Preset: ${currentTexturePreset.name}`);
+                console.log(
+                  `   - Base bumpScale: ${currentTexturePreset?.bumpScale || 0.05}`,
+                );
+                console.log(`   - Texture depth: ${textureDepth}%`);
+                console.log(`   - Depth factor: ${depthFactor}`);
+                console.log(
+                  `   - Final normal scale: ${scaledBumpScale.toFixed(4)}`,
+                );
+                console.log(
+                  `   - Normal texture size: ${normalTexture.image?.width}x${normalTexture.image?.height}`,
+                );
+              } catch (normalError) {
+                console.error(
+                  `❌ Failed to load normal map for ${currentTexturePreset.name}:`,
+                  normalError,
+                );
+                console.error(`   URL: ${currentTexturePreset.normalMap}`);
+              }
+            } else {
+              console.warn(
+                `⚠️ No normal map defined for preset: ${currentTexturePreset.name}`,
               );
             }
+
+            // Disable displacement maps to prevent geometry artifacts
+            // We'll use only normal maps for depth effect
 
             // Load roughness map if available
             if (currentTexturePreset.roughnessMap) {
               const roughnessTexture = await loadTexture(
                 currentTexturePreset.roughnessMap,
-                textureOptions,
+                {
+                  ...textureOptions,
+                  colorSpace: THREE.NoColorSpace, // Roughness maps should not use color space conversion
+                },
               );
               materialProps.roughnessMap = roughnessTexture;
             }
 
             // Load AO map if available
             if (currentTexturePreset.aoMap) {
-              const aoTexture = await loadTexture(
-                currentTexturePreset.aoMap,
-                textureOptions,
-              );
+              const aoTexture = await loadTexture(currentTexturePreset.aoMap, {
+                ...textureOptions,
+                colorSpace: THREE.NoColorSpace, // AO maps should not use color space conversion
+              });
               materialProps.aoMap = aoTexture;
               materialProps.aoMapIntensity = 1.0;
             }
@@ -373,6 +452,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         envMapIntensity,
         textureScale.x,
         textureScale.y,
+        textureDepth,
       ],
     );
 
@@ -399,6 +479,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       texturePreset,
       textureScale.x,
       textureScale.y,
+      textureDepth,
     ]);
 
     // Cleanup on unmount
@@ -446,7 +527,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
 
     // Create a stable key for material changes
     const materialKey = useMemo(() => {
-      return `${textureEnabled}-${texturePreset}-${roughness}-${metalness}-${clearcoat}-${transmission}-${envMapIntensity}-${textureScale.x}-${textureScale.y}`;
+      return `${textureEnabled}-${texturePreset}-${roughness}-${metalness}-${clearcoat}-${transmission}-${envMapIntensity}-${textureScale.x}-${textureScale.y}-${textureDepth}`;
     }, [
       textureEnabled,
       texturePreset,
@@ -457,6 +538,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       envMapIntensity,
       textureScale.x,
       textureScale.y,
+      textureDepth,
     ]);
 
     if (geometryData.length === 0) return null;
@@ -467,7 +549,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       bevelThickness: isHole ? bevelThickness * 1.05 : bevelThickness,
       bevelSize: isHole ? bevelSize * 1.05 : bevelSize,
       bevelSegments: Math.max(4, bevelSegments),
-      curveSegments: Math.max(8, bevelSegments * 2),
+      curveSegments: Math.max(32, bevelSegments * 4), // Increased for smoother geometry
     });
 
     const box = new THREE.Box3();

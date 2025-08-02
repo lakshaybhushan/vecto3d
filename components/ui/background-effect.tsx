@@ -11,7 +11,6 @@ import {
 } from "@/lib/motion-variants";
 import * as THREE from "three";
 import { memoryManager } from "@/lib/memory-manager";
-import { useSafariDetection } from "@/hooks/use-mobile-detection";
 
 const vertexShader = `
   varying vec2 vUv;
@@ -179,7 +178,6 @@ export default function BackgroundEffect() {
   const [viewportHeight, setViewportHeight] = useState(0);
   const { resolvedTheme } = useTheme();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  // Removing Safari detection since we want the effect on all browsers
 
   useEffect(() => {
     setMounted(true);

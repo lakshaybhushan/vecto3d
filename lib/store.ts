@@ -36,6 +36,7 @@ interface EditorState {
   textureEnabled: boolean;
   texturePreset: string;
   textureScale: { x: number; y: number };
+  textureDepth: number;
 
   // Environment Options
   useEnvironment: boolean;
@@ -96,6 +97,7 @@ interface EditorState {
   setTextureEnabled: (enabled: boolean) => void;
   setTexturePreset: (preset: string) => void;
   setTextureScale: (scale: { x: number; y: number }) => void;
+  setTextureDepth: (depth: number) => void;
 
   setUseEnvironment: (use: boolean) => void;
   setEnvironmentPreset: (preset: string) => void;
@@ -160,6 +162,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   textureEnabled: false,
   texturePreset: "oak",
   textureScale: { x: 100, y: 100 },
+  textureDepth: 100,
 
   useEnvironment: true,
   environmentPreset: "apartment",
@@ -216,6 +219,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   setTextureEnabled: (enabled) => set({ textureEnabled: enabled }),
   setTexturePreset: (preset) => set({ texturePreset: preset }),
   setTextureScale: (scale) => set({ textureScale: scale }),
+  setTextureDepth: (depth) => set({ textureDepth: depth }),
 
   setUseEnvironment: (use) => set({ useEnvironment: use }),
   setEnvironmentPreset: (preset) => set({ environmentPreset: preset }),
@@ -304,6 +308,7 @@ export const useEditorStore = create<EditorState>((set) => ({
       textureEnabled: false,
       texturePreset: "oak",
       textureScale: { x: 100, y: 100 },
+      textureDepth: 100,
 
       useEnvironment: true,
       environmentPreset: "apartment",
