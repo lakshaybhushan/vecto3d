@@ -128,7 +128,7 @@ export default function Home() {
 
   return (
     <motion.main
-      className="relative flex h-screen w-full flex-col overflow-hidden"
+      className="safari-fix relative flex h-screen w-full flex-col overflow-hidden"
       variants={pageTransitionVariants}
       initial="initial"
       animate="animate"
@@ -166,7 +166,7 @@ export default function Home() {
       <motion.div
         className={`flex flex-1 flex-col items-center justify-center ${
           isMobile
-            ? "gap-6 px-4 py-6"
+            ? "gap-2 px-4 py-1"
             : "px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 lg:px-12"
         } overflow-hidden`}
         variants={staggeredContainerVariants}
@@ -204,7 +204,7 @@ export default function Home() {
         </motion.div>
 
         <motion.div
-          className="mx-auto flex w-fit flex-shrink-0 flex-col items-center"
+          className="mx-auto flex max-h-full w-fit flex-shrink-0 flex-col items-center justify-center"
           variants={staggeredItemVariants}>
           <motion.div
             className="w-full"
@@ -220,7 +220,7 @@ export default function Home() {
             <motion.p
               className={`text-muted-foreground text-center text-balance ${
                 isMobile
-                  ? "mt-3 mb-3 text-sm"
+                  ? "mt-2 mb-1 text-sm"
                   : "mt-2 mb-2 text-sm sm:mt-2 sm:mb-3 sm:text-sm md:text-base"
               }`}
               variants={helpTextVariants}
@@ -234,7 +234,7 @@ export default function Home() {
           <motion.div
             ref={continueButtonSectionRef}
             className={`${
-              isMobile ? "mt-6" : "mt-5"
+              isMobile ? "mt-3" : "mt-5"
             } flex items-center justify-center`}>
             <AnimatePresence mode="wait">
               {svgData && (
@@ -265,7 +265,9 @@ export default function Home() {
           </motion.div>
         </motion.div>
       </motion.div>
-      <motion.div className="flex-shrink-0" variants={staggeredItemVariants}>
+      <motion.div
+        className={`flex-shrink-0 ${isMobile ? "pb-1" : ""}`}
+        variants={staggeredItemVariants}>
         <Footer />
       </motion.div>
     </motion.main>

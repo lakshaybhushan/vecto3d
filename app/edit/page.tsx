@@ -277,7 +277,7 @@ const MobileTabBar = memo(
 
     return (
       <div className="bg-background/98 border-border/50 flex-shrink-0 border-t backdrop-blur-xl md:hidden">
-        <div className="pb-safe flex items-center justify-around px-1 py-2">
+        <div className="flex items-center justify-around px-1 py-2">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -427,7 +427,7 @@ export default function EditPage() {
   }
 
   return (
-    <main className="bg-background relative flex h-screen w-full flex-col overflow-hidden">
+    <main className="bg-background safari-fix relative flex h-screen w-full flex-col overflow-hidden">
       {/* Include the separated logic components */}
       <SvgProcessingLogic />
       <BackgroundThemeManager />
@@ -530,205 +530,408 @@ export default function EditPage() {
       </header>
 
       <div
-        className={`flex-1 ${isMobile ? "flex flex-col overflow-hidden" : "px-4 py-4 md:px-6 md:py-6 xl:px-8 xl:py-8"}`}>
-        <div
-          key="editor-content"
-          className={`grid grid-cols-1 ${isMobile ? "flex-1 overflow-hidden" : "gap-6 md:gap-8"} xl:grid-cols-12`}>
-          {/* Mobile: Show preview or controls based on screen */}
+        className={`flex-1 ${isMobile ? "flex flex-col gap-0 overflow-hidden" : "px-4 py-4 md:px-6 md:py-6 xl:px-8 xl:py-8"}`}>
+        {isMobile ? (
           <div
-            className={`col relative ${isMobile ? "order-first flex-1 overflow-hidden" : "order-first xl:order-last"} ${isMobile ? "" : "h-[70dvh]"} overflow-hidden xl:order-last xl:col-span-7 xl:h-[calc(100vh-8rem)] ${isMobile ? "md:block" : ""}`}>
-            <Card
-              className={`flex h-full w-full flex-col overflow-hidden ${isMobile ? "rounded-none border-0" : "border"}`}>
-              {!isMobile && (
-                <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 backdrop-blur-xs [.border-b]:pb-4">
+            key="editor-content"
+            className={`grid grid-cols-1 ${isMobile ? "h-[calc(100vh-8rem)] overflow-hidden" : "gap-6 md:gap-8"} xl:grid-cols-12`}>
+            {/* Mobile: Show preview or controls based on screen */}
+            <div
+              className={`col relative ${isMobile ? "order-first h-[40vh] overflow-hidden" : "order-first xl:order-last"} ${isMobile ? "" : "h-[70dvh]"} overflow-hidden xl:order-last xl:col-span-7 xl:h-[calc(100vh-8rem)] ${isMobile ? "md:block" : ""}`}>
+              <Card
+                className={`flex h-full w-full flex-col overflow-hidden ${isMobile ? "rounded-none border-0" : "border"}`}>
+                {!isMobile && (
+                  <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 backdrop-blur-xs [.border-b]:pb-4">
+                    <div>
+                      <CardTitle className="text-xl font-medium">
+                        Preview
+                      </CardTitle>
+                      <CardDescription className="mt-1 text-xs">
+                        {!svgData
+                          ? "Loading SVG data..."
+                          : isModelLoading
+                            ? "Processing SVG..."
+                            : "Interact with your 3D model"}
+                      </CardDescription>
+                    </div>
+                    <TooltipProvider>
+                      <div className="flex gap-2">
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => {
+                                resetEditor();
+                                toast.success(
+                                  "Editor settings reset to default",
+                                );
+                              }}
+                              aria-label="Reset editor settings">
+                              <RotateCcw className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="bottom"
+                            align="center"
+                            sideOffset={10}
+                            className="px-4 text-sm">
+                            Reset all settings
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => {
+                                if (isFullscreen) {
+                                  document.exitFullscreen();
+                                } else if (previewContainerRef.current) {
+                                  previewContainerRef.current.requestFullscreen();
+                                }
+                              }}
+                              aria-label={
+                                isFullscreen
+                                  ? "Exit fullscreen"
+                                  : "Enter fullscreen"
+                              }>
+                              {isFullscreen ? (
+                                <Minimize2 className="h-4 w-4" />
+                              ) : (
+                                <Maximize2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="bottom"
+                            align="center"
+                            sideOffset={10}
+                            className="px-4 text-sm">
+                            Full Screen
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </TooltipProvider>
+                  </CardHeader>
+                )}
+                <div
+                  className="relative flex grow items-center justify-center"
+                  ref={previewContainerRef}>
+                  {renderModelPreview()}
+                  {isFullscreen && (
+                    <div className="pointer-events-none absolute inset-0">
+                      <TooltipProvider>
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant={"ghost"}
+                              onClick={() => document.exitFullscreen()}
+                              aria-label="Exit fullscreen"
+                              className="hover:bg-background/80 pointer-events-auto absolute top-6 right-6 bg-transparent backdrop-blur-xs">
+                              <Minimize2 className="h-4 w-4" />
+                              <span className="sr-only">Exit fullscreen</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="left"
+                            align="center"
+                            sideOffset={10}
+                            className="z-[99999] px-4 text-sm"
+                            container={previewContainerRef.current}>
+                            Exit fullscreen
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </div>
+            {/* Desktop Controls */}
+            <div className="order-last hidden space-y-6 md:block xl:order-first xl:col-span-5">
+              <Card className="flex max-h-[50dvh] w-full flex-col overflow-hidden border lg:max-h-[55dvh] xl:max-h-[calc(100vh-8rem)]">
+                <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 pb-4 backdrop-blur-xs [.border-b]:pb-4">
                   <div>
                     <CardTitle className="text-xl font-medium">
-                      Preview
+                      Customize
                     </CardTitle>
-                    <CardDescription className="mt-1 text-xs">
-                      {!svgData
-                        ? "Loading SVG data..."
-                        : isModelLoading
-                          ? "Processing SVG..."
-                          : "Interact with your 3D model"}
+                    <CardDescription className="mt-1 truncate text-xs">
+                      {fileName || "Loading..."}
                     </CardDescription>
                   </div>
-                  <TooltipProvider>
-                    <div className="flex gap-2">
-                      <Tooltip delayDuration={100}>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => {
-                              resetEditor();
-                              toast.success("Editor settings reset to default");
-                            }}
-                            aria-label="Reset editor settings">
-                            <RotateCcw className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent
-                          side="bottom"
-                          align="center"
-                          sideOffset={10}
-                          className="px-4 text-sm">
-                          Reset all settings
-                        </TooltipContent>
-                      </Tooltip>
-                      <Tooltip delayDuration={100}>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => {
-                              if (isFullscreen) {
-                                document.exitFullscreen();
-                              } else if (previewContainerRef.current) {
-                                previewContainerRef.current.requestFullscreen();
-                              }
-                            }}
-                            aria-label={
-                              isFullscreen
-                                ? "Exit fullscreen"
-                                : "Enter fullscreen"
-                            }>
-                            {isFullscreen ? (
-                              <Minimize2 className="h-4 w-4" />
-                            ) : (
-                              <Maximize2 className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent
-                          side="bottom"
-                          align="center"
-                          sideOffset={10}
-                          className="px-4 text-sm">
-                          Full Screen
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </TooltipProvider>
                 </CardHeader>
-              )}
+                <CardContent className="flex flex-1 flex-col overflow-hidden p-0">
+                  <Tabs
+                    defaultValue="geometry"
+                    className="flex flex-1 flex-col overflow-y-hidden">
+                    <div className="border-b p-4">
+                      <TabsList className="grid w-full grid-cols-5 text-xs">
+                        <TabsTrigger value="geometry" className="text-sm">
+                          Geometry
+                        </TabsTrigger>
+                        <TabsTrigger value="material" className="text-sm">
+                          Material
+                        </TabsTrigger>
+                        <TabsTrigger value="textures" className="text-sm">
+                          Textures
+                        </TabsTrigger>
+                        <TabsTrigger value="environment" className="text-sm">
+                          Environment
+                        </TabsTrigger>
+                        <TabsTrigger value="background" className="text-sm">
+                          Background
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
 
-              <div className="relative grow" ref={previewContainerRef}>
-                {renderModelPreview()}
-                {isFullscreen && (
-                  <div className="pointer-events-none absolute inset-0">
+                    <div className="flex-1 overflow-y-auto p-4">
+                      <TabsContent
+                        value="geometry"
+                        key="geometry"
+                        className="mt-0">
+                        <GeometryControls />
+                      </TabsContent>
+
+                      <TabsContent
+                        value="material"
+                        key="material"
+                        className="mt-0">
+                        <MaterialControls />
+                      </TabsContent>
+
+                      <TabsContent
+                        value="textures"
+                        key="textures"
+                        className="mt-0">
+                        <TextureControls />
+                      </TabsContent>
+
+                      <TabsContent
+                        value="environment"
+                        key="environment"
+                        className="mt-0">
+                        <EnvironmentControls />
+                      </TabsContent>
+
+                      <TabsContent
+                        value="background"
+                        key="background"
+                        className="mt-0">
+                        <BackgroundControls />
+                      </TabsContent>
+                    </div>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        ) : (
+          <ResizablePanelGroup
+            direction="horizontal"
+            className="h-full w-full gap-2 md:gap-4">
+            <ResizablePanel
+              defaultSize={42}
+              minSize={20}
+              maxSize={70}
+              className="flex flex-col xl:order-first xl:col-span-5">
+              <Card className="flex max-h-[50dvh] w-full flex-col overflow-hidden border lg:max-h-[55dvh] xl:max-h-[calc(100vh-8rem)]">
+                <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 pb-4 backdrop-blur-xs [.border-b]:pb-4">
+                  <div>
+                    <CardTitle className="text-xl font-medium">
+                      Customize
+                    </CardTitle>
+                    <CardDescription className="mt-1 truncate text-xs">
+                      {fileName || "Loading..."}
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex flex-1 flex-col overflow-hidden p-0">
+                  <Tabs
+                    defaultValue="geometry"
+                    className="flex flex-1 flex-col overflow-y-hidden">
+                    <div className="border-b p-4">
+                      <TabsList className="grid w-full grid-cols-5 text-xs">
+                        <TabsTrigger value="geometry" className="text-sm">
+                          Geometry
+                        </TabsTrigger>
+                        <TabsTrigger value="material" className="text-sm">
+                          Material
+                        </TabsTrigger>
+                        <TabsTrigger value="textures" className="text-sm">
+                          Textures
+                        </TabsTrigger>
+                        <TabsTrigger value="environment" className="text-sm">
+                          Environment
+                        </TabsTrigger>
+                        <TabsTrigger value="background" className="text-sm">
+                          Background
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-4">
+                      <TabsContent
+                        value="geometry"
+                        key="geometry"
+                        className="mt-0">
+                        <GeometryControls />
+                      </TabsContent>
+
+                      <TabsContent
+                        value="material"
+                        key="material"
+                        className="mt-0">
+                        <MaterialControls />
+                      </TabsContent>
+
+                      <TabsContent
+                        value="textures"
+                        key="textures"
+                        className="mt-0">
+                        <TextureControls />
+                      </TabsContent>
+
+                      <TabsContent
+                        value="environment"
+                        key="environment"
+                        className="mt-0">
+                        <EnvironmentControls />
+                      </TabsContent>
+
+                      <TabsContent
+                        value="background"
+                        key="background"
+                        className="mt-0">
+                        <BackgroundControls />
+                      </TabsContent>
+                    </div>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            </ResizablePanel>
+            <ResizableHandle withHandle className="hidden xl:flex" />
+            <ResizablePanel
+              defaultSize={58}
+              minSize={30}
+              maxSize={80}
+              className="flex flex-col xl:order-last xl:col-span-7 xl:h-[calc(100vh-8rem)]">
+              <Card className="flex h-full w-full flex-col overflow-hidden border">
+                {!isMobile && (
+                  <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 backdrop-blur-xs [.border-b]:pb-4">
+                    <div>
+                      <CardTitle className="text-xl font-medium">
+                        Preview
+                      </CardTitle>
+                      <CardDescription className="mt-1 text-xs">
+                        {!svgData
+                          ? "Loading SVG data..."
+                          : isModelLoading
+                            ? "Processing SVG..."
+                            : "Interact with your 3D model"}
+                      </CardDescription>
+                    </div>
                     <TooltipProvider>
-                      <Tooltip delayDuration={100}>
-                        <TooltipTrigger asChild>
-                          <Button
-                            size="icon"
-                            variant={"ghost"}
-                            onClick={() => document.exitFullscreen()}
-                            aria-label="Exit fullscreen"
-                            className="hover:bg-background/80 pointer-events-auto absolute top-6 right-6 bg-transparent backdrop-blur-xs">
-                            <Minimize2 className="h-4 w-4" />
-                            <span className="sr-only">Exit fullscreen</span>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent
-                          side="left"
-                          align="center"
-                          sideOffset={10}
-                          className="z-[99999] px-4 text-sm"
-                          container={previewContainerRef.current}>
-                          Exit fullscreen
-                        </TooltipContent>
-                      </Tooltip>
+                      <div className="flex gap-2">
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => {
+                                resetEditor();
+                                toast.success(
+                                  "Editor settings reset to default",
+                                );
+                              }}
+                              aria-label="Reset editor settings">
+                              <RotateCcw className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="bottom"
+                            align="center"
+                            sideOffset={10}
+                            className="px-4 text-sm">
+                            Reset all settings
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => {
+                                if (isFullscreen) {
+                                  document.exitFullscreen();
+                                } else if (previewContainerRef.current) {
+                                  previewContainerRef.current.requestFullscreen();
+                                }
+                              }}
+                              aria-label={
+                                isFullscreen
+                                  ? "Exit fullscreen"
+                                  : "Enter fullscreen"
+                              }>
+                              {isFullscreen ? (
+                                <Minimize2 className="h-4 w-4" />
+                              ) : (
+                                <Maximize2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="bottom"
+                            align="center"
+                            sideOffset={10}
+                            className="px-4 text-sm">
+                            Full Screen
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                     </TooltipProvider>
-                  </div>
+                  </CardHeader>
                 )}
-              </div>
-            </Card>
-          </div>
-
-          {/* Desktop Controls */}
-          <div className="order-last hidden space-y-6 md:block xl:order-first xl:col-span-5">
-            <Card className="flex max-h-[50dvh] w-full flex-col overflow-hidden border lg:max-h-[55dvh] xl:max-h-[calc(100vh-8rem)]">
-              <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 pb-4 backdrop-blur-xs [.border-b]:pb-4">
-                <div>
-                  <CardTitle className="text-xl font-medium">
-                    Customize
-                  </CardTitle>
-                  <CardDescription className="mt-1 truncate text-xs">
-                    {fileName || "Loading..."}
-                  </CardDescription>
+                <div className="relative grow" ref={previewContainerRef}>
+                  {renderModelPreview()}
+                  {isFullscreen && (
+                    <div className="pointer-events-none absolute inset-0">
+                      <TooltipProvider>
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant={"ghost"}
+                              onClick={() => document.exitFullscreen()}
+                              aria-label="Exit fullscreen"
+                              className="hover:bg-background/80 pointer-events-auto absolute top-6 right-6 bg-transparent backdrop-blur-xs">
+                              <Minimize2 className="h-4 w-4" />
+                              <span className="sr-only">Exit fullscreen</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="left"
+                            align="center"
+                            sideOffset={10}
+                            className="z-[99999] px-4 text-sm"
+                            container={previewContainerRef.current}>
+                            Exit fullscreen
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  )}
                 </div>
-              </CardHeader>
-              <CardContent className="flex flex-1 flex-col overflow-hidden p-0">
-                <Tabs
-                  defaultValue="geometry"
-                  className="flex flex-1 flex-col overflow-y-hidden">
-                  <div className="border-b p-4">
-                    <TabsList className="grid w-full grid-cols-5 text-xs">
-                      <TabsTrigger value="geometry" className="text-sm">
-                        Geometry
-                      </TabsTrigger>
-                      <TabsTrigger value="material" className="text-sm">
-                        Material
-                      </TabsTrigger>
-                      <TabsTrigger value="textures" className="text-sm">
-                        Textures
-                      </TabsTrigger>
-                      <TabsTrigger value="environment" className="text-sm">
-                        Environment
-                      </TabsTrigger>
-                      <TabsTrigger value="background" className="text-sm">
-                        Background
-                      </TabsTrigger>
-                    </TabsList>
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto p-4">
-                    <TabsContent
-                      value="geometry"
-                      key="geometry"
-                      className="mt-0">
-                      <GeometryControls />
-                    </TabsContent>
-
-                    <TabsContent
-                      value="material"
-                      key="material"
-                      className="mt-0">
-                      <MaterialControls />
-                    </TabsContent>
-
-                    <TabsContent
-                      value="textures"
-                      key="textures"
-                      className="mt-0">
-                      <TextureControls />
-                    </TabsContent>
-
-                    <TabsContent
-                      value="environment"
-                      key="environment"
-                      className="mt-0">
-                      <EnvironmentControls />
-                    </TabsContent>
-
-                    <TabsContent
-                      value="background"
-                      key="background"
-                      className="mt-0">
-                      <BackgroundControls />
-                    </TabsContent>
-                  </div>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              </Card>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        )}
 
         {/* Mobile Controls Sheet */}
         {isMobile && (
-          <div className="bg-background/98 border-border/50 flex-shrink-0 border-t backdrop-blur-xl">
-            <div className="pb-safe h-[30vh] overflow-y-auto p-3">
+          <div className="bg-background/98 border-border/50 h-[calc(100vh-8rem-40vh)] flex-shrink-0 border-t backdrop-blur-xl">
+            <div className="h-full space-y-4 overflow-y-auto p-3">
               {activeMobileTab === "geometry" && <GeometryControls />}
               {activeMobileTab === "material" && <MaterialControls />}
               {activeMobileTab === "textures" && <TextureControls />}
