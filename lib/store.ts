@@ -159,7 +159,7 @@ export const useEditorStore = create<EditorState>((set) => ({
 
   textureEnabled: false,
   texturePreset: "oak",
-  textureScale: { x: 25, y: 25 },
+  textureScale: { x: 100, y: 100 },
 
   useEnvironment: true,
   environmentPreset: "apartment",
@@ -303,7 +303,7 @@ export const useEditorStore = create<EditorState>((set) => ({
 
       textureEnabled: false,
       texturePreset: "oak",
-      textureScale: { x: 25, y: 25 },
+      textureScale: { x: 100, y: 100 },
 
       useEnvironment: true,
       environmentPreset: "apartment",

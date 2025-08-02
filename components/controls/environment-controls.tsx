@@ -162,7 +162,7 @@ export function EnvironmentControls() {
 
               <button
                 key="custom-preset"
-                className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 sm:aspect-square sm:w-auto ${
+                className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                   environmentPreset === "custom"
                     ? "bg-secondary"
                     : "hover:bg-secondary/50 hover:border-secondary"

@@ -28,17 +28,6 @@ export function TextureControls() {
     }
   };
 
-  const texturesByCategory = TEXTURE_PRESETS.reduce(
-    (acc, texture) => {
-      if (!acc[texture.category]) {
-        acc[texture.category] = [];
-      }
-      acc[texture.category].push(texture);
-      return acc;
-    },
-    {} as Record<string, typeof TEXTURE_PRESETS>,
-  );
-
   const getTexturePreview = (texture: (typeof TEXTURE_PRESETS)[0]) => {
     if (texture.previewImage) {
       return (
@@ -47,7 +36,7 @@ export function TextureControls() {
           alt={texture.label}
           width={100}
           height={100}
-          className="h-full w-full rounded-md object-cover"
+          className="h-full w-full rounded-b-none object-cover"
         />
       );
     }
@@ -99,51 +88,53 @@ export function TextureControls() {
 
       {textureEnabled && (
         <div className="space-y-6">
-          <div className="space-y-6">
-            {Object.entries(texturesByCategory).map(([category, textures]) => (
-              <div key={category} className="space-y-3">
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-                  {textures.map((texture) => (
-                    <button
-                      key={texture.name}
-                      className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
-                        texturePreset === texture.name
-                          ? "bg-secondary"
-                          : "hover:bg-secondary/50 hover:border-secondary"
-                      }`}
-                      onClick={() => setTexturePreset(texture.name)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          setTexturePreset(texture.name);
-                        }
-                      }}
-                      type="button">
-                      <div className="relative flex h-full flex-col">
-                        <div className="bg-muted/20 absolute inset-0 rounded-md" />
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+            {TEXTURE_PRESETS.map((texture) => (
+              <button
+                key={texture.name}
+                className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                  texturePreset === texture.name
+                    ? "bg-secondary"
+                    : "hover:bg-secondary/50 hover:border-secondary"
+                }`}
+                onClick={() => setTexturePreset(texture.name)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    setTexturePreset(texture.name);
+                  }
+                }}
+                type="button">
+                <div className="relative flex h-full flex-col">
+                  <div className="bg-muted/5 absolute inset-0" />
 
-                        <div className="relative flex flex-1 items-center justify-center">
-                          <div className="h-14 w-14 overflow-hidden rounded-md">
-                            {getTexturePreview(texture)}
-                          </div>
-                        </div>
-
-                        <div className="bg-primary/10 px-2 py-1.5 text-center">
-                          <p className="text-foreground text-xs leading-tight font-medium">
-                            {texture.label}
-                          </p>
-                        </div>
+                  <div className="relative flex flex-1 items-center justify-center">
+                    <div
+                      className="relative h-full w-full overflow-hidden rounded-b-none"
+                      style={{
+                        backgroundColor: "var(--input)",
+                        border: "1px solid hsl(var(--primary)/0.4)",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                      }}>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        {getTexturePreview(texture)}
                       </div>
-                    </button>
-                  ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-primary/10 px-2 py-1.5 text-center">
+                    <p className="text-foreground text-xs leading-tight font-medium">
+                      {texture.label}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
 
           <div className="space-y-4 border-t pt-4">
             <div className="space-y-4 pt-2">
               <Label>Texture Scale</Label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 pb-2">
                 <div className="space-y-2">
                   <Label
                     htmlFor="textureScaleX"
@@ -155,9 +146,9 @@ export function TextureControls() {
                   </Label>
                   <Slider
                     id="textureScaleX"
-                    min={5}
-                    max={100}
-                    step={1}
+                    min={10}
+                    max={200}
+                    step={10}
                     value={[textureScale.x]}
                     onValueChange={(value) =>
                       setTextureScale({ ...textureScale, x: value[0] })
@@ -175,43 +166,14 @@ export function TextureControls() {
                   </Label>
                   <Slider
                     id="textureScaleY"
-                    min={5}
-                    max={100}
-                    step={1}
+                    min={10}
+                    max={200}
+                    step={10}
                     value={[textureScale.y]}
                     onValueChange={(value) =>
                       setTextureScale({ ...textureScale, y: value[0] })
                     }
                   />
-                </div>
-              </div>
-
-              <div className="border-primary/10 border-t pt-3">
-                <Label className="text-muted-foreground mb-2 block text-xs">
-                  Quick Scale Presets
-                </Label>
-                <div className="grid grid-cols-3 gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setTextureScale({ x: 25, y: 25 })}
-                    className="h-8 text-xs">
-                    25x
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setTextureScale({ x: 50, y: 50 })}
-                    className="h-8 text-xs">
-                    50x
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setTextureScale({ x: 75, y: 75 })}
-                    className="h-8 text-xs">
-                    75x
-                  </Button>
                 </div>
               </div>
             </div>
