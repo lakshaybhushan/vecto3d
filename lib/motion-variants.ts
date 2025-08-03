@@ -216,7 +216,6 @@ export const continueButtonContainerVariants = {
 export const continueButtonVariants = {
   initial: {
     opacity: 0,
-    scale: 0.95,
     y: 8,
     transform: "translate3d(0, 0, 0)",
   },

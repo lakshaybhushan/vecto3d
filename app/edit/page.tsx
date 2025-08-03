@@ -48,7 +48,11 @@ import { BackgroundControls } from "@/components/controls/background-controls";
 import { ExportButtons } from "@/components/forms/export-buttons";
 
 import { useDebounce } from "@/hooks/use-debounce";
-import { useMobileDetection } from "@/hooks/use-mobile-detection";
+import {
+  useMobileDetection,
+  useIOSDetection,
+  useFullscreenSupport,
+} from "@/hooks/use-mobile-detection";
 import { useTexturePreloader } from "@/hooks/use-texture-preloader";
 import { useEditorStore } from "@/lib/store";
 import { DARK_MODE_COLOR, LIGHT_MODE_COLOR } from "@/lib/constants";
@@ -329,6 +333,8 @@ export default function EditPage() {
 
   const router = useRouter();
   const { isMobile, clearMobilePreference } = useMobileDetection();
+  const isIOS = useIOSDetection();
+  const isFullscreenSupported = useFullscreenSupport();
 
   // Initialize texture preloader
   useTexturePreloader(true);
@@ -447,11 +453,11 @@ export default function EditPage() {
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              size="sm"
+              size={isMobile ? "icon" : "sm"}
               onClick={handleBackToHome}
               aria-label="Back to home">
-              <ChevronLeft className="-ml-1 h-4 w-4" />
-              <span className="-ml-0.5 hidden sm:inline">Home</span>
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Home</span>
             </Button>
             {isMobile && (
               <div className="ml-2">
@@ -484,36 +490,40 @@ export default function EditPage() {
                       Reset all settings
                     </TooltipContent>
                   </Tooltip>
-                  <Tooltip delayDuration={100}>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => {
-                          if (isFullscreen) {
-                            document.exitFullscreen();
-                          } else if (previewContainerRef.current) {
-                            previewContainerRef.current.requestFullscreen();
-                          }
-                        }}
-                        aria-label={
-                          isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
-                        }>
-                        {isFullscreen ? (
-                          <Minimize2 className="h-4 w-4" />
-                        ) : (
-                          <Maximize2 className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      side="bottom"
-                      align="center"
-                      sideOffset={10}
-                      className="px-4 text-sm">
-                      Full Screen
-                    </TooltipContent>
-                  </Tooltip>
+                  {isFullscreenSupported && !isIOS && (
+                    <Tooltip delayDuration={100}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            if (isFullscreen) {
+                              document.exitFullscreen();
+                            } else if (previewContainerRef.current) {
+                              previewContainerRef.current.requestFullscreen();
+                            }
+                          }}
+                          aria-label={
+                            isFullscreen
+                              ? "Exit fullscreen"
+                              : "Enter fullscreen"
+                          }>
+                          {isFullscreen ? (
+                            <Minimize2 className="h-4 w-4" />
+                          ) : (
+                            <Maximize2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="bottom"
+                        align="center"
+                        sideOffset={10}
+                        className="px-4 text-sm">
+                        Full Screen
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                 </div>
               </TooltipProvider>
             )}
@@ -895,7 +905,7 @@ export default function EditPage() {
                 )}
                 <div className="relative grow" ref={previewContainerRef}>
                   {renderModelPreview()}
-                  {isFullscreen && (
+                  {isFullscreen && isFullscreenSupported && !isIOS && (
                     <div className="pointer-events-none absolute inset-0">
                       <TooltipProvider>
                         <Tooltip delayDuration={100}>

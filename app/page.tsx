@@ -4,6 +4,26 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
+import { useMobileDetection } from "@/hooks/use-mobile-detection";
+import { RainbowButton } from "@/components/ui/rainbow-button";
+import Footer from "@/components/layouts/footer";
+import Nav from "@/components/layouts/nav";
+import AnimatedLogo from "@/components/ui/animated-logo";
+import BackgroundEffect from "@/components/ui/background-effect";
+import {
+  loadingOverlayVariants,
+  loadingLogoVariants,
+  titleSpanVariants,
+  fileUploadVariants,
+  helpTextVariants,
+  continueButtonVariants,
+  continueButtonContainerVariants,
+  staggeredContainerVariants,
+  staggeredItemVariants,
+  pageTransitionVariants,
+  titleContainerVariants,
+} from "@/lib/motion-variants";
+import { useEditorStore } from "@/lib/store";
 
 const FileUpload = dynamic(
   () =>
@@ -30,26 +50,6 @@ const FileUpload = dynamic(
     ),
   },
 );
-import { useMobileDetection } from "@/hooks/use-mobile-detection";
-import { RainbowButton } from "@/components/ui/rainbow-button";
-import Footer from "@/components/layouts/footer";
-import Nav from "@/components/layouts/nav";
-import AnimatedLogo from "@/components/ui/animated-logo";
-import BackgroundEffect from "@/components/ui/background-effect";
-import {
-  loadingOverlayVariants,
-  loadingLogoVariants,
-  titleSpanVariants,
-  fileUploadVariants,
-  helpTextVariants,
-  continueButtonVariants,
-  continueButtonContainerVariants,
-  staggeredContainerVariants,
-  staggeredItemVariants,
-  pageTransitionVariants,
-  titleContainerVariants,
-} from "@/lib/motion-variants";
-import { useEditorStore } from "@/lib/store";
 
 export default function Home() {
   const router = useRouter();
@@ -128,7 +128,9 @@ export default function Home() {
 
   return (
     <motion.main
-      className="safari-fix relative flex h-screen w-full flex-col overflow-hidden"
+      className={`safari-fix relative flex w-full flex-col ${
+        isMobile ? "min-h-screen overflow-y-auto" : "h-screen overflow-hidden"
+      }`}
       variants={pageTransitionVariants}
       initial="initial"
       animate="animate"
@@ -164,15 +166,15 @@ export default function Home() {
       </AnimatePresence>
 
       <motion.div
-        className={`flex flex-1 flex-col items-center justify-center ${
+        className={`flex flex-col items-center justify-center ${
           isMobile
-            ? "gap-2 px-4 py-1"
-            : "px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 lg:px-12"
-        } overflow-hidden`}
+            ? "flex-1 gap-2 p-4"
+            : "flex-1 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 lg:px-12"
+        } ${isMobile ? "" : "overflow-hidden"}`}
         variants={staggeredContainerVariants}
         initial="initial"
         animate="animate"
-        style={{ minHeight: 0 }}>
+        style={{ minHeight: isMobile ? "auto" : 0 }}>
         <motion.div
           className={`${
             isMobile ? "mb-2" : "mb-4 md:mb-6"
@@ -204,7 +206,9 @@ export default function Home() {
         </motion.div>
 
         <motion.div
-          className="mx-auto flex max-h-full w-fit flex-shrink-0 flex-col items-center justify-center"
+          className={`mx-auto flex w-fit flex-col items-center justify-center ${
+            isMobile ? "flex-shrink-0" : "max-h-full flex-shrink-0"
+          }`}
           variants={staggeredItemVariants}>
           <motion.div
             className="w-full"
@@ -234,7 +238,7 @@ export default function Home() {
           <motion.div
             ref={continueButtonSectionRef}
             className={`${
-              isMobile ? "mt-3" : "mt-5"
+              isMobile ? "mt-2" : "mt-3"
             } flex items-center justify-center`}>
             <AnimatePresence mode="wait">
               {svgData && (
@@ -253,7 +257,7 @@ export default function Home() {
                     exit="exit"
                     layout>
                     <RainbowButton
-                      className="mx-auto w-full max-w-[16rem] rounded-md py-4"
+                      className="mx-auto w-full max-w-[16rem] rounded-md"
                       onClick={handleContinue}
                       disabled={isLoading}>
                       {isLoading ? "Processing..." : "Continue to Editor"}
@@ -266,7 +270,7 @@ export default function Home() {
         </motion.div>
       </motion.div>
       <motion.div
-        className={`flex-shrink-0 ${isMobile ? "pb-1" : ""}`}
+        className={`flex-shrink-0 ${isMobile ? "pb-4" : ""}`}
         variants={staggeredItemVariants}>
         <Footer />
       </motion.div>

@@ -75,3 +75,44 @@ export function useSafariDetection() {
 
   return isSafari;
 }
+
+/**
+ * Hook to detect iOS devices
+ * @returns boolean indicating if the device is iOS
+ */
+export function useIOSDetection() {
+  const [isIOS, setIsIOS] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userAgent = window.navigator.userAgent;
+      const isIOSDevice = /iPad|iPhone|iPod/.test(userAgent);
+      setIsIOS(isIOSDevice);
+    }
+  }, []);
+
+  return isIOS;
+}
+
+/**
+ * Hook to detect if fullscreen API is supported
+ * @returns boolean indicating if fullscreen API is available
+ */
+export function useFullscreenSupport() {
+  const [isFullscreenSupported, setIsFullscreenSupported] =
+    useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hasFullscreenSupport = !!(
+        document.fullscreenEnabled ||
+        (document as any).webkitFullscreenEnabled ||
+        (document as any).mozFullScreenEnabled ||
+        (document as any).msFullscreenEnabled
+      );
+      setIsFullscreenSupported(hasFullscreenSupport);
+    }
+  }, []);
+
+  return isFullscreenSupported;
+}
