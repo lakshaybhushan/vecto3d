@@ -28,7 +28,7 @@ const clashGrotesk = LocalFont({
 });
 
 export const metadata: Metadata = {
-  title: "Vecto3d — Convert SVGs to 3D",
+  title: "Vecto3d - Convert SVGs to 3D",
   description: "A super simple tool to convert SVG logos to 3D models",
   icons: {
     icon: [
@@ -37,16 +37,16 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "Vecto3d — Convert SVGs to 3D",
+    title: "Vecto3d - Convert SVGs to 3D",
     description: "A super simple tool to convert SVG logos to 3D models",
     url: "https://vecto3d.xyz/",
-    siteName: "Vecto3d — Convert SVGs to 3D",
+    siteName: "Vecto3d - Convert SVGs to 3D",
     images: [
       {
         url: "/opengraph-image-v1.png",
         width: 1200,
         height: 675,
-        alt: "Vecto3d — Convert SVGs to 3D",
+        alt: "Vecto3d - Convert SVGs to 3D",
       },
     ],
     locale: "en_US",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vecto3d — Convert SVGs to 3D",
+    title: "Vecto3d - Convert SVGs to 3D",
     description: "A super simple tool to convert SVG logos to 3D models",
     images: ["/twitter-image-v1.png"],
   },

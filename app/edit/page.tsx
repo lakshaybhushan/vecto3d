@@ -677,21 +677,26 @@ export default function EditPage() {
                     defaultValue="geometry"
                     className="flex flex-1 flex-col overflow-y-hidden">
                     <div className="border-b p-4">
-                      <TabsList className="grid w-full grid-cols-5 text-xs">
+                      <TabsList className="w-full text-xs">
                         <TabsTrigger value="geometry" className="text-sm">
-                          Geometry
+                          <Box className="h-4 w-4 shrink-0" />
+                          <span className="truncate">Geometry</span>
                         </TabsTrigger>
                         <TabsTrigger value="material" className="text-sm">
-                          Material
+                          <Palette className="h-4 w-4 shrink-0" />
+                          <span className="truncate">Material</span>
                         </TabsTrigger>
                         <TabsTrigger value="textures" className="text-sm">
-                          Textures
+                          <Image className="h-4 w-4 shrink-0" />
+                          <span className="truncate">Textures</span>
                         </TabsTrigger>
                         <TabsTrigger value="environment" className="text-sm">
-                          Environment
+                          <Mountain className="h-4 w-4 shrink-0" />
+                          <span className="truncate">Environment</span>
                         </TabsTrigger>
                         <TabsTrigger value="background" className="text-sm">
-                          Background
+                          <Monitor className="h-4 w-4 shrink-0" />
+                          <span className="truncate">Background</span>
                         </TabsTrigger>
                       </TabsList>
                     </div>
@@ -742,9 +747,9 @@ export default function EditPage() {
             direction="horizontal"
             className="h-full w-full gap-2 md:gap-4">
             <ResizablePanel
-              defaultSize={42}
-              minSize={20}
-              maxSize={70}
+              defaultSize={40}
+              minSize={35}
+              maxSize={80}
               className="flex flex-col xl:order-first xl:col-span-5">
               <Card className="flex max-h-[50dvh] w-full flex-col overflow-hidden border lg:max-h-[55dvh] xl:max-h-[calc(100vh-8rem)]">
                 <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 pb-4 backdrop-blur-xs [.border-b]:pb-4">
@@ -762,21 +767,26 @@ export default function EditPage() {
                     defaultValue="geometry"
                     className="flex flex-1 flex-col overflow-y-hidden">
                     <div className="border-b p-4">
-                      <TabsList className="grid w-full grid-cols-5 text-xs">
+                      <TabsList className="w-full text-xs">
                         <TabsTrigger value="geometry" className="text-sm">
-                          Geometry
+                          <Box className="h-4 w-4 shrink-0" />
+                          <span className="truncate">Geometry</span>
                         </TabsTrigger>
                         <TabsTrigger value="material" className="text-sm">
-                          Material
+                          <Palette className="h-4 w-4 shrink-0" />
+                          <span className="truncate">Material</span>
                         </TabsTrigger>
                         <TabsTrigger value="textures" className="text-sm">
-                          Textures
+                          <Image className="h-4 w-4 shrink-0" />
+                          <span className="truncate">Textures</span>
                         </TabsTrigger>
                         <TabsTrigger value="environment" className="text-sm">
-                          Environment
+                          <Mountain className="h-4 w-4 shrink-0" />
+                          <span className="truncate">Environment</span>
                         </TabsTrigger>
                         <TabsTrigger value="background" className="text-sm">
-                          Background
+                          <Monitor className="h-4 w-4 shrink-0" />
+                          <span className="truncate">Background</span>
                         </TabsTrigger>
                       </TabsList>
                     </div>
