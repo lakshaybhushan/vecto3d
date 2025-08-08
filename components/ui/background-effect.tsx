@@ -11,6 +11,7 @@ import {
 } from "@/lib/motion-variants";
 import * as THREE from "three";
 import { memoryManager } from "@/lib/memory-manager";
+import { useMobileDetection } from "@/hooks/use-mobile-detection";
 
 const vertexShader = `
   varying vec2 vUv;
@@ -25,6 +26,7 @@ const fragmentShader = `
   uniform float iTime;
   uniform vec2 iResolution;
   uniform float isDark;
+  uniform vec2 iDrift;
   varying vec2 vUv;
 
   float rand(vec2 n) {
@@ -64,11 +66,12 @@ const fragmentShader = `
   }
 
   void main() {
-    // Correct UV scaling based on screen aspect ratio to prevent stretching on narrow/wide viewports
     float aspect = iResolution.x / iResolution.y;
     vec2 uv = vUv;
     uv.x *= aspect;
-    uv *= 3.5;
+    vec2 drift = iDrift;
+    drift.x *= aspect;
+    uv = uv * 4.0 + drift * 0.5;
     float shade = pattern(uv);
 
     if (isDark > 0.5) {
@@ -95,11 +98,21 @@ const fragmentShader = `
   }
 `;
 
-function BackgroundShader({ isDark }: { isDark: boolean }) {
+function BackgroundShader({
+  isDark,
+  isDesktop,
+}: {
+  isDark: boolean;
+  isDesktop: boolean;
+}) {
   const meshRef = useRef<THREE.Mesh>(null!);
   const { viewport } = useThree();
   const [dimensions, setDimensions] = useState({ width: 1920, height: 1080 });
   const materialRef = useRef<THREE.ShaderMaterial | null>(null);
+  const driftVelocityRef = useRef(new THREE.Vector2(0, 0));
+  const targetVelocityRef = useRef(new THREE.Vector2(0, 0));
+  const driftOffsetRef = useRef(new THREE.Vector2(0, 0));
+  const lastPointerPosRef = useRef<{ x: number; y: number } | null>(null);
 
   const uniforms = useRef({
     iTime: { value: 0 },
@@ -107,6 +120,7 @@ function BackgroundShader({ isDark }: { isDark: boolean }) {
       value: new THREE.Vector2(dimensions.width, dimensions.height),
     },
     isDark: { value: isDark ? 1.0 : 0.0 },
+    iDrift: { value: new THREE.Vector2(0, 0) },
   });
 
   useEffect(() => {
@@ -128,12 +142,77 @@ function BackgroundShader({ isDark }: { isDark: boolean }) {
     }
   }, []);
 
-  useFrame((state) => {
+  useFrame((state, frameDelta) => {
     const mesh = meshRef.current;
     if (mesh) {
       uniforms.current.iTime.value = state.clock.elapsedTime;
+      const dt = Math.min(Math.max(frameDelta, 0.001), 0.033);
+      const response = 5.0;
+      const friction = 1.4;
+      const lerpFactor = 1 - Math.exp(-dt * response);
+      driftVelocityRef.current.lerp(targetVelocityRef.current, lerpFactor);
+      driftVelocityRef.current.multiplyScalar(Math.exp(-dt * friction));
+      driftOffsetRef.current.addScaledVector(driftVelocityRef.current, dt);
+      uniforms.current.iDrift.value.copy(driftOffsetRef.current);
     }
   });
+
+  useEffect(() => {
+    if (!isDesktop) {
+      targetVelocityRef.current.set(0, 0);
+      return;
+    }
+    const applyMove = (
+      dx: number,
+      dy: number,
+      clientX: number,
+      clientY: number,
+    ) => {
+      const width = window.innerWidth || 1;
+      const height = window.innerHeight || 1;
+      let localDx = dx;
+      let localDy = dy;
+      if (localDx === 0 && localDy === 0) {
+        const last = lastPointerPosRef.current;
+        if (last) {
+          localDx = clientX - last.x;
+          localDy = clientY - last.y;
+        }
+      }
+      lastPointerPosRef.current = { x: clientX, y: clientY };
+      const dir = new THREE.Vector2(localDx, localDy);
+      const mag = dir.length();
+      if (mag > 0) dir.divideScalar(mag);
+      const speedFactor = Math.min(mag / 50, 1);
+      const maxSpeed = 0.1;
+      const normScaleX = 1 / Math.max(width, 1);
+      const normScaleY = 1 / Math.max(height, 1);
+      const velocity = new THREE.Vector2(
+        dir.x * maxSpeed * speedFactor * (width * normScaleX),
+        -dir.y * maxSpeed * speedFactor * (height * normScaleY),
+      );
+      targetVelocityRef.current.copy(velocity);
+    };
+    const handlePointerMove = (e: PointerEvent) => {
+      applyMove(e.movementX ?? 0, e.movementY ?? 0, e.clientX, e.clientY);
+    };
+    const handleMouseMove = (e: MouseEvent) => {
+      applyMove(e.movementX ?? 0, e.movementY ?? 0, e.clientX, e.clientY);
+    };
+    const handlePointerLeave = () => {
+      targetVelocityRef.current.set(0, 0);
+    };
+    window.addEventListener("pointermove", handlePointerMove);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseleave", handlePointerLeave);
+    window.addEventListener("blur", handlePointerLeave);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseleave", handlePointerLeave);
+      window.removeEventListener("blur", handlePointerLeave);
+    };
+  }, [isDesktop]);
 
   useEffect(() => {
     const material = materialRef.current;
@@ -178,6 +257,7 @@ export default function BackgroundEffect() {
   const [viewportHeight, setViewportHeight] = useState(0);
   const { resolvedTheme } = useTheme();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const { isMobile } = useMobileDetection();
 
   useEffect(() => {
     setMounted(true);
@@ -270,7 +350,7 @@ export default function BackgroundEffect() {
           }}
           style={{ background: isDark ? "#000000" : "#ffffff" }}
           dpr={[1, 2]}>
-          <BackgroundShader isDark={isDark} />
+          <BackgroundShader isDark={isDark} isDesktop={!isMobile} />
         </Canvas>
       </motion.div>
     </motion.div>
