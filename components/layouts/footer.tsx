@@ -12,7 +12,7 @@ import {
 export default function Footer() {
   return (
     <motion.footer
-      className="w-full px-8 py-4"
+      className="w-full p-4"
       variants={footerVariants}
       initial="initial"
       animate="animate"

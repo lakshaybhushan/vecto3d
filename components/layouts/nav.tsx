@@ -30,7 +30,7 @@ export default function Nav() {
 
   return (
     <motion.header
-      className="flex w-full items-center justify-between px-8 py-4"
+      className="flex w-full items-center justify-between p-4"
       variants={navigationVariants}
       initial="initial"
       animate="animate"
