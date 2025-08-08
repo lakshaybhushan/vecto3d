@@ -434,7 +434,6 @@ export default function EditPage() {
 
   return (
     <main className="bg-background safari-fix relative flex h-screen w-full flex-col overflow-hidden">
-      {/* Include the separated logic components */}
       <SvgProcessingLogic />
       <BackgroundThemeManager />
       <HdriCleanupManager />
@@ -446,10 +445,7 @@ export default function EditPage() {
             ? "bg-background/95 flex-shrink-0 backdrop-blur-xl"
             : "sticky top-0"
         }`}>
-        <div
-          className={`flex items-center justify-between ${
-            isMobile ? "p-4" : "px-4 py-3 md:px-6 md:py-4 xl:px-8"
-          }`}>
+        <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -540,7 +536,7 @@ export default function EditPage() {
       </header>
 
       <div
-        className={`flex-1 ${isMobile ? "flex flex-col gap-0 overflow-hidden" : "px-4 py-4 md:px-6 md:py-6 xl:px-8 xl:py-8"}`}>
+        className={`flex-1 ${isMobile ? "flex flex-col gap-0 overflow-hidden" : "px-4 py-4"}`}>
         {isMobile ? (
           <div
             key="editor-content"
@@ -745,13 +741,13 @@ export default function EditPage() {
         ) : (
           <ResizablePanelGroup
             direction="horizontal"
-            className="h-full w-full gap-2 md:gap-4">
+            className="h-full w-full gap-1.5">
             <ResizablePanel
               defaultSize={40}
               minSize={35}
               maxSize={80}
               className="flex flex-col xl:order-first xl:col-span-5">
-              <Card className="flex max-h-[50dvh] w-full flex-col overflow-hidden border lg:max-h-[55dvh] xl:max-h-[calc(100vh-8rem)]">
+              <Card className="flex h-fit w-full flex-col overflow-hidden border">
                 <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 pb-4 backdrop-blur-xs [.border-b]:pb-4">
                   <div>
                     <CardTitle className="text-xl font-medium">
@@ -831,12 +827,12 @@ export default function EditPage() {
                 </CardContent>
               </Card>
             </ResizablePanel>
-            <ResizableHandle withHandle className="hidden xl:flex" />
+            <ResizableHandle className="hidden xl:flex" />
             <ResizablePanel
               defaultSize={58}
               minSize={30}
               maxSize={80}
-              className="flex flex-col xl:order-last xl:col-span-7 xl:h-[calc(100vh-8rem)]">
+              className="flex flex-col xl:order-last xl:col-span-7">
               <Card className="flex h-full w-full flex-col overflow-hidden border">
                 {!isMobile && (
                   <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 backdrop-blur-xs [.border-b]:pb-4">
