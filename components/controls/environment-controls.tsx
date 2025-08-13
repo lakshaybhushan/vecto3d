@@ -10,6 +10,77 @@ import { motion } from "framer-motion";
 import { useEditorStore } from "@/lib/store";
 import { Switch } from "@/components/ui/switch";
 
+type Rgb = { r: number; g: number; b: number };
+
+function hexToRgb(hex: string): Rgb {
+  const normalized = hex.replace("#", "");
+  const bigint = parseInt(
+    normalized.length === 3
+      ? normalized
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : normalized,
+    16,
+  );
+  return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function adjustColor(hex: string, amount: number) {
+  const { r, g, b } = hexToRgb(hex);
+  const nr = clamp(Math.round(r + 255 * amount), 0, 255);
+  const ng = clamp(Math.round(g + 255 * amount), 0, 255);
+  const nb = clamp(Math.round(b + 255 * amount), 0, 255);
+  return `rgb(${nr}, ${ng}, ${nb})`;
+}
+
+function withAlpha(hex: string, alpha: number) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function getLuminance(hex: string) {
+  const { r, g, b } = hexToRgb(hex);
+  const sr = r / 255;
+  const sg = g / 255;
+  const sb = b / 255;
+  const R = sr <= 0.03928 ? sr / 12.92 : Math.pow((sr + 0.055) / 1.055, 2.4);
+  const G = sg <= 0.03928 ? sg / 12.92 : Math.pow((sg + 0.055) / 1.055, 2.4);
+  const B = sb <= 0.03928 ? sb / 12.92 : Math.pow((sb + 0.055) / 1.055, 2.4);
+  return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+}
+
+function buildHorizonGradient(hex: string) {
+  const base = hex;
+  const sky = adjustColor(base, 0.12);
+  const mid = adjustColor(base, 0.02);
+  const ground = adjustColor(base, -0.22);
+  return `linear-gradient(180deg, ${sky} 0%, ${mid} 48%, ${ground} 100%)`;
+}
+
+function buildVignetteOverlay(hex: string) {
+  return `radial-gradient(120% 100% at 50% 0%, ${withAlpha("#000000", 0.14)} 0%, transparent 52%), radial-gradient(80% 60% at 50% 100%, ${withAlpha("#000000", 0.18)} 0%, transparent 68%)`;
+}
+
+function buildSphereGradient(hex: string) {
+  const fill = withAlpha(hex, 0.85);
+  const highlight = withAlpha("#ffffff", 0.65);
+  const highlightSoft = withAlpha("#ffffff", 0.18);
+  const rim = withAlpha(hex, 0.8);
+  const body = withAlpha(hex, 0.55);
+  const base = withAlpha("#000000", 0.18);
+  return [
+    `radial-gradient(circle at 30% 28%, ${highlight} 0%, ${highlightSoft} 22%, transparent 36%)`,
+    `radial-gradient(circle at 70% 70%, ${rim} 0%, ${body} 45%, transparent 80%)`,
+    `radial-gradient(circle at 50% 90%, ${base} 0%, transparent 60%)`,
+    `radial-gradient(circle at 50% 50%, ${fill} 0%, ${fill} 100%)`,
+  ].join(", ");
+}
+
 export function EnvironmentControls() {
   const useEnvironment = useEditorStore((state) => state.useEnvironment);
   const setUseEnvironment = useEditorStore((state) => state.setUseEnvironment);
@@ -122,35 +193,20 @@ export function EnvironmentControls() {
                       handlePresetChange(preset.name);
                     }
                   }}
+                  aria-label={preset.label}
+                  aria-pressed={environmentPreset === preset.name}
                   type="button">
                   <div className="relative flex h-full flex-col">
-                    <div className="bg-muted/5 absolute inset-0 rounded-md" />
-
-                    <div className="relative flex flex-1 items-center justify-center">
-                      <div
-                        className="relative h-14 w-14 rounded-full border border-white/20 shadow-lg"
-                        style={{
-                          background: `radial-gradient(circle at 30% 30%, ${preset.color}40 0%, ${preset.color}80 25%, ${preset.color} 60%, ${preset.color.replace("#", "#").slice(0, 4)}${preset.color.slice(4)}CC 85%, ${preset.color.replace("#", "#").slice(0, 4)}${preset.color.slice(4)}AA 100%)`,
-                          boxShadow: `
-                            0 6px 20px ${preset.color}25,
-                            inset 0 2px 0 rgba(255,255,255,0.3),
-                            inset 0 -1px 0 rgba(0,0,0,0.15)
-                          `,
-                        }}>
-                        <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-white/40 blur-[1px]" />
-                        <div className="absolute top-2.5 left-2.5 h-1.5 w-1.5 rounded-full bg-white/80" />
-                        {preset.name === "sunset" && (
-                          <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-orange-300/60 blur-[1px]" />
-                        )}
-                        {preset.name === "studio" && (
-                          <div className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-white/60" />
-                        )}
-                        {preset.name === "dawn" && (
-                          <div className="absolute right-2 bottom-2 h-2 w-2 rounded-full bg-pink-300/50 blur-[1px]" />
-                        )}
+                    <div className="relative flex flex-1 items-center justify-center overflow-hidden">
+                      <div className="relative z-10 mb-0 flex items-center justify-center">
+                        <div
+                          className="h-12 w-12 rounded-full border border-white/20 shadow-md shadow-black/20 sm:h-14 sm:w-14"
+                          style={{
+                            background: buildSphereGradient(preset.color),
+                          }}
+                        />
                       </div>
                     </div>
-
                     <div className="bg-primary/10 px-2 py-1.5 text-center">
                       <p className="text-foreground text-xs leading-tight font-medium">
                         {preset.label}
@@ -183,6 +239,8 @@ export function EnvironmentControls() {
                     }
                   }
                 }}
+                aria-label={customHdriUrl ? "Custom" : "Upload custom image"}
+                aria-pressed={environmentPreset === "custom"}
                 type="button">
                 <input
                   ref={hdriFileInputRef}
@@ -193,17 +251,14 @@ export function EnvironmentControls() {
                 />
                 {customHdriUrl ? (
                   <div className="relative flex h-full flex-col">
-                    <div className="bg-muted/20 absolute inset-0 rounded-md" />
-
-                    <div className="relative flex flex-1 items-center justify-center">
-                      <div
-                        className="h-12 w-12 rounded-full border border-white/20 bg-cover bg-center shadow-sm sm:h-14 sm:w-14"
-                        style={{
-                          backgroundImage: `url(${customHdriUrl})`,
-                        }}
-                      />
+                    <div className="relative flex flex-1 items-center justify-center overflow-hidden">
+                      <div className="relative z-10 mb-0 flex items-center justify-center">
+                        <div
+                          className="h-12 w-12 rounded-full border border-white/20 shadow-md shadow-black/20 sm:h-14 sm:w-14"
+                          style={{ background: buildSphereGradient("#9CA3AF") }}
+                        />
+                      </div>
                     </div>
-
                     <div className="bg-primary/10 px-2 py-1.5 text-center">
                       <p className="text-foreground text-xs leading-tight font-medium">
                         Custom
@@ -212,14 +267,11 @@ export function EnvironmentControls() {
                   </div>
                 ) : (
                   <div className="relative flex h-full flex-col">
-                    <div className="bg-muted/5 absolute inset-0 rounded-md" />
-
-                    <div className="relative flex flex-1 items-center justify-center">
-                      <div className="border-muted-foreground/30 bg-muted/20 flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed sm:h-14 sm:w-14">
+                    <div className="relative flex flex-1 items-center justify-center overflow-hidden">
+                      <div className="border-muted-foreground/30 bg-muted/20 relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed sm:h-14 sm:w-14">
                         <PlusIcon className="text-muted-foreground h-6 w-6 sm:h-8 sm:w-8" />
                       </div>
                     </div>
-
                     <div className="bg-primary/10 px-2 py-1.5 text-center">
                       <p className="text-foreground text-xs leading-tight font-medium">
                         Custom

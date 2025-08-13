@@ -71,7 +71,7 @@ const fragmentShader = `
     uv.x *= aspect;
     vec2 drift = iDrift;
     drift.x *= aspect;
-    uv = uv * 4.0 + drift * 0.5;
+    uv = uv * 4.0 + drift * 3.0;
     float shade = pattern(uv);
 
     if (isDark > 0.5) {
