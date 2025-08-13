@@ -748,14 +748,14 @@ export default function EditPage() {
               maxSize={80}
               className="flex flex-col xl:order-first xl:col-span-5">
               <Card className="flex h-fit w-full flex-col overflow-hidden border">
-                <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 pb-4 backdrop-blur-xs [.border-b]:pb-4">
-                  <div>
-                    <CardTitle className="text-xl font-medium">
+                <CardHeader className="bg-background/80 z-10 flex min-h-12 flex-row items-center justify-between border-b backdrop-blur-xs">
+                  <div className="flex w-full items-center justify-between">
+                    <CardTitle className="px-2 text-xl font-medium">
                       Customize
                     </CardTitle>
-                    <CardDescription className="mt-1 truncate text-xs">
+                    <span className="bg-muted text-muted-foreground mx-1.5 truncate rounded-sm px-1.5 py-0.5 text-xs">
                       {fileName || "Loading..."}
-                    </CardDescription>
+                    </span>
                   </div>
                 </CardHeader>
                 <CardContent className="flex flex-1 flex-col overflow-hidden p-0">
@@ -835,21 +835,14 @@ export default function EditPage() {
               className="flex flex-col xl:order-last xl:col-span-7">
               <Card className="flex h-full w-full flex-col overflow-hidden border">
                 {!isMobile && (
-                  <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 backdrop-blur-xs [.border-b]:pb-4">
+                  <CardHeader className="bg-background/80 z-10 flex min-h-12 flex-row items-center justify-between border-b backdrop-blur-xs">
                     <div>
-                      <CardTitle className="text-xl font-medium">
+                      <CardTitle className="px-2 text-xl font-medium">
                         Preview
                       </CardTitle>
-                      <CardDescription className="mt-1 text-xs">
-                        {!svgData
-                          ? "Loading SVG data..."
-                          : isModelLoading
-                            ? "Processing SVG..."
-                            : "Interact with your 3D model"}
-                      </CardDescription>
                     </div>
                     <TooltipProvider>
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
                         <Tooltip delayDuration={100}>
                           <TooltipTrigger asChild>
                             <Button
