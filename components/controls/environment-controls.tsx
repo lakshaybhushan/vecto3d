@@ -26,44 +26,9 @@ function hexToRgb(hex: string): Rgb {
   return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
 }
 
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max);
-}
-
-function adjustColor(hex: string, amount: number) {
-  const { r, g, b } = hexToRgb(hex);
-  const nr = clamp(Math.round(r + 255 * amount), 0, 255);
-  const ng = clamp(Math.round(g + 255 * amount), 0, 255);
-  const nb = clamp(Math.round(b + 255 * amount), 0, 255);
-  return `rgb(${nr}, ${ng}, ${nb})`;
-}
-
 function withAlpha(hex: string, alpha: number) {
   const { r, g, b } = hexToRgb(hex);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-function getLuminance(hex: string) {
-  const { r, g, b } = hexToRgb(hex);
-  const sr = r / 255;
-  const sg = g / 255;
-  const sb = b / 255;
-  const R = sr <= 0.03928 ? sr / 12.92 : Math.pow((sr + 0.055) / 1.055, 2.4);
-  const G = sg <= 0.03928 ? sg / 12.92 : Math.pow((sg + 0.055) / 1.055, 2.4);
-  const B = sb <= 0.03928 ? sb / 12.92 : Math.pow((sb + 0.055) / 1.055, 2.4);
-  return 0.2126 * R + 0.7152 * G + 0.0722 * B;
-}
-
-function buildHorizonGradient(hex: string) {
-  const base = hex;
-  const sky = adjustColor(base, 0.12);
-  const mid = adjustColor(base, 0.02);
-  const ground = adjustColor(base, -0.22);
-  return `linear-gradient(180deg, ${sky} 0%, ${mid} 48%, ${ground} 100%)`;
-}
-
-function buildVignetteOverlay(hex: string) {
-  return `radial-gradient(120% 100% at 50% 0%, ${withAlpha("#000000", 0.14)} 0%, transparent 52%), radial-gradient(80% 60% at 50% 100%, ${withAlpha("#000000", 0.18)} 0%, transparent 68%)`;
 }
 
 function buildSphereGradient(hex: string) {
