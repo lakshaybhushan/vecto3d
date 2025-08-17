@@ -20,7 +20,8 @@ import {
   Mountain,
   Monitor,
 } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { motion } from "framer-motion";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -313,9 +314,95 @@ const MobileTabBar = memo(
 
 MobileTabBar.displayName = "MobileTabBar";
 
+const AnimatedTabs = memo(
+  ({
+    activeTab,
+    onTabChange,
+  }: {
+    activeTab: string;
+    onTabChange: (tab: string) => void;
+  }) => {
+    const [indicatorStyle, setIndicatorStyle] = useState({
+      width: 0,
+      left: 0,
+      opacity: 0,
+    });
+    const tabRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+
+    const tabs = [
+      { id: "geometry", name: "Geometry", icon: Box },
+      { id: "material", name: "Material", icon: Palette },
+      { id: "textures", name: "Textures", icon: Image },
+      { id: "environment", name: "Environment", icon: Mountain },
+      { id: "background", name: "Background", icon: Monitor },
+    ];
+
+    useEffect(() => {
+      const updateIndicator = () => {
+        const activeTabElement = tabRefs.current[activeTab];
+        if (activeTabElement) {
+          const { offsetLeft, offsetWidth } = activeTabElement;
+          setIndicatorStyle({
+            left: offsetLeft,
+            width: offsetWidth,
+            opacity: 1,
+          });
+        }
+      };
+
+      requestAnimationFrame(updateIndicator);
+    }, [activeTab]);
+
+    return (
+      <div className="scrollbar-hidden overflow-x-auto border-b">
+        <nav className="relative flex w-full items-center">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+
+            return (
+              <button
+                key={tab.id}
+                ref={(el) => {
+                  tabRefs.current[tab.id] = el;
+                }}
+                onClick={() => onTabChange(tab.id)}
+                className={`flex min-w-[120px] flex-1 cursor-pointer items-center justify-center px-3 py-3 text-sm whitespace-nowrap transition-colors ${
+                  isActive
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}>
+                <Icon className="mr-1.5 h-4 w-4 shrink-0" />
+                <span className="truncate">{tab.name}</span>
+              </button>
+            );
+          })}
+
+          <motion.div
+            className="bg-primary absolute bottom-0 h-0.5"
+            animate={{
+              left: indicatorStyle.left,
+              width: indicatorStyle.width,
+              opacity: indicatorStyle.opacity,
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 30,
+            }}
+          />
+        </nav>
+      </div>
+    );
+  },
+);
+
+AnimatedTabs.displayName = "AnimatedTabs";
+
 export default function EditPage() {
   const [isClientMounted, setIsClientMounted] = useState(false);
   const [activeMobileTab, setActiveMobileTab] = useState("geometry");
+  const [activeTab, setActiveTab] = useState("geometry");
   const svgData = useEditorStore((state) => state.svgData);
   const fileName = useEditorStore((state) => state.fileName);
   const isModelLoading = useEditorStore((state) => state.isModelLoading);
@@ -448,7 +535,7 @@ export default function EditPage() {
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="ghost"
               size={isMobile ? "icon" : "sm"}
               onClick={handleBackToHome}
               aria-label="Back to home">
@@ -669,71 +756,20 @@ export default function EditPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="flex flex-1 flex-col overflow-hidden p-0">
-                  <Tabs
-                    defaultValue="geometry"
-                    className="flex flex-1 flex-col overflow-y-hidden">
-                    <div className="border-b p-4">
-                      <TabsList className="w-full text-xs">
-                        <TabsTrigger value="geometry" className="text-sm">
-                          <Box className="h-4 w-4 shrink-0" />
-                          <span className="truncate">Geometry</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="material" className="text-sm">
-                          <Palette className="h-4 w-4 shrink-0" />
-                          <span className="truncate">Material</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="textures" className="text-sm">
-                          <Image className="h-4 w-4 shrink-0" />
-                          <span className="truncate">Textures</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="environment" className="text-sm">
-                          <Mountain className="h-4 w-4 shrink-0" />
-                          <span className="truncate">Environment</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="background" className="text-sm">
-                          <Monitor className="h-4 w-4 shrink-0" />
-                          <span className="truncate">Background</span>
-                        </TabsTrigger>
-                      </TabsList>
-                    </div>
+                  <div className="flex flex-1 flex-col overflow-y-hidden">
+                    <AnimatedTabs
+                      activeTab={activeTab}
+                      onTabChange={setActiveTab}
+                    />
 
                     <div className="flex-1 overflow-y-auto p-4">
-                      <TabsContent
-                        value="geometry"
-                        key="geometry"
-                        className="mt-0">
-                        <GeometryControls />
-                      </TabsContent>
-
-                      <TabsContent
-                        value="material"
-                        key="material"
-                        className="mt-0">
-                        <MaterialControls />
-                      </TabsContent>
-
-                      <TabsContent
-                        value="textures"
-                        key="textures"
-                        className="mt-0">
-                        <TextureControls />
-                      </TabsContent>
-
-                      <TabsContent
-                        value="environment"
-                        key="environment"
-                        className="mt-0">
-                        <EnvironmentControls />
-                      </TabsContent>
-
-                      <TabsContent
-                        value="background"
-                        key="background"
-                        className="mt-0">
-                        <BackgroundControls />
-                      </TabsContent>
+                      {activeTab === "geometry" && <GeometryControls />}
+                      {activeTab === "material" && <MaterialControls />}
+                      {activeTab === "textures" && <TextureControls />}
+                      {activeTab === "environment" && <EnvironmentControls />}
+                      {activeTab === "background" && <BackgroundControls />}
                     </div>
-                  </Tabs>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -748,82 +784,31 @@ export default function EditPage() {
               maxSize={80}
               className="flex flex-col xl:order-first xl:col-span-5">
               <Card className="flex h-fit w-full flex-col overflow-hidden border">
-                <CardHeader className="bg-background/80 z-10 flex min-h-12 flex-row items-center justify-between border-b backdrop-blur-xs">
+                <CardHeader className="bg-background/80 z-10 flex min-h-13 flex-row items-center justify-between border-b backdrop-blur-xs">
                   <div className="flex w-full items-center justify-between">
-                    <CardTitle className="px-2 text-xl font-medium">
+                    <CardTitle className="px-1 text-xl font-medium">
                       Customize
                     </CardTitle>
-                    <span className="bg-muted text-muted-foreground mx-1.5 truncate rounded-sm px-1.5 py-0.5 text-xs">
+                    <span className="bg-muted text-muted-foreground mx-1 truncate rounded-sm px-1.5 py-0.5 text-xs">
                       {fileName || "Loading..."}
                     </span>
                   </div>
                 </CardHeader>
                 <CardContent className="flex flex-1 flex-col overflow-hidden p-0">
-                  <Tabs
-                    defaultValue="geometry"
-                    className="flex flex-1 flex-col overflow-y-hidden">
-                    <div className="border-b p-4">
-                      <TabsList className="w-full text-xs">
-                        <TabsTrigger value="geometry" className="text-sm">
-                          <Box className="h-4 w-4 shrink-0" />
-                          <span className="truncate">Geometry</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="material" className="text-sm">
-                          <Palette className="h-4 w-4 shrink-0" />
-                          <span className="truncate">Material</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="textures" className="text-sm">
-                          <Image className="h-4 w-4 shrink-0" />
-                          <span className="truncate">Textures</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="environment" className="text-sm">
-                          <Mountain className="h-4 w-4 shrink-0" />
-                          <span className="truncate">Environment</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="background" className="text-sm">
-                          <Monitor className="h-4 w-4 shrink-0" />
-                          <span className="truncate">Background</span>
-                        </TabsTrigger>
-                      </TabsList>
-                    </div>
+                  <div className="flex flex-1 flex-col overflow-y-hidden">
+                    <AnimatedTabs
+                      activeTab={activeTab}
+                      onTabChange={setActiveTab}
+                    />
 
                     <div className="flex-1 overflow-y-auto p-4">
-                      <TabsContent
-                        value="geometry"
-                        key="geometry"
-                        className="mt-0">
-                        <GeometryControls />
-                      </TabsContent>
-
-                      <TabsContent
-                        value="material"
-                        key="material"
-                        className="mt-0">
-                        <MaterialControls />
-                      </TabsContent>
-
-                      <TabsContent
-                        value="textures"
-                        key="textures"
-                        className="mt-0">
-                        <TextureControls />
-                      </TabsContent>
-
-                      <TabsContent
-                        value="environment"
-                        key="environment"
-                        className="mt-0">
-                        <EnvironmentControls />
-                      </TabsContent>
-
-                      <TabsContent
-                        value="background"
-                        key="background"
-                        className="mt-0">
-                        <BackgroundControls />
-                      </TabsContent>
+                      {activeTab === "geometry" && <GeometryControls />}
+                      {activeTab === "material" && <MaterialControls />}
+                      {activeTab === "textures" && <TextureControls />}
+                      {activeTab === "environment" && <EnvironmentControls />}
+                      {activeTab === "background" && <BackgroundControls />}
                     </div>
-                  </Tabs>
+                  </div>
                 </CardContent>
               </Card>
             </ResizablePanel>
@@ -835,9 +820,9 @@ export default function EditPage() {
               className="flex flex-col xl:order-last xl:col-span-7">
               <Card className="flex h-full w-full flex-col overflow-hidden border">
                 {!isMobile && (
-                  <CardHeader className="bg-background/80 z-10 flex min-h-12 flex-row items-center justify-between border-b backdrop-blur-xs">
-                    <div>
-                      <CardTitle className="px-2 text-xl font-medium">
+                  <CardHeader className="bg-background/80 z-10 flex min-h-13 flex-row items-center justify-between border-b backdrop-blur-xs">
+                    <div className="flex w-full items-center justify-between">
+                      <CardTitle className="px-1 text-xl font-medium">
                         Preview
                       </CardTitle>
                     </div>

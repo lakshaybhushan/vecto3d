@@ -137,118 +137,127 @@ export function ExportButtons({
             <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-80 p-4">
+        <DropdownMenuContent
+          align="end"
+          className="w-[420px] overflow-hidden rounded-xl p-0 shadow-2xl">
           <Tabs defaultValue="png" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="png" className="flex items-center gap-1">
-                <Image className="h-4 w-4" />
-                PNG
-              </TabsTrigger>
-              <TabsTrigger value="video" className="flex items-center gap-1">
-                <Video className="h-4 w-4" />
-                Video
-              </TabsTrigger>
-              <TabsTrigger value="3d" className="flex items-center gap-1">
-                <ThreeDExportIcon />
-                3D Model
-              </TabsTrigger>
-            </TabsList>
+            <div className="border-b p-3">
+              <TabsList className="bg-muted/60 grid w-full grid-cols-3 gap-1 rounded-lg p-1">
+                <TabsTrigger
+                  value="png"
+                  className="data-[state=active]:bg-background flex items-center gap-1 rounded-md data-[state=active]:shadow-sm">
+                  <Image className="h-4 w-4" />
+                  PNG
+                </TabsTrigger>
+                <TabsTrigger
+                  value="video"
+                  className="data-[state=active]:bg-background flex items-center gap-1 rounded-md data-[state=active]:shadow-sm">
+                  <Video className="h-4 w-4" />
+                  Video
+                </TabsTrigger>
+                <TabsTrigger
+                  value="3d"
+                  className="data-[state=active]:bg-background flex items-center gap-1 rounded-md data-[state=active]:shadow-sm">
+                  <ThreeDExportIcon />
+                  3D Model
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-            <TabsContent value="png" className="mt-4 space-y-4">
-              <div>
-                <h4 className="mb-2 text-sm font-medium">Export PNG Image</h4>
-                <p className="text-muted-foreground mb-3 text-xs">
-                  Export high-quality PNG image of your 3D model
+            <TabsContent value="png" className="space-y-4 p-4">
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Export PNG Image</h4>
+                <p className="text-muted-foreground text-xs">
+                  Export a crisp, transparent PNG of your 3D model.
                 </p>
+              </div>
+              <Button
+                onClick={handlePngExport}
+                className="flex w-full items-center justify-center gap-2">
+                <ImageDownloadIcon />
+                Export High Quality PNG
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="video" className="space-y-4 p-4">
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Export Video</h4>
+                <p className="text-muted-foreground text-xs">
+                  Choose a duration and format. Auto‑rotate must be enabled.
+                </p>
+              </div>
+              <div>
+                <label className="text-muted-foreground mb-2 block text-xs">
+                  Video Duration: {videoDuration[0]} seconds
+                </label>
+                <Slider
+                  value={videoDuration}
+                  onValueChange={setVideoDuration}
+                  min={5}
+                  max={30}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="text-muted-foreground mt-1 flex justify-between text-[11px]">
+                  <span>5s</span>
+                  <span>30s</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <Button
-                  onClick={handlePngExport}
+                  onClick={() => handleVideoExport("mp4", videoDuration[0])}
+                  disabled={!canvasRef?.current || !autoRotate}
                   className="flex w-full items-center gap-2">
-                  <ImageDownloadIcon />
-                  Export High Quality PNG
+                  <Video className="h-4 w-4" />
+                  Export MP4 ({videoDuration[0]}s)
+                </Button>
+                <Button
+                  onClick={() =>
+                    handleVideoExport("gif", Math.min(videoDuration[0], 10))
+                  }
+                  disabled={!canvasRef?.current || !autoRotate}
+                  variant="outline"
+                  className="flex w-full items-center gap-2">
+                  <FileImage className="h-4 w-4" />
+                  Export GIF ({Math.min(videoDuration[0], 10)}s max)
                 </Button>
               </div>
+              {!autoRotate && (
+                <div className="text-muted-foreground bg-muted rounded-md px-3 py-2 text-xs">
+                  Enable auto‑rotate in Geometry settings to record videos.
+                </div>
+              )}
             </TabsContent>
 
-            <TabsContent value="video" className="mt-4 space-y-4">
-              <div>
-                <h4 className="mb-2 text-sm font-medium">Export Video</h4>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-muted-foreground mb-2 block text-xs">
-                      Video Duration: {videoDuration[0]} seconds
-                    </label>
-                    <Slider
-                      value={videoDuration}
-                      onValueChange={setVideoDuration}
-                      min={5}
-                      max={30}
-                      step={1}
-                      className="w-full"
-                    />
-                    <div className="text-muted-foreground mt-1 flex justify-between text-xs">
-                      <span>5s</span>
-                      <span>30s</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Button
-                      onClick={() => handleVideoExport("mp4", videoDuration[0])}
-                      disabled={!canvasRef?.current || !autoRotate}
-                      className="flex w-full items-center gap-2">
-                      <Video className="h-4 w-4" />
-                      Export MP4 ({videoDuration[0]}s)
-                    </Button>
-
-                    <Button
-                      onClick={() =>
-                        handleVideoExport("gif", Math.min(videoDuration[0], 10))
-                      }
-                      disabled={!canvasRef?.current || !autoRotate}
-                      variant="outline"
-                      className="flex w-full items-center gap-2">
-                      <FileImage className="h-4 w-4" />
-                      Export GIF ({Math.min(videoDuration[0], 10)}s max)
-                    </Button>
-                  </div>
-
-                  {!autoRotate && (
-                    <div className="text-muted-foreground bg-muted rounded p-2 text-xs">
-                      * Enable auto-rotate in Geometry settings to record videos
-                    </div>
-                  )}
-                </div>
+            <TabsContent value="3d" className="space-y-4 p-4">
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Export 3D Model</h4>
+                <p className="text-muted-foreground text-xs">
+                  Choose a format for printing or sharing in 3D apps.
+                </p>
               </div>
-            </TabsContent>
-
-            <TabsContent value="3d" className="mt-4 space-y-4">
-              <div>
-                <h4 className="mb-2 text-sm font-medium">Export 3D Model</h4>
-                <div className="space-y-2">
-                  <Button
-                    onClick={() => handle3DExport("stl")}
-                    variant="outline"
-                    className="flex w-full items-center justify-start gap-2">
-                    <File className="h-4 w-4" />
-                    STL (3D Printing)
-                  </Button>
-
-                  <Button
-                    onClick={() => handle3DExport("glb")}
-                    variant="outline"
-                    className="flex w-full items-center justify-start gap-2">
-                    <File className="h-4 w-4" />
-                    GLB{textureEnabled ? " + Textures" : ""} (Binary)
-                  </Button>
-
-                  <Button
-                    onClick={() => handle3DExport("gltf")}
-                    variant="outline"
-                    className="flex w-full items-center justify-start gap-2">
-                    <File className="h-4 w-4" />
-                    GLTF{textureEnabled ? " + Textures" : ""} (JSON)
-                  </Button>
-                </div>
+              <div className="space-y-2">
+                <Button
+                  onClick={() => handle3DExport("stl")}
+                  variant="outline"
+                  className="flex w-full items-center justify-start gap-2">
+                  <File className="h-4 w-4" />
+                  STL (3D Printing)
+                </Button>
+                <Button
+                  onClick={() => handle3DExport("glb")}
+                  variant="outline"
+                  className="flex w-full items-center justify-start gap-2">
+                  <File className="h-4 w-4" />
+                  GLB{textureEnabled ? " + Textures" : ""} (Binary)
+                </Button>
+                <Button
+                  onClick={() => handle3DExport("gltf")}
+                  variant="outline"
+                  className="flex w-full items-center justify-start gap-2">
+                  <File className="h-4 w-4" />
+                  GLTF{textureEnabled ? " + Textures" : ""} (JSON)
+                </Button>
               </div>
             </TabsContent>
           </Tabs>
