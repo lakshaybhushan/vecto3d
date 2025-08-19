@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useMemo, useState, memo } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,19 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Maximize2,
-  Minimize2,
-  ChevronLeft,
-  RotateCcw,
-  Box,
-  Palette,
-  Image,
-  Mountain,
-  Monitor,
-} from "lucide-react";
-
-import { motion } from "framer-motion";
+import { Maximize2, Minimize2, RotateCcw } from "lucide-react";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -29,11 +17,7 @@ import {
 } from "@/components/ui/resizable";
 import type * as THREE from "three";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
 import { toast } from "sonner";
-import { ModeToggle } from "@/components/ui/theme-toggle";
-import dynamic from "next/dynamic";
-
 import {
   Tooltip,
   TooltipContent,
@@ -46,9 +30,7 @@ import { MaterialControls } from "@/components/controls/material-controls";
 import { TextureControls } from "@/components/controls/texture-controls";
 import { EnvironmentControls } from "@/components/controls/environment-controls";
 import { BackgroundControls } from "@/components/controls/background-controls";
-import { ExportButtons } from "@/components/forms/export-buttons";
 
-import { useDebounce } from "@/hooks/use-debounce";
 import {
   useMobileDetection,
   useIOSDetection,
@@ -56,348 +38,15 @@ import {
 } from "@/hooks/use-mobile-detection";
 import { useTexturePreloader } from "@/hooks/use-texture-preloader";
 import { useEditorStore } from "@/lib/store";
-import { DARK_MODE_COLOR, LIGHT_MODE_COLOR } from "@/lib/constants";
-import AnimatedLogo from "@/components/ui/animated-logo";
 import { memoryManager } from "@/lib/memory-manager";
 
-// Dynamically import ModelPreview with SSR disabled to prevent ProgressEvent errors
-const ModelPreview = dynamic(
-  () => import("@/components/previews/model-preview"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="bg-card flex h-full w-full flex-col items-center justify-center">
-        <div className="flex max-w-xs flex-col items-center gap-4 px-4 text-center">
-          <div className="relative h-20 w-20">
-            <div className="bg-background/20 absolute inset-0 animate-pulse rounded-full"></div>
-            <div className="bg-background/40 absolute inset-4 animate-pulse rounded-full [animation-delay:200ms]"></div>
-            <AnimatedLogo className="absolute inset-0 h-full w-full" />
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm font-medium">Loading 3D preview...</p>
-            <p className="text-muted-foreground text-xs">
-              Initializing Three.js components
-            </p>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-);
+import { AnimatedTabs } from "@/components/edit/animated-tabs";
+import { MobileTabBar } from "@/components/edit/mobile-tab-bar";
+import { EditHeader } from "@/components/edit/edit-header";
+import { EditManagers } from "@/components/edit/edit-managers";
+import { ModelViewport } from "@/components/edit/model-viewport";
 
-function useThemeBackgroundColor() {
-  const { resolvedTheme } = useTheme();
-
-  return useMemo(() => {
-    if (resolvedTheme === "dark") return DARK_MODE_COLOR;
-    return LIGHT_MODE_COLOR;
-  }, [resolvedTheme]);
-}
-
-const ModelLoadingState = ({ message }: { message: string }) => (
-  <div className="bg-card flex h-full w-full flex-col items-center justify-center">
-    <div className="flex max-w-xs flex-col items-center gap-4 px-4 text-center">
-      <div className="relative h-20 w-20">
-        <div className="bg-background/20 absolute inset-0 animate-pulse rounded-full"></div>
-        <div className="bg-background/40 absolute inset-4 animate-pulse rounded-full [animation-delay:200ms]"></div>
-        <AnimatedLogo className="absolute inset-0 h-full w-full" />
-      </div>
-      <div className="space-y-2">
-        <p className="text-sm font-medium">{message}</p>
-        <p className="text-muted-foreground text-xs">
-          This may take a moment for complex SVGs
-        </p>
-      </div>
-    </div>
-  </div>
-);
-
-const ModelErrorState = ({ error }: { error: string }) => (
-  <div className="bg-destructive/5 flex h-full w-full items-center justify-center">
-    <div className="max-w-sm p-6 text-center">
-      <p className="text-destructive mb-2 font-medium">Error processing SVG</p>
-      <p className="text-muted-foreground text-xs">{error}</p>
-      <Button
-        variant="outline"
-        size="sm"
-        className="mt-4"
-        onClick={() => window.location.reload()}>
-        Try Again
-      </Button>
-    </div>
-  </div>
-);
-
-const SvgProcessingLogic = memo(() => {
-  const svgData = useEditorStore((state) => state.svgData);
-  const fileName = useEditorStore((state) => state.fileName);
-  const setSvgData = useEditorStore((state) => state.setSvgData);
-  const setFileName = useEditorStore((state) => state.setFileName);
-  const setIsModelLoading = useEditorStore((state) => state.setIsModelLoading);
-  const setIsHollowSvg = useEditorStore((state) => state.setIsHollowSvg);
-  const resetEditor = useEditorStore((state) => state.resetEditor);
-
-  const router = useRouter();
-  const debouncedSvgData = useDebounce(svgData, 300);
-
-  useEffect(() => {
-    const storedSvgData = sessionStorage.getItem("vecto3d_svgData");
-    const storedFileName = sessionStorage.getItem("vecto3d_fileName");
-
-    if (!svgData && storedSvgData) {
-      setSvgData(storedSvgData);
-      setFileName(storedFileName || "");
-      resetEditor();
-    } else if (!svgData && !storedSvgData) {
-      router.push("/");
-    }
-  }, [svgData, setSvgData, setFileName, resetEditor, router]);
-
-  useEffect(() => {
-    if (svgData) {
-      sessionStorage.setItem("vecto3d_svgData", svgData);
-      sessionStorage.setItem("vecto3d_fileName", fileName);
-    }
-  }, [svgData, fileName]);
-
-  useEffect(() => {
-    if (debouncedSvgData) {
-      setIsModelLoading(true);
-      setIsModelLoading(false);
-    }
-  }, [debouncedSvgData, setIsModelLoading]);
-
-  useEffect(() => {
-    if (!debouncedSvgData) return;
-
-    const hasClosedPath =
-      debouncedSvgData.includes("Z") || debouncedSvgData.includes("z");
-    const hasMultiplePaths =
-      (debouncedSvgData.match(/<path/g) || []).length > 1;
-    const hasCircles = debouncedSvgData.includes("<circle");
-    const hasEllipse = debouncedSvgData.includes("<ellipse");
-    const hasRect = debouncedSvgData.includes("<rect");
-
-    const isLikelyHollow =
-      (hasClosedPath &&
-        (hasMultiplePaths || hasCircles || hasEllipse || hasRect)) ||
-      debouncedSvgData.toLowerCase().includes("smile") ||
-      debouncedSvgData.toLowerCase().includes("face");
-
-    setIsHollowSvg(isLikelyHollow);
-  }, [debouncedSvgData, setIsHollowSvg]);
-
-  return null;
-});
-
-SvgProcessingLogic.displayName = "SvgProcessingLogic";
-
-const BackgroundThemeManager = memo(() => {
-  const userSelectedBackground = useEditorStore(
-    (state) => state.userSelectedBackground,
-  );
-  const setBackgroundColor = useEditorStore(
-    (state) => state.setBackgroundColor,
-  );
-  const setSolidColorPreset = useEditorStore(
-    (state) => state.setSolidColorPreset,
-  );
-
-  const { resolvedTheme } = useTheme();
-  const themeBackgroundColor = useThemeBackgroundColor();
-
-  useEffect(() => {
-    if (!userSelectedBackground) {
-      setBackgroundColor(themeBackgroundColor);
-      setSolidColorPreset(resolvedTheme === "dark" ? "dark" : "light");
-    }
-  }, [
-    resolvedTheme,
-    themeBackgroundColor,
-    userSelectedBackground,
-    setBackgroundColor,
-    setSolidColorPreset,
-  ]);
-
-  return null;
-});
-
-BackgroundThemeManager.displayName = "BackgroundThemeManager";
-
-const HdriCleanupManager = memo(() => {
-  const customHdriUrl = useEditorStore((state) => state.customHdriUrl);
-
-  useEffect(() => {
-    const urlToRevoke = customHdriUrl;
-    return () => {
-      if (urlToRevoke && urlToRevoke.startsWith("blob:")) {
-        URL.revokeObjectURL(urlToRevoke);
-      }
-    };
-  }, [customHdriUrl]);
-
-  return null;
-});
-
-HdriCleanupManager.displayName = "HdriCleanupManager";
-
-const VibeModeManager = memo(() => {
-  const environmentPreset = useEditorStore((state) => state.environmentPreset);
-  const customHdriUrl = useEditorStore((state) => state.customHdriUrl);
-  const useBloom = useEditorStore((state) => state.useBloom);
-  const toggleVibeMode = useEditorStore((state) => state.toggleVibeMode);
-
-  useEffect(() => {
-    if (environmentPreset === "custom" && customHdriUrl && useBloom) {
-      toggleVibeMode(false);
-      toast.info(
-        "Vibe Mode has been disabled because you selected a custom image",
-        {
-          duration: 3000,
-        },
-      );
-    }
-  }, [environmentPreset, customHdriUrl, useBloom, toggleVibeMode]);
-
-  return null;
-});
-
-VibeModeManager.displayName = "VibeModeManager";
-
-const MobileTabBar = memo(
-  ({
-    activeTab,
-    onTabChange,
-  }: {
-    activeTab: string;
-    onTabChange: (tab: string) => void;
-  }) => {
-    const tabs = [
-      { id: "geometry", label: "Geometry", icon: Box },
-      { id: "material", label: "Material", icon: Palette },
-      { id: "textures", label: "Textures", icon: Image },
-      { id: "environment", label: "Environment", icon: Mountain },
-      { id: "background", label: "Background", icon: Monitor },
-    ];
-
-    return (
-      <div className="bg-background/98 border-border/50 flex-shrink-0 border-t backdrop-blur-xl md:hidden">
-        <div className="flex items-center justify-around px-1 py-2">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-
-            return (
-              <button
-                key={tab.id}
-                onClick={() => onTabChange(tab.id)}
-                className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 ${
-                  isActive
-                    ? "text-primary"
-                    : "text-muted-foreground/70 hover:text-foreground"
-                }`}>
-                <Icon className={isActive ? "h-6 w-6" : "h-5 w-5"} />
-                <span
-                  className={`text-[9px] leading-none font-medium ${
-                    isActive ? "text-primary" : "text-muted-foreground/60"
-                  }`}>
-                  {tab.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  },
-);
-
-MobileTabBar.displayName = "MobileTabBar";
-
-const AnimatedTabs = memo(
-  ({
-    activeTab,
-    onTabChange,
-  }: {
-    activeTab: string;
-    onTabChange: (tab: string) => void;
-  }) => {
-    const [indicatorStyle, setIndicatorStyle] = useState({
-      width: 0,
-      left: 0,
-      opacity: 0,
-    });
-    const tabRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
-
-    const tabs = [
-      { id: "geometry", name: "Geometry", icon: Box },
-      { id: "material", name: "Material", icon: Palette },
-      { id: "textures", name: "Textures", icon: Image },
-      { id: "environment", name: "Environment", icon: Mountain },
-      { id: "background", name: "Background", icon: Monitor },
-    ];
-
-    useEffect(() => {
-      const updateIndicator = () => {
-        const activeTabElement = tabRefs.current[activeTab];
-        if (activeTabElement) {
-          const { offsetLeft, offsetWidth } = activeTabElement;
-          setIndicatorStyle({
-            left: offsetLeft,
-            width: offsetWidth,
-            opacity: 1,
-          });
-        }
-      };
-
-      requestAnimationFrame(updateIndicator);
-    }, [activeTab]);
-
-    return (
-      <div className="scrollbar-hidden overflow-x-auto border-b">
-        <nav className="relative flex w-full items-center">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-
-            return (
-              <button
-                key={tab.id}
-                ref={(el) => {
-                  tabRefs.current[tab.id] = el;
-                }}
-                onClick={() => onTabChange(tab.id)}
-                className={`flex min-w-[120px] flex-1 cursor-pointer items-center justify-center px-3 py-3 text-sm whitespace-nowrap transition-colors ${
-                  isActive
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}>
-                <Icon className="mr-1.5 h-4 w-4 shrink-0" />
-                <span className="truncate">{tab.name}</span>
-              </button>
-            );
-          })}
-
-          <motion.div
-            className="bg-primary absolute bottom-0 h-0.5"
-            animate={{
-              left: indicatorStyle.left,
-              width: indicatorStyle.width,
-              opacity: indicatorStyle.opacity,
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 30,
-            }}
-          />
-        </nav>
-      </div>
-    );
-  },
-);
-
-AnimatedTabs.displayName = "AnimatedTabs";
+// extracted components are imported above
 
 export default function EditPage() {
   const [isClientMounted, setIsClientMounted] = useState(false);
@@ -480,147 +129,36 @@ export default function EditPage() {
     };
   }, [setIsFullscreen]);
 
-  const renderModelPreview = () => {
-    if (!isClientMounted) {
-      return <ModelLoadingState message="Initializing editor..." />;
-    }
-    if (svgProcessingError)
-      return <ModelErrorState error={svgProcessingError} />;
-    if (isModelLoading) {
-      return (
-        <ModelLoadingState message="Reconstructing your 3D model geometry..." />
-      );
-    }
-
-    return (
-      <div className="h-full w-full md:overflow-hidden">
-        <ModelPreview
-          svgData={svgData!}
-          modelGroupRef={modelGroupRef}
-          modelRef={modelRef}
-          isMobile={isMobile}
-          canvasRef={canvasRef}
-          onLoadStart={() => useEditorStore.getState().setIsModelLoading(true)}
-          onLoadComplete={() =>
-            useEditorStore.getState().setIsModelLoading(false)
-          }
-          onError={(error) => {
-            useEditorStore
-              .getState()
-              .setSvgProcessingError(error.message || "Failed to process SVG");
-            useEditorStore.getState().setIsModelLoading(false);
-          }}
-        />
-      </div>
-    );
-  };
-
   if (!isClientMounted) {
     return null;
   }
 
   return (
     <main className="bg-background safari-fix relative flex h-screen w-full flex-col overflow-hidden">
-      <SvgProcessingLogic />
-      <BackgroundThemeManager />
-      <HdriCleanupManager />
-      <VibeModeManager />
+      <EditManagers />
 
-      <header
-        className={`bg-background/80 z-20 w-full border-b border-dashed backdrop-blur-xs ${
-          isMobile
-            ? "bg-background/95 flex-shrink-0 backdrop-blur-xl"
-            : "sticky top-0"
-        }`}>
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size={isMobile ? "icon" : "sm"}
-              onClick={handleBackToHome}
-              aria-label="Back to home">
-              <ChevronLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Home</span>
-            </Button>
-            {isMobile && (
-              <div className="ml-2">
-                <h1 className="text-lg font-medium">Preview</h1>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {isMobile && (
-              <TooltipProvider>
-                <div className="flex gap-2">
-                  <Tooltip delayDuration={100}>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => {
-                          resetEditor();
-                          toast.success("Editor settings reset to default");
-                        }}
-                        aria-label="Reset editor settings">
-                        <RotateCcw className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      side="bottom"
-                      align="center"
-                      sideOffset={10}
-                      className="px-4 text-sm">
-                      Reset all settings
-                    </TooltipContent>
-                  </Tooltip>
-                  {isFullscreenSupported && !isIOS && (
-                    <Tooltip delayDuration={100}>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => {
-                            if (isFullscreen) {
-                              document.exitFullscreen();
-                            } else if (previewContainerRef.current) {
-                              previewContainerRef.current.requestFullscreen();
-                            }
-                          }}
-                          aria-label={
-                            isFullscreen
-                              ? "Exit fullscreen"
-                              : "Enter fullscreen"
-                          }>
-                          {isFullscreen ? (
-                            <Minimize2 className="h-4 w-4" />
-                          ) : (
-                            <Maximize2 className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="bottom"
-                        align="center"
-                        sideOffset={10}
-                        className="px-4 text-sm">
-                        Full Screen
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </div>
-              </TooltipProvider>
-            )}
-            <ModeToggle />
-            {svgData && (
-              <ExportButtons
-                fileName={fileName}
-                modelGroupRef={modelGroupRef}
-                canvasRef={canvasRef}
-              />
-            )}
-          </div>
-        </div>
-      </header>
+      <EditHeader
+        isMobile={isMobile}
+        isFullscreenSupported={isFullscreenSupported}
+        isIOS={isIOS}
+        isFullscreen={isFullscreen}
+        onBack={handleBackToHome}
+        onReset={() => {
+          resetEditor();
+          toast.success("Editor settings reset to default");
+        }}
+        onToggleFullscreen={() => {
+          if (isFullscreen) {
+            document.exitFullscreen();
+          } else if (previewContainerRef.current) {
+            previewContainerRef.current.requestFullscreen();
+          }
+        }}
+        svgData={svgData}
+        fileName={fileName}
+        modelGroupRef={modelGroupRef}
+        canvasRef={canvasRef}
+      />
 
       <div
         className={`flex-1 ${isMobile ? "flex flex-col gap-0 overflow-hidden" : "px-4 py-4"}`}>
@@ -708,38 +246,19 @@ export default function EditPage() {
                     </TooltipProvider>
                   </CardHeader>
                 )}
-                <div
-                  className="relative flex grow items-center justify-center"
-                  ref={previewContainerRef}>
-                  {renderModelPreview()}
-                  {isFullscreen && (
-                    <div className="pointer-events-none absolute inset-0">
-                      <TooltipProvider>
-                        <Tooltip delayDuration={100}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              size="icon"
-                              variant={"ghost"}
-                              onClick={() => document.exitFullscreen()}
-                              aria-label="Exit fullscreen"
-                              className="hover:bg-background/80 pointer-events-auto absolute top-6 right-6 bg-transparent backdrop-blur-xs">
-                              <Minimize2 className="h-4 w-4" />
-                              <span className="sr-only">Exit fullscreen</span>
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="left"
-                            align="center"
-                            sideOffset={10}
-                            className="z-[99999] px-4 text-sm"
-                            container={previewContainerRef.current}>
-                            Exit fullscreen
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  )}
-                </div>
+                <ModelViewport
+                  svgData={svgData}
+                  isMobile={isMobile}
+                  isModelLoading={isModelLoading}
+                  svgProcessingError={svgProcessingError}
+                  isFullscreen={isFullscreen}
+                  isFullscreenSupported={isFullscreenSupported}
+                  isIOS={isIOS}
+                  modelGroupRef={modelGroupRef}
+                  modelRef={modelRef}
+                  canvasRef={canvasRef}
+                  containerRef={previewContainerRef}
+                />
               </Card>
             </div>
             {/* Desktop Controls */}
@@ -887,36 +406,19 @@ export default function EditPage() {
                     </TooltipProvider>
                   </CardHeader>
                 )}
-                <div className="relative grow" ref={previewContainerRef}>
-                  {renderModelPreview()}
-                  {isFullscreen && isFullscreenSupported && !isIOS && (
-                    <div className="pointer-events-none absolute inset-0">
-                      <TooltipProvider>
-                        <Tooltip delayDuration={100}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              size="icon"
-                              variant={"ghost"}
-                              onClick={() => document.exitFullscreen()}
-                              aria-label="Exit fullscreen"
-                              className="hover:bg-background/80 pointer-events-auto absolute top-6 right-6 bg-transparent backdrop-blur-xs">
-                              <Minimize2 className="h-4 w-4" />
-                              <span className="sr-only">Exit fullscreen</span>
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="left"
-                            align="center"
-                            sideOffset={10}
-                            className="z-[99999] px-4 text-sm"
-                            container={previewContainerRef.current}>
-                            Exit fullscreen
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  )}
-                </div>
+                <ModelViewport
+                  svgData={svgData}
+                  isMobile={isMobile}
+                  isModelLoading={isModelLoading}
+                  svgProcessingError={svgProcessingError}
+                  isFullscreen={isFullscreen}
+                  isFullscreenSupported={isFullscreenSupported}
+                  isIOS={isIOS}
+                  modelGroupRef={modelGroupRef}
+                  modelRef={modelRef}
+                  canvasRef={canvasRef}
+                  containerRef={previewContainerRef}
+                />
               </Card>
             </ResizablePanel>
           </ResizablePanelGroup>
