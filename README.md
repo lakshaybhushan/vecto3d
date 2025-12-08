@@ -11,7 +11,7 @@
 
 </p>
 
-![GithubBanner](./app/opengraph-image.png)
+![GithubBanner](https://vecto3d.xyz/opengraph-image-v1.png)
 
 <a href="https://vercel.com/oss">
   <img alt="Vercel OSS Program" src="https://vercel.com/oss/program-badge.svg" />
