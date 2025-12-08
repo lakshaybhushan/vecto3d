@@ -390,7 +390,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
                   `   - Final normal scale: ${scaledBumpScale.toFixed(4)}`,
                 );
                 console.log(
-                  `   - Normal texture size: ${normalTexture.image?.width}x${normalTexture.image?.height}`,
+                  `   - Normal texture size: ${(normalTexture.image as HTMLImageElement)?.width}x${(normalTexture.image as HTMLImageElement)?.height}`,
                 );
               } catch (normalError) {
                 console.error(

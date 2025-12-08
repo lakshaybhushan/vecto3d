@@ -140,8 +140,8 @@ export function prepareModelForExport(
 
           const isHole = Boolean(
             physMat.userData?.isHole ||
-              mesh.userData?.isHole ||
-              physMat.polygonOffsetFactor < 0,
+            mesh.userData?.isHole ||
+            physMat.polygonOffsetFactor < 0,
           );
 
           const newMat = physMat.clone();
@@ -196,8 +196,8 @@ export function prepareModelForExport(
 
         const isHole = Boolean(
           physMat.userData?.isHole ||
-            mesh.userData?.isHole ||
-            physMat.polygonOffsetFactor < 0,
+          mesh.userData?.isHole ||
+          physMat.polygonOffsetFactor < 0,
         );
 
         const newMat = physMat.clone();
@@ -267,8 +267,8 @@ export function prepareModelForExport(
 
       const isHole = Boolean(
         originalMaterial.userData?.isHole ||
-          mesh.userData?.isHole ||
-          originalMaterial?.polygonOffsetFactor < 0,
+        mesh.userData?.isHole ||
+        originalMaterial?.polygonOffsetFactor < 0,
       );
 
       const materialKey = isHole ? "hole" : originalMaterial.uuid;
@@ -402,8 +402,8 @@ export async function exportToGLTFWithTextures(
 
             const isHole = Boolean(
               material.userData?.isHole ||
-                mesh.userData?.isHole ||
-                physMaterial.polygonOffsetFactor < 0,
+              mesh.userData?.isHole ||
+              physMaterial.polygonOffsetFactor < 0,
             );
 
             if (props.color !== undefined)

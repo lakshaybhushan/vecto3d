@@ -99,7 +99,7 @@ class TextureCache {
 
   private estimateTextureSize(texture: THREE.Texture): number {
     // Rough estimation: width * height * 4 bytes (RGBA) + mipmaps (~33% extra)
-    const image = texture.image;
+    const image = texture.image as HTMLImageElement;
     if (image && image.width && image.height) {
       return image.width * image.height * 4 * 1.33;
     }
