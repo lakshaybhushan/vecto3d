@@ -32,3 +32,6 @@ demo/
 
 #rules
 .cursor
+
+#todos 
+todo.md
