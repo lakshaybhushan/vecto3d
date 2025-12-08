@@ -11,7 +11,13 @@
 
 </p>
 
-![GithubBanner](./public/opengraph-image-v1.png)
+![GithubBanner](https://vecto3d.xyz/opengraph-image-v1.png)
+
+<a href="https://vercel.com/oss">
+  <img alt="Vercel OSS Program" src="https://vercel.com/oss/program-badge.svg" />
+</a>
+
+<br/>
 
 A super simple tool to convert your simple SVGs, mostly logos, to 3D models.
 Check it out at [https://vecto3d.xyz](https://vecto3d.xyz)
@@ -59,14 +65,12 @@ I've used multiple tools to make this app, especially [V0.dev](https://v0.dev) f
 
 This project uses the MIT License. See the [LICENSE](LICENSE) file for details. For contributing, please read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
-## Sponsors
+## Support
 
-This project is proudly supported by:
+If you like the app, please star the repository and share it with your friends and acquaintances. You can also support me by [buying me a coffee](https://www.buymeacoffee.com/lakshaybhushan).
 
-<a href="https://vercel.com/oss">
-  <img alt="Vercel OSS Program" src="https://vercel.com/oss/program-badge.svg" />
-</a>
+<a href="https://www.buymeacoffee.com/lakshaybhushan" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50" width="200"></a>
 
 ## Contact
 
-You can contact me on [X (Twitter)](https://x.com/blakssh) I'll be happy to help you :)
+You can contact me on [X (Twitter)](https://x.com/blakssh). I'll be happy to help you!

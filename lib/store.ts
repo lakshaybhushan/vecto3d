@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { MATERIAL_PRESETS, LIGHT_MODE_COLOR } from "@/lib/constants";
 
 const initialPreset =
-  MATERIAL_PRESETS.find((p) => p.name === "metallic") || MATERIAL_PRESETS[0];
+  MATERIAL_PRESETS.find((p) => p.name === "matte_metal") || MATERIAL_PRESETS[0];
 
 interface EditorState {
   // SVG and Model State
@@ -32,6 +32,12 @@ interface EditorState {
   transmission: number;
   vibeModeOriginalMaterial: string | null;
 
+  // Texture Options
+  textureEnabled: boolean;
+  texturePreset: string;
+  textureScale: { x: number; y: number };
+  textureDepth: number;
+
   // Environment Options
   useEnvironment: boolean;
   environmentPreset: string;
@@ -51,6 +57,17 @@ interface EditorState {
   useBloom: boolean;
   bloomIntensity: number;
   bloomMipmapBlur: boolean;
+
+  // Recording Options
+  isRecording: boolean;
+  recordingDuration: number;
+  recordingStartTime: number | null;
+
+  // Video Modal State
+  videoModalOpen: boolean;
+  completedVideoBlob: Blob | null;
+  completedVideoFormat: "mp4" | "gif" | null;
+  completedVideoFileName: string | null;
 
   // Actions
   setSvgData: (data: string | null) => void;
@@ -77,6 +94,11 @@ interface EditorState {
   setTransmission: (transmission: number) => void;
   setVibeModeOriginalMaterial: (material: string | null) => void;
 
+  setTextureEnabled: (enabled: boolean) => void;
+  setTexturePreset: (preset: string) => void;
+  setTextureScale: (scale: { x: number; y: number }) => void;
+  setTextureDepth: (depth: number) => void;
+
   setUseEnvironment: (use: boolean) => void;
   setEnvironmentPreset: (preset: string) => void;
   setCustomHdriUrl: (url: string | null) => void;
@@ -93,8 +115,22 @@ interface EditorState {
   setBloomIntensity: (intensity: number) => void;
   setBloomMipmapBlur: (blur: boolean) => void;
 
+  setIsRecording: (recording: boolean) => void;
+  setRecordingDuration: (duration: number) => void;
+  setRecordingStartTime: (time: number | null) => void;
+
+  // Video Modal Actions
+  setVideoModalOpen: (open: boolean) => void;
+  setCompletedVideo: (
+    blob: Blob | null,
+    format: "mp4" | "gif" | null,
+    fileName: string | null,
+  ) => void;
+  clearCompletedVideo: () => void;
+
   // Complex Actions
   toggleVibeMode: (newState: boolean) => void;
+  resetEditor: () => void;
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -107,21 +143,26 @@ export const useEditorStore = create<EditorState>((set) => ({
   isHollowSvg: false,
   modelRotationY: 0,
 
-  bevelEnabled: true,
-  bevelThickness: 1.0,
-  bevelSize: 0.5,
-  bevelSegments: 4,
-  bevelPreset: "medium",
+  bevelEnabled: false,
+  bevelThickness: 0.0,
+  bevelSize: 0.0,
+  bevelSegments: 1,
+  bevelPreset: "none",
 
   customColor: "#3498db",
   useCustomColor: false,
-  materialPreset: "metallic",
+  materialPreset: "matte_metal",
   roughness: initialPreset.roughness,
   metalness: initialPreset.metalness,
   clearcoat: initialPreset.clearcoat,
   envMapIntensity: initialPreset.envMapIntensity,
   transmission: initialPreset.transmission,
   vibeModeOriginalMaterial: null,
+
+  textureEnabled: false,
+  texturePreset: "oak",
+  textureScale: { x: 100, y: 100 },
+  textureDepth: 100,
 
   useEnvironment: true,
   environmentPreset: "apartment",
@@ -138,6 +179,16 @@ export const useEditorStore = create<EditorState>((set) => ({
   useBloom: false,
   bloomIntensity: 1.0,
   bloomMipmapBlur: true,
+
+  isRecording: false,
+  recordingDuration: 0,
+  recordingStartTime: null,
+
+  // Video Modal State
+  videoModalOpen: false,
+  completedVideoBlob: null,
+  completedVideoFormat: null,
+  completedVideoFileName: null,
 
   // Simple Actions
   setSvgData: (data) => set({ svgData: data }),
@@ -165,6 +216,11 @@ export const useEditorStore = create<EditorState>((set) => ({
   setVibeModeOriginalMaterial: (material) =>
     set({ vibeModeOriginalMaterial: material }),
 
+  setTextureEnabled: (enabled) => set({ textureEnabled: enabled }),
+  setTexturePreset: (preset) => set({ texturePreset: preset }),
+  setTextureScale: (scale) => set({ textureScale: scale }),
+  setTextureDepth: (depth) => set({ textureDepth: depth }),
+
   setUseEnvironment: (use) => set({ useEnvironment: use }),
   setEnvironmentPreset: (preset) => set({ environmentPreset: preset }),
   setCustomHdriUrl: (url) => set({ customHdriUrl: url }),
@@ -182,6 +238,25 @@ export const useEditorStore = create<EditorState>((set) => ({
   setBloomIntensity: (intensity) => set({ bloomIntensity: intensity }),
   setBloomMipmapBlur: (blur) => set({ bloomMipmapBlur: blur }),
 
+  setIsRecording: (recording) => set({ isRecording: recording }),
+  setRecordingDuration: (duration) => set({ recordingDuration: duration }),
+  setRecordingStartTime: (time) => set({ recordingStartTime: time }),
+
+  // Video Modal Actions
+  setVideoModalOpen: (open) => set({ videoModalOpen: open }),
+  setCompletedVideo: (blob, format, fileName) =>
+    set({
+      completedVideoBlob: blob,
+      completedVideoFormat: format,
+      completedVideoFileName: fileName,
+    }),
+  clearCompletedVideo: () =>
+    set({
+      completedVideoBlob: null,
+      completedVideoFormat: null,
+      completedVideoFileName: null,
+    }),
+
   // Complex Actions
   toggleVibeMode: (newState) =>
     set((state) => {
@@ -190,7 +265,7 @@ export const useEditorStore = create<EditorState>((set) => ({
         state.environmentPreset === "custom" &&
         state.customHdriUrl
       ) {
-        return state; // Don't change state if trying to enable vibe mode with custom HDRI
+        return state;
       }
 
       const updates: Partial<EditorState> = {
@@ -198,26 +273,54 @@ export const useEditorStore = create<EditorState>((set) => ({
         userSelectedBackground: newState ? true : state.userSelectedBackground,
         backgroundColor: newState ? "#000000" : state.backgroundColor,
         solidColorPreset: newState ? "custom" : state.solidColorPreset,
-        autoRotate: newState ? false : state.autoRotate,
       };
 
       if (newState) {
-        if (state.useCustomColor) {
-          updates.vibeModeOriginalMaterial = state.customColor;
-        }
-        updates.useCustomColor = true;
-        updates.customColor = "#000000";
-
         if (state.environmentPreset !== "custom" || !state.customHdriUrl) {
           updates.environmentPreset = "dawn";
         }
-      } else {
-        if (state.vibeModeOriginalMaterial) {
-          updates.customColor = state.vibeModeOriginalMaterial;
-          updates.vibeModeOriginalMaterial = null;
-        }
       }
-
       return updates;
     }),
+
+  resetEditor: () =>
+    set(() => ({
+      depth: 1,
+      isHollowSvg: false,
+      modelRotationY: 0,
+
+      bevelEnabled: false,
+      bevelThickness: 0.0,
+      bevelSize: 0.0,
+      bevelSegments: 1,
+      bevelPreset: "none",
+
+      customColor: "#3498db",
+      useCustomColor: false,
+      materialPreset: "matte_metal",
+      roughness: initialPreset.roughness,
+      metalness: initialPreset.metalness,
+      clearcoat: initialPreset.clearcoat,
+      envMapIntensity: initialPreset.envMapIntensity,
+      transmission: initialPreset.transmission,
+      vibeModeOriginalMaterial: null,
+
+      textureEnabled: false,
+      texturePreset: "oak",
+      textureScale: { x: 100, y: 100 },
+      textureDepth: 100,
+
+      useEnvironment: true,
+      environmentPreset: "apartment",
+      customHdriUrl: null,
+
+      userSelectedBackground: false,
+
+      autoRotate: false,
+      autoRotateSpeed: 3,
+
+      useBloom: false,
+      bloomIntensity: 1.0,
+      bloomMipmapBlur: true,
+    })),
 }));

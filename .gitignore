@@ -27,5 +27,11 @@ yarn-error.log*
 next-env.d.ts
 .DS_Store
 
-# wrangler
-.wrangler
+#omiting demo
+demo/
+
+#rules
+.cursor
+
+#todos 
+todo.md

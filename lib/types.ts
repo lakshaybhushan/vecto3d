@@ -1,4 +1,22 @@
-import * as THREE from "three";
+import type * as THREE from "three";
+
+// Texture preset interface
+export interface TexturePreset {
+  name: string;
+  label: string;
+  category: "wood" | "miscellaneous";
+  diffuseMap: string;
+  normalMap?: string;
+  roughnessMap?: string;
+  displacementMap?: string;
+  aoMap?: string;
+  previewImage?: string;
+  repeat: { x: number; y: number };
+  roughnessAdjust?: number;
+  metalnessAdjust?: number;
+  bumpScale?: number;
+  displacementScale?: number;
+}
 
 // Material presets interface
 export interface MaterialPreset {
@@ -16,6 +34,7 @@ export interface EnvironmentPreset {
   name: string;
   label: string;
   color: string;
+  exrFile?: string; // EXR file path for @pmndrs/assets
 }
 
 // Color preset interface
@@ -31,6 +50,13 @@ export interface ResolutionPreset {
   multiplier: number;
 }
 
+// Texture export state for enhanced exports
+export interface TextureExportState {
+  textureEnabled: boolean;
+  texturePreset: string;
+  textureScale: { x: number; y: number };
+}
+
 // Bevel preset interface
 export interface BevelPreset {
   name: string;
@@ -38,7 +64,30 @@ export interface BevelPreset {
   thickness: number;
   size: number;
   segments: number;
+  previewStyle?: {
+    borderRadius: string;
+    boxShadow: string;
+  };
 }
+
+// Environment preset names type
+export type EnvironmentPresetName =
+  | "apartment"
+  | "city"
+  | "dawn"
+  | "forest"
+  | "lobby"
+  | "park"
+  | "studio"
+  | "sunset"
+  | "warehouse"
+  | "custom";
+
+// Drei environment preset names (excludes custom)
+export type DreiEnvironmentPresetName = Exclude<
+  EnvironmentPresetName,
+  "custom"
+>;
 
 // Props for the SVG model component
 export interface SVGModelProps {
@@ -58,6 +107,10 @@ export interface SVGModelProps {
   castShadow?: boolean;
   isHollowSvg?: boolean;
   spread?: number;
+  // Texture properties
+  textureEnabled?: boolean;
+  texturePreset?: string;
+  textureScale?: { x: number; y: number };
 }
 
 // Props for the model preview component
@@ -82,6 +135,10 @@ export interface ModelPreviewProps {
   clearcoat: number;
   transmission: number;
   envMapIntensity: number;
+  // Texture settings
+  textureEnabled: boolean;
+  texturePreset: string;
+  textureScale: { x: number; y: number };
   // Environment settings
   backgroundColor: string;
   useEnvironment: boolean;

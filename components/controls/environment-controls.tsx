@@ -1,42 +1,70 @@
 import { useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { ENVIRONMENT_PRESETS } from "@/lib/constants";
 import { toast } from "sonner";
-import { RainbowButton } from "@/components/ui/rainbow-button";
 import { motion } from "framer-motion";
-import { BsStars } from "react-icons/bs";
 import { useEditorStore } from "@/lib/store";
+import { Switch } from "@/components/ui/switch";
+
+type Rgb = { r: number; g: number; b: number };
+
+function hexToRgb(hex: string): Rgb {
+  const normalized = hex.replace("#", "");
+  const bigint = parseInt(
+    normalized.length === 3
+      ? normalized
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : normalized,
+    16,
+  );
+  return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+}
+
+function withAlpha(hex: string, alpha: number) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function buildSphereGradient(hex: string) {
+  const fill = withAlpha(hex, 0.85);
+  const highlight = withAlpha("#ffffff", 0.65);
+  const highlightSoft = withAlpha("#ffffff", 0.18);
+  const rim = withAlpha(hex, 0.8);
+  const body = withAlpha(hex, 0.55);
+  const base = withAlpha("#000000", 0.18);
+  return [
+    `radial-gradient(circle at 30% 28%, ${highlight} 0%, ${highlightSoft} 22%, transparent 36%)`,
+    `radial-gradient(circle at 70% 70%, ${rim} 0%, ${body} 45%, transparent 80%)`,
+    `radial-gradient(circle at 50% 90%, ${base} 0%, transparent 60%)`,
+    `radial-gradient(circle at 50% 50%, ${fill} 0%, ${fill} 100%)`,
+  ].join(", ");
+}
 
 export function EnvironmentControls() {
-  const {
-    useEnvironment,
-    setUseEnvironment,
-    environmentPreset,
-    setEnvironmentPreset,
-    customHdriUrl,
-    setCustomHdriUrl,
-    useBloom,
-    // setUseBloom,
-    bloomIntensity,
-    setBloomIntensity,
-    bloomMipmapBlur,
-    setBloomMipmapBlur,
-    modelRotationY,
-    setModelRotationY,
-    toggleVibeMode,
-  } = useEditorStore();
+  const useEnvironment = useEditorStore((state) => state.useEnvironment);
+  const setUseEnvironment = useEditorStore((state) => state.setUseEnvironment);
+  const environmentPreset = useEditorStore((state) => state.environmentPreset);
+  const setEnvironmentPreset = useEditorStore(
+    (state) => state.setEnvironmentPreset,
+  );
+  const customHdriUrl = useEditorStore((state) => state.customHdriUrl);
+  const setCustomHdriUrl = useEditorStore((state) => state.setCustomHdriUrl);
+  const useBloom = useEditorStore((state) => state.useBloom);
+  const bloomIntensity = useEditorStore((state) => state.bloomIntensity);
+  const setBloomIntensity = useEditorStore((state) => state.setBloomIntensity);
+  const bloomMipmapBlur = useEditorStore((state) => state.bloomMipmapBlur);
+  const setBloomMipmapBlur = useEditorStore(
+    (state) => state.setBloomMipmapBlur,
+  );
+  const modelRotationY = useEditorStore((state) => state.modelRotationY);
+  const setModelRotationY = useEditorStore((state) => state.setModelRotationY);
+  const toggleVibeMode = useEditorStore((state) => state.toggleVibeMode);
 
   const hdriFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -57,9 +85,13 @@ export function EnvironmentControls() {
     const fileType = file.type.toLowerCase();
     const isJpg = fileType === "image/jpeg" || fileType === "image/jpg";
     const isPng = fileType === "image/png";
+    const isHdr =
+      fileType === "image/hdr" || fileType === "application/octet-stream";
 
-    if (!isJpg && !isPng) {
-      toast.error("Unsupported file format: Only JPG and PNG are supported");
+    if (!isJpg && !isPng && !isHdr) {
+      toast.error(
+        "Unsupported file format: Only JPG, PNG, and HDR are supported",
+      );
       return;
     }
 
@@ -68,249 +100,264 @@ export function EnvironmentControls() {
       return;
     }
 
-    const reader = new FileReader();
+    if (customHdriUrl && customHdriUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(customHdriUrl);
+    }
 
     try {
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setCustomHdriUrl(event.target.result as string);
-          setEnvironmentPreset("custom");
-          toast.success("Image uploaded successfully");
-        } else {
-          toast.error("Failed to process image");
-        }
-      };
-
-      reader.onerror = (error) => {
-        console.error("FileReader error:", error);
-        toast.error("Failed to read the image file");
-      };
-
-      reader.readAsDataURL(file);
+      const objectURL = URL.createObjectURL(file);
+      setCustomHdriUrl(objectURL);
+      setEnvironmentPreset("custom");
+      toast.success("Image uploaded successfully");
     } catch (error) {
-      console.error("File reading error:", error);
-      toast.error("Failed to read the image file");
+      console.error("Error creating object URL:", error);
+      toast.error("Failed to process the image file");
     }
 
     e.target.value = "";
   };
 
+  const handlePresetChange = (preset: string) => {
+    setEnvironmentPreset(preset);
+  };
+
   return (
     <div className="space-y-4">
-      <Alert className="bg-muted/50 mb-4">
-        <AlertDescription className="text-xs flex items-center">
-          <InfoIcon className="h-4 w-4 mr-2" />
-          Environment settings are for preview only and will not affect the
-          exported 3D model.
-        </AlertDescription>
-      </Alert>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
+      <div className="flex items-center justify-between rounded-lg border p-3">
+        <div className="space-y-0.5">
+          <Label htmlFor="useEnvironment" className="text-sm font-medium">
+            Use Environment Lighting
+          </Label>
+          <p className="text-muted-foreground text-xs">
+            Enable environment lighting for the 3D model.
+          </p>
+        </div>
+        <Switch
           id="useEnvironment"
           checked={useEnvironment}
           onCheckedChange={(checked) => setUseEnvironment(checked as boolean)}
         />
-        <Label htmlFor="useEnvironment">Use Environment Lighting</Label>
       </div>
 
       {useEnvironment && (
-        <>
+        <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="environmentPreset">Environment Preset</Label>
-            <Select
-              value={environmentPreset}
-              onValueChange={setEnvironmentPreset}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select environment" />
-              </SelectTrigger>
-              <SelectContent>
-                {ENVIRONMENT_PRESETS.map((preset) => (
-                  <SelectItem key={preset.name} value={preset.name}>
-                    {preset.label}
-                  </SelectItem>
-                ))}
-                {customHdriUrl && (
-                  <SelectItem value="custom">Custom Image</SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 my-3">
-            {ENVIRONMENT_PRESETS.map((preset) => (
-              <div
-                key={preset.name}
-                className={`cursor-pointer rounded-md p-2 flex flex-col items-center ${
-                  environmentPreset === preset.name
-                    ? "bg-primary/20 ring-1 ring-primary"
-                    : "hover:bg-muted"
-                }`}
-                onClick={() => setEnvironmentPreset(preset.name)}>
-                <div
-                  className="w-12 h-12 rounded-full mb-1 overflow-hidden"
-                  style={{
-                    background: preset.color,
-                    boxShadow: "0 0 8px rgba(0,0,0,0.15) inset",
+            <Label className="text-sm font-medium">Presets</Label>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+              {ENVIRONMENT_PRESETS.map((preset) => (
+                <button
+                  key={preset.name}
+                  className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                    environmentPreset === preset.name
+                      ? "bg-secondary"
+                      : "hover:bg-secondary/50 hover:border-secondary"
+                  }`}
+                  onClick={() => handlePresetChange(preset.name)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      handlePresetChange(preset.name);
+                    }
                   }}
-                />
-                <span className="text-xs font-medium text-center">
-                  {preset.label.split(" ")[0]}
-                </span>
-              </div>
-            ))}
-
-            <div
-              className={`cursor-pointer rounded-md p-2 flex flex-col items-center ${
-                environmentPreset === "custom"
-                  ? "bg-primary/20 ring-1 ring-primary"
-                  : "hover:bg-muted"
-              }`}
-              onClick={() => {
-                if (customHdriUrl) {
-                  setEnvironmentPreset("custom");
-                } else {
-                  hdriFileInputRef.current?.click();
-                }
-              }}>
-              <input
-                ref={hdriFileInputRef}
-                type="file"
-                accept="image/jpeg,image/jpg,image/png"
-                className="hidden"
-                onChange={handleHdriFileChange}
-              />
-
-              {customHdriUrl ? (
-                <>
-                  <div
-                    className="w-12 h-12 rounded-full mb-1 overflow-hidden"
-                    style={{
-                      backgroundImage: `url(${customHdriUrl})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    }}
-                  />
-                  <span className="text-xs font-medium">Custom</span>
-                </>
-              ) : (
-                <>
-                  <div className="w-12 h-12 rounded-full mb-1 flex items-center justify-center bg-primary/10">
-                    <span className="text-2xl font-semibold text-primary">
-                      +
-                    </span>
+                  aria-label={preset.label}
+                  aria-pressed={environmentPreset === preset.name}
+                  type="button">
+                  <div className="relative flex h-full flex-col">
+                    <div className="relative flex flex-1 items-center justify-center overflow-hidden">
+                      <div className="relative z-10 mb-0 flex items-center justify-center">
+                        <div
+                          className="h-12 w-12 rounded-full border border-white/20 shadow-md shadow-black/20 sm:h-14 sm:w-14"
+                          style={{
+                            background: buildSphereGradient(preset.color),
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="bg-primary/10 px-2 py-1.5 text-center">
+                      <p className="text-foreground text-xs leading-tight font-medium">
+                        {preset.label}
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-xs font-medium">Custom</span>
-                </>
-              )}
+                </button>
+              ))}
+
+              <button
+                key="custom-preset"
+                className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                  environmentPreset === "custom"
+                    ? "bg-secondary"
+                    : "hover:bg-secondary/50 hover:border-secondary"
+                }`}
+                onClick={() => {
+                  if (customHdriUrl) {
+                    setEnvironmentPreset("custom");
+                  } else {
+                    hdriFileInputRef.current?.click();
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    if (customHdriUrl) {
+                      setEnvironmentPreset("custom");
+                    } else {
+                      hdriFileInputRef.current?.click();
+                    }
+                  }
+                }}
+                aria-label={customHdriUrl ? "Custom" : "Upload custom image"}
+                aria-pressed={environmentPreset === "custom"}
+                type="button">
+                <input
+                  ref={hdriFileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png"
+                  className="hidden"
+                  onChange={handleHdriFileChange}
+                />
+                {customHdriUrl ? (
+                  <div className="relative flex h-full flex-col">
+                    <div className="relative flex flex-1 items-center justify-center overflow-hidden">
+                      <div className="relative z-10 mb-0 flex items-center justify-center">
+                        <div
+                          className="h-12 w-12 rounded-full border border-white/20 shadow-md shadow-black/20 sm:h-14 sm:w-14"
+                          style={{ background: buildSphereGradient("#9CA3AF") }}
+                        />
+                      </div>
+                    </div>
+                    <div className="bg-primary/10 px-2 py-1.5 text-center">
+                      <p className="text-foreground text-xs leading-tight font-medium">
+                        Custom
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative flex h-full flex-col">
+                    <div className="relative flex flex-1 items-center justify-center overflow-hidden">
+                      <div className="border-muted-foreground/30 bg-muted/20 relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed sm:h-14 sm:w-14">
+                        <PlusIcon className="text-muted-foreground h-6 w-6 sm:h-8 sm:w-8" />
+                      </div>
+                    </div>
+                    <div className="bg-primary/10 px-2 py-1.5 text-center">
+                      <p className="text-foreground text-xs leading-tight font-medium">
+                        Custom
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </button>
             </div>
           </div>
 
           {environmentPreset === "custom" && customHdriUrl && (
-            <div className="mt-3 p-3 bg-muted/30 rounded-md">
-              <div className="flex items-start">
-                <InfoIcon className="h-4 w-4 text-muted-foreground mr-2 mt-0.5" />
-                <div>
-                  <p className="text-xs text-muted-foreground">
-                    Your image will be used for reflections in the 3D model
+            <Alert className="bg-muted/50">
+              <AlertDescription className="flex items-center text-xs">
+                <div className="mr-2 h-5 w-1 rounded-full bg-blue-500" />
+                <div className="flex w-full items-center justify-between">
+                  <p className="text-muted-foreground mt-0.5 text-xs">
+                    Your image will be used for reflections in the 3D model.
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="mt-2 text-xs h-7"
+                    className="h-7 text-xs"
                     onClick={() => hdriFileInputRef.current?.click()}>
                     Change Image
                   </Button>
                 </div>
-              </div>
-            </div>
+              </AlertDescription>
+            </Alert>
           )}
-        </>
-      )}
 
-      {useEnvironment && (
-        <div className="space-y-4 pt-4 mt-4 border-t">
-          <div className="w-full">
+          <div className="space-y-4 border-t pt-4">
             {environmentPreset === "custom" && customHdriUrl ? (
-              <Button
-                variant="outline"
-                size="lg"
-                disabled={true}
-                className="w-full opacity-50 cursor-not-allowed">
-                Vibe Mode Not Available with Custom Images
-              </Button>
+              <div className="bg-muted/50 flex items-center justify-between rounded-lg border px-4 py-3">
+                <Label
+                  htmlFor="vibe-mode-disabled"
+                  className="text-muted-foreground">
+                  Vibe Mode
+                </Label>
+                <p className="text-muted-foreground text-xs">
+                  Unavailable with custom images
+                </p>
+              </div>
             ) : (
-              <RainbowButton
-                className={`w-full py-5 text-base font-semibold transition-all ${
-                  useBloom ? "animate-rainbow" : "opacity-90 hover:opacity-100"
-                }`}
-                onClick={() => {
-                  const newValue = !useBloom;
-                  toggleVibeMode(newValue);
-                }}>
-                {useBloom ? "Disable Vibe Mode" : "Enable Vibe Mode"}
-                <BsStars className="w-4 h-4 ml-2" />
-              </RainbowButton>
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div className="space-y-0.5">
+                  <Label htmlFor="vibe-mode" className="text-sm font-medium">
+                    Vibe Mode
+                  </Label>
+                  <p className="text-muted-foreground text-xs">
+                    Enable a cinematic bloom effect.
+                  </p>
+                </div>
+                <Switch
+                  id="vibe-mode"
+                  checked={useBloom}
+                  onCheckedChange={toggleVibeMode}
+                />
+              </div>
+            )}
+
+            {useBloom && (
+              <motion.div
+                className="bg-muted/20 border-primary/20 mt-2 space-y-4 rounded-md border p-4"
+                initial={{ opacity: 0, height: 0, y: -10 }}
+                animate={{ opacity: 1, height: "auto", y: 0 }}
+                exit={{ opacity: 0, height: 0, y: -10 }}
+                transition={{ duration: 0.15 }}>
+                <div className="space-y-4">
+                  <Label
+                    htmlFor="bloomIntensity"
+                    className="flex items-center justify-between">
+                    <span>Bloom Intensity</span>
+                    <span className="text-primary font-mono">
+                      {bloomIntensity.toFixed(2)}
+                    </span>
+                  </Label>
+                  <Slider
+                    id="bloomIntensity"
+                    min={0.1}
+                    max={2.0}
+                    step={0.1}
+                    value={[bloomIntensity]}
+                    onValueChange={(value) => setBloomIntensity(value[0])}
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="bloomMipmapBlur"
+                    checked={bloomMipmapBlur}
+                    onCheckedChange={(checked) =>
+                      setBloomMipmapBlur(checked as boolean)
+                    }
+                  />
+
+                  <Label htmlFor="bloomMipmapBlur">Smooth Bloom</Label>
+                </div>
+
+                <div className="border-primary/10 space-y-2 border-t pt-3">
+                  <Label
+                    htmlFor="modelRotation"
+                    className="flex justify-between">
+                    <span>Rotate Model</span>
+                    <span className="text-primary font-mono">
+                      {(modelRotationY * (180 / Math.PI)).toFixed(0)}°
+                    </span>
+                  </Label>
+                  <Slider
+                    id="modelRotation"
+                    min={0}
+                    max={2 * Math.PI}
+                    step={Math.PI / 12}
+                    value={[modelRotationY]}
+                    onValueChange={(value) => setModelRotationY(value[0])}
+                    className="py-1"
+                  />
+                </div>
+              </motion.div>
             )}
           </div>
-
-          {useBloom && (
-            <motion.div
-              className="space-y-4 mt-2 p-4 bg-muted/20 rounded-md border border-primary/20"
-              initial={{ opacity: 0, height: 0, y: -10 }}
-              animate={{ opacity: 1, height: "auto", y: 0 }}
-              exit={{ opacity: 0, height: 0, y: -10 }}
-              transition={{ duration: 0.15 }}>
-              <div className="space-y-2">
-                <Label
-                  htmlFor="bloomIntensity"
-                  className="flex justify-between">
-                  <span>Bloom Intensity</span>
-                  <span className="text-primary font-mono">
-                    {bloomIntensity.toFixed(1)}
-                  </span>
-                </Label>
-                <Slider
-                  id="bloomIntensity"
-                  min={0.1}
-                  max={2.0}
-                  step={0.1}
-                  value={[bloomIntensity]}
-                  onValueChange={(value) => setBloomIntensity(value[0])}
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="bloomMipmapBlur"
-                  checked={bloomMipmapBlur}
-                  onCheckedChange={(checked) =>
-                    setBloomMipmapBlur(checked as boolean)
-                  }
-                />
-                <Label htmlFor="bloomMipmapBlur">
-                  Smooth Bloom (Better Quality)
-                </Label>
-              </div>
-              <div className="space-y-2 pt-3 border-t border-primary/10">
-                <Label htmlFor="modelRotation" className="flex justify-between">
-                  <span>Model Rotation</span>
-                  <span className="text-primary font-mono">
-                    {(modelRotationY * (180 / Math.PI)).toFixed(0)}°
-                  </span>
-                </Label>
-                <Slider
-                  id="modelRotation"
-                  min={0}
-                  max={2 * Math.PI}
-                  step={Math.PI / 12}
-                  value={[modelRotationY]}
-                  onValueChange={(value) => setModelRotationY(value[0])}
-                  className="py-1"
-                />
-              </div>
-            </motion.div>
-          )}
         </div>
       )}
     </div>

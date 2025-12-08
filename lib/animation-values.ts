@@ -1,247 +1,154 @@
-// Animation variants for staggered children
-export const staggerContainer = (
-  staggerChildren?: number,
-  delayChildren?: number,
-) => ({
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: staggerChildren || 0.1,
-      delayChildren: delayChildren || 0,
-    },
-  },
-});
+export const easingCurves = {
+  easeInQuad: [0.55, 0.085, 0.68, 0.53],
+  easeInCubic: [0.55, 0.055, 0.675, 0.19],
+  easeInQuart: [0.895, 0.03, 0.685, 0.22],
+  easeInQuint: [0.755, 0.05, 0.855, 0.06],
+  easeInExpo: [0.95, 0.05, 0.795, 0.035],
+  easeInCirc: [0.6, 0.04, 0.98, 0.335],
 
-// Fade up animation with blur effect
-export const fadeUp = {
-  hidden: {
-    opacity: 0,
-    y: 20,
-    filter: "blur(8px)",
-  },
-  show: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: {
-      type: "spring",
-      damping: 15,
-      stiffness: 100,
-      filter: { duration: 0.4 },
-    },
-  },
-};
+  easeOutQuad: [0.25, 0.46, 0.45, 0.94],
+  easeOutCubic: [0.215, 0.61, 0.355, 1],
+  easeOutQuart: [0.165, 0.84, 0.44, 1],
+  easeOutQuint: [0.23, 1, 0.32, 1],
+  easeOutExpo: [0.19, 1, 0.22, 1],
+  easeOutCirc: [0.075, 0.82, 0.165, 1],
 
-// Scale animation with blur effect
-export const scaleUp = {
-  hidden: {
-    opacity: 0,
-    scale: 0.9,
-    filter: "blur(5px)",
-  },
-  show: {
-    opacity: 1,
-    scale: 1,
-    filter: "blur(0px)",
-    transition: {
-      type: "spring",
-      damping: 20,
-      stiffness: 100,
-      filter: { duration: 0.5, ease: "easeOut" },
-    },
-  },
-};
+  easeInOutQuad: [0.455, 0.03, 0.515, 0.955],
+  easeInOutCubic: [0.645, 0.045, 0.355, 1],
+  easeInOutQuart: [0.77, 0, 0.175, 1],
+  easeInOutQuint: [0.86, 0, 0.07, 1],
+  easeInOutExpo: [1, 0, 0, 1],
+  easeInOutCirc: [0.785, 0.135, 0.15, 0.86],
+} as const;
 
-// Slide in from right with blur
-export const slideRight = {
-  hidden: {
-    opacity: 0,
-    x: -20,
-    filter: "blur(8px)",
+export const springConfigs = {
+  gentle: {
+    type: "spring" as const,
+    stiffness: 100,
+    damping: 20,
+    mass: 1.2,
   },
-  show: {
-    opacity: 1,
-    x: 0,
-    filter: "blur(0px)",
-    transition: {
-      type: "spring",
-      damping: 15,
-      stiffness: 100,
-      filter: { duration: 0.4 },
-    },
+  smooth: {
+    type: "spring" as const,
+    stiffness: 120,
+    damping: 22,
+    mass: 1,
   },
-};
+  bouncy: {
+    type: "spring" as const,
+    stiffness: 180,
+    damping: 12,
+    mass: 0.8,
+  },
+  snappy: {
+    type: "spring" as const,
+    stiffness: 300,
+    damping: 30,
+    mass: 0.6,
+  },
+  appleLike: {
+    type: "spring" as const,
+    stiffness: 400,
+    damping: 30,
+    mass: 0.5,
+    velocity: 0,
+  },
+  appleGentle: {
+    type: "spring" as const,
+    stiffness: 300,
+    damping: 35,
+    mass: 0.8,
+    velocity: 0,
+  },
+  iosSheet: {
+    type: "spring" as const,
+    stiffness: 500,
+    damping: 40,
+    mass: 0.4,
+    velocity: 0,
+  },
+} as const;
 
-// Page transition variants with blur
-export const pageTransition = {
+export const pageTransitions = {
   initial: {
     opacity: 0,
-    filter: "blur(10px)",
+    y: 20,
   },
   animate: {
     opacity: 1,
-    filter: "blur(0px)",
-    transition: {
-      duration: 0.6,
-      ease: [0.25, 0.1, 0.25, 1], // cubic-bezier for smoother motion
-      filter: { duration: 0.5 },
-      when: "beforeChildren",
-      staggerChildren: 0.1,
-    },
+    y: 0,
   },
   exit: {
     opacity: 0,
-    filter: "blur(10px)",
+    y: -20,
+  },
+} as const;
+
+export const staggerContainer = {
+  animate: {
     transition: {
-      duration: 0.4,
-      ease: "easeInOut",
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
     },
   },
-};
+} as const;
 
-// 3D model container animation with enhanced blur
-export const modelContainerAnimation = {
-  hidden: {
+export const fadeInUp = {
+  initial: {
     opacity: 0,
-    filter: "blur(12px)",
-    scale: 0.97,
+    y: 60,
   },
-  show: {
+  animate: {
     opacity: 1,
-    filter: "blur(0px)",
-    scale: 1,
+    y: 0,
     transition: {
-      duration: 0.7,
-      ease: "easeOut",
-      scale: {
-        type: "spring",
-        damping: 20,
-        stiffness: 100,
-      },
+      duration: 0.8,
+      ease: easingCurves.easeOutQuart,
     },
   },
-};
+} as const;
 
-// Logo animation with blur and rotation
-export const logoAnimation = {
-  hidden: {
+export const fadeInScale = {
+  initial: {
     opacity: 0,
     scale: 0.8,
-    rotate: -5,
-    filter: "blur(4px)",
   },
-  show: {
+  animate: {
     opacity: 1,
     scale: 1,
-    rotate: 0,
-    filter: "blur(0px)",
     transition: {
-      type: "spring",
-      damping: 10,
-      stiffness: 100,
-      filter: { duration: 0.3 },
+      duration: 0.6,
+      ease: easingCurves.easeOutCubic,
     },
   },
-};
+} as const;
 
-// Button animation with hover effect and blur
-export const buttonAnimation = {
-  hidden: {
+export const slideInFromLeft = {
+  initial: {
     opacity: 0,
-    scale: 0.9,
-    filter: "blur(5px)",
+    x: -60,
   },
-  show: {
-    opacity: 1,
-    scale: 1,
-    filter: "blur(0px)",
-    transition: {
-      type: "spring",
-      damping: 12,
-      stiffness: 100,
-      filter: { duration: 0.4 },
-    },
-  },
-  hover: {
-    scale: 1.05,
-    boxShadow: "0px 10px 25px rgba(0, 0, 0, 0.1)",
-    transition: {
-      type: "spring",
-      damping: 10,
-      stiffness: 400,
-    },
-  },
-  tap: { scale: 0.98 },
-};
-
-// List item stagger animation with blur
-export const listItem = {
-  hidden: {
-    opacity: 0,
-    x: -20,
-    filter: "blur(4px)",
-  },
-  show: {
+  animate: {
     opacity: 1,
     x: 0,
-    filter: "blur(0px)",
     transition: {
-      type: "spring",
-      damping: 15,
-      stiffness: 100,
-      filter: { duration: 0.3 },
+      duration: 0.7,
+      ease: easingCurves.easeOutQuint,
     },
   },
-};
+} as const;
 
-// Card animation with depth effect and blur
-export const cardAnimation = {
-  hidden: {
+export const slideInFromRight = {
+  initial: {
     opacity: 0,
-    y: 30,
-    filter: "blur(8px)",
-    scale: 0.95,
+    x: 60,
   },
-  show: {
+  animate: {
     opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    scale: 1,
+    x: 0,
     transition: {
-      type: "spring",
-      damping: 20,
-      stiffness: 100,
-      filter: { duration: 0.5 },
-      scale: { duration: 0.5 },
+      duration: 0.7,
+      ease: easingCurves.easeOutQuint,
     },
   },
-};
-
-// Tab content transition with enhanced blur
-export const tabContentAnimation = {
-  hidden: {
-    opacity: 0,
-    y: 10,
-    filter: "blur(8px)",
-  },
-  show: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: {
-      type: "spring",
-      damping: 20,
-      stiffness: 300,
-      filter: { duration: 0.4, ease: "easeOut" },
-    },
-  },
-  exit: {
-    opacity: 0,
-    y: -10,
-    filter: "blur(8px)",
-    transition: {
-      duration: 0.3,
-      filter: { duration: 0.2 },
-    },
-  },
-};
+} as const;

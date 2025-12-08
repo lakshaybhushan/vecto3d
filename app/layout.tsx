@@ -1,25 +1,34 @@
+import "@/lib/polyfills";
 import type React from "react";
 import "@/styles/globals.css";
-import { Instrument_Sans, Instrument_Serif } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster as SonnerToaster } from "sonner";
-import Script from "next/script";
+import { Geist_Mono, Instrument_Serif } from "next/font/google";
+import LocalFont from "next/font/local";
+import { ThemeProvider } from "@/components/layouts/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 
-const instrumentSans = Instrument_Sans({
-  subsets: ["latin"],
-  variable: "--font-instrument-sans",
-});
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
   weight: "400",
-  variable: "--font-instrument-serif",
+  variable: "--font-serif",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-mono",
+});
+
+const clashGrotesk = LocalFont({
+  src: "../public/fonts/ClashGrotesk-Variable.woff2",
+  display: "swap",
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
-  title: "Vecto3d | Transform Your Vectors in a New Dimension",
+  title: "Vecto3d - Convert SVGs to 3D",
   description: "A super simple tool to convert SVG logos to 3D models",
   icons: {
     icon: [
@@ -28,16 +37,16 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "Vecto3d | Transform Your Vectors in a New Dimension",
+    title: "Vecto3d - Convert SVGs to 3D",
     description: "A super simple tool to convert SVG logos to 3D models",
     url: "https://vecto3d.xyz/",
-    siteName: "Vecto3d | Transform Your Vectors in a New Dimension",
+    siteName: "Vecto3d - Convert SVGs to 3D",
     images: [
       {
         url: "/opengraph-image-v1.png",
         width: 1200,
         height: 675,
-        alt: "Vecto3d - Transform Your Vectors in a New Dimension",
+        alt: "Vecto3d - Convert SVGs to 3D",
       },
     ],
     locale: "en_US",
@@ -45,7 +54,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vecto3d | Transform Your Vectors in a New Dimension",
+    title: "Vecto3d - Convert SVGs to 3D",
     description: "A super simple tool to convert SVG logos to 3D models",
     images: ["/twitter-image-v1.png"],
   },
@@ -58,12 +67,26 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <Script
-        src="https://cloud.umami.is/script.js"
-        defer
-        data-website-id="237f1de7-ab04-44dd-a7b4-6b0b819b7991"
-      />
-      <body className={cn(instrumentSans.className, instrumentSerif.variable)}>
+      <head>
+        {/* <script
+          crossOrigin="anonymous"
+          src="//unpkg.com/react-scan/dist/auto.global.js"
+          defer
+        /> */}
+        <script
+          src="https://cloud.umami.is/script.js"
+          defer
+          data-website-id="237f1de7-ab04-44dd-a7b4-6b0b819b7991"
+        />
+      </head>
+      <body
+        className={cn(
+          clashGrotesk.className,
+          instrumentSerif.variable,
+          geistMono.variable,
+          "overflow-x-hidden",
+        )}
+        suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -71,12 +94,7 @@ export default function RootLayout({
           disableTransitionOnChange>
           {children}
           <Analytics />
-          <SonnerToaster
-            position="top-center"
-            richColors
-            closeButton
-            theme="system"
-          />
+          <Toaster position="top-center" theme="system" />
         </ThemeProvider>
       </body>
     </html>

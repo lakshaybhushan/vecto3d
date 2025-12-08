@@ -2,6 +2,106 @@ import * as THREE from "three";
 import React from "react";
 import { toast } from "sonner";
 import { loadThreeModules } from "./three-imports";
+import { TEXTURE_PRESETS } from "./constants";
+import { loadTexture } from "./texture-cache";
+import type { TextureExportState } from "./types";
+import { VideoRecorder, downloadRecording } from "./video-recorder";
+
+export async function prepareMaterialWithTextures(
+  material: THREE.MeshPhysicalMaterial,
+  textureEnabled: boolean,
+  texturePreset: string,
+  textureScale: { x: number; y: number },
+): Promise<THREE.MeshPhysicalMaterial> {
+  if (!textureEnabled) {
+    return material;
+  }
+
+  const currentTexturePreset = TEXTURE_PRESETS.find(
+    (preset) => preset.name === texturePreset,
+  );
+
+  if (!currentTexturePreset) {
+    return material;
+  }
+
+  const clonedMaterial = material.clone();
+
+  try {
+    const textureOptions = {
+      wrapS: THREE.RepeatWrapping,
+      wrapT: THREE.RepeatWrapping,
+      repeat: {
+        x: currentTexturePreset.repeat.x / textureScale.x,
+        y: currentTexturePreset.repeat.y / textureScale.y,
+      },
+      generateMipmaps: true,
+    };
+
+    const diffuseTexture = await loadTexture(currentTexturePreset.diffuseMap, {
+      ...textureOptions,
+      colorSpace: THREE.SRGBColorSpace,
+    });
+
+    clonedMaterial.map = diffuseTexture;
+
+    if (currentTexturePreset.normalMap) {
+      const normalTexture = await loadTexture(
+        currentTexturePreset.normalMap,
+        textureOptions,
+      );
+      clonedMaterial.normalMap = normalTexture;
+      clonedMaterial.normalScale = new THREE.Vector2(
+        currentTexturePreset?.bumpScale || 0.02,
+        currentTexturePreset?.bumpScale || 0.02,
+      );
+    }
+
+    if (currentTexturePreset.roughnessMap) {
+      const roughnessTexture = await loadTexture(
+        currentTexturePreset.roughnessMap,
+        textureOptions,
+      );
+      clonedMaterial.roughnessMap = roughnessTexture;
+    }
+
+    if (currentTexturePreset.aoMap) {
+      const aoTexture = await loadTexture(
+        currentTexturePreset.aoMap,
+        textureOptions,
+      );
+      clonedMaterial.aoMap = aoTexture;
+      clonedMaterial.aoMapIntensity = 1.0;
+    }
+
+    clonedMaterial.userData = {
+      ...clonedMaterial.userData,
+      textureEnabled: true,
+      texturePreset: texturePreset,
+      textureScale: textureScale,
+      textureMaps: {
+        diffuse: currentTexturePreset.diffuseMap,
+        normal: currentTexturePreset.normalMap,
+        roughness: currentTexturePreset.roughnessMap,
+        ao: currentTexturePreset.aoMap,
+      },
+    };
+
+    if (currentTexturePreset.roughnessAdjust !== undefined) {
+      clonedMaterial.roughness = currentTexturePreset.roughnessAdjust;
+    }
+
+    if (currentTexturePreset.metalnessAdjust !== undefined) {
+      clonedMaterial.metalness = currentTexturePreset.metalnessAdjust;
+    }
+
+    clonedMaterial.needsUpdate = true;
+  } catch (error) {
+    console.warn(`Failed to load textures for export:`, error);
+  }
+
+  return clonedMaterial;
+}
 
 export function prepareModelForExport(
   model: THREE.Object3D,
@@ -40,9 +140,8 @@ export function prepareModelForExport(
 
           const isHole = Boolean(
             physMat.userData?.isHole ||
-              mesh.userData?.isHole ||
-              mesh.renderOrder > 0 ||
-              physMat.polygonOffsetFactor < 0,
+            mesh.userData?.isHole ||
+            physMat.polygonOffsetFactor < 0,
           );
 
           const newMat = physMat.clone();
@@ -97,9 +196,8 @@ export function prepareModelForExport(
 
         const isHole = Boolean(
           physMat.userData?.isHole ||
-            mesh.userData?.isHole ||
-            mesh.renderOrder > 0 ||
-            physMat.polygonOffsetFactor < 0,
+          mesh.userData?.isHole ||
+          physMat.polygonOffsetFactor < 0,
         );
 
         const newMat = physMat.clone();
@@ -169,9 +267,8 @@ export function prepareModelForExport(
 
       const isHole = Boolean(
         originalMaterial.userData?.isHole ||
-          mesh.userData?.isHole ||
-          mesh.renderOrder > 0 ||
-          originalMaterial?.polygonOffsetFactor < 0,
+        mesh.userData?.isHole ||
+        originalMaterial?.polygonOffsetFactor < 0,
       );
 
       const materialKey = isHole ? "hole" : originalMaterial.uuid;
@@ -282,78 +379,103 @@ export async function prepareSTL(model: THREE.Object3D): Promise<Blob | null> {
   }
 }
 
-export async function exportToGLTF(
+export async function exportToGLTFWithTextures(
   model: THREE.Object3D,
   fileName: string,
   format: "gltf" | "glb" = "glb",
+  editorState?: TextureExportState,
 ): Promise<boolean> {
   try {
     const exportModel = prepareModelForExport(model, format);
     const modules = await loadThreeModules();
 
+    const materialProcessingPromises: Promise<void>[] = [];
+
     exportModel.traverse((object) => {
       if (object instanceof THREE.Mesh) {
         const mesh = object as THREE.Mesh;
 
-        // Handle array materials
+        const processMaterial = async (material: THREE.Material) => {
+          if (material.userData?.originalProperties) {
+            const physMaterial = material as THREE.MeshPhysicalMaterial;
+            const props = material.userData.originalProperties;
+
+            const isHole = Boolean(
+              material.userData?.isHole ||
+              mesh.userData?.isHole ||
+              physMaterial.polygonOffsetFactor < 0,
+            );
+
+            if (props.color !== undefined)
+              physMaterial.color.setHex(props.color);
+            if (props.roughness !== undefined)
+              physMaterial.roughness = props.roughness;
+            if (props.metalness !== undefined)
+              physMaterial.metalness = props.metalness;
+            if (props.clearcoat !== undefined)
+              physMaterial.clearcoat = props.clearcoat;
+            if (props.clearcoatRoughness !== undefined)
+              physMaterial.clearcoatRoughness = props.clearcoatRoughness;
+            if (props.transmission !== undefined)
+              physMaterial.transmission = props.transmission;
+            if (props.ior !== undefined) physMaterial.ior = props.ior;
+            if (props.opacity !== undefined)
+              physMaterial.opacity = props.opacity;
+            if (props.sheen !== undefined) physMaterial.sheen = props.sheen;
+            if (props.sheenRoughness !== undefined)
+              physMaterial.sheenRoughness = props.sheenRoughness;
+
+            if (editorState?.textureEnabled && !isHole) {
+              const enhancedMaterial = await prepareMaterialWithTextures(
+                physMaterial,
+                editorState.textureEnabled,
+                editorState.texturePreset,
+                editorState.textureScale,
+              );
+
+              enhancedMaterial.userData = {
+                ...enhancedMaterial.userData,
+                isHole: isHole,
+              };
+
+              if (Array.isArray(mesh.material)) {
+                const index = mesh.material.indexOf(material);
+                if (index !== -1) {
+                  mesh.material[index] = enhancedMaterial;
+                }
+              } else {
+                mesh.material = enhancedMaterial;
+              }
+            }
+
+            if (isHole) {
+              physMaterial.transparent = true;
+              physMaterial.opacity = 0.5;
+              physMaterial.depthWrite = false;
+              physMaterial.polygonOffset = true;
+              physMaterial.polygonOffsetFactor = -2;
+              physMaterial.polygonOffsetUnits = 1;
+              physMaterial.userData = {
+                ...physMaterial.userData,
+                isHole: true,
+              };
+            }
+
+            physMaterial.needsUpdate = true;
+          }
+        };
+
         if (Array.isArray(mesh.material)) {
           mesh.material.forEach((material) => {
-            // If we stored original properties in userData, apply them now
-            if (material.userData?.originalProperties) {
-              const physMaterial = material as THREE.MeshPhysicalMaterial;
-              const props = material.userData.originalProperties;
-
-              // Apply all stored properties
-              if (props.color !== undefined)
-                physMaterial.color.setHex(props.color);
-              if (props.roughness !== undefined)
-                physMaterial.roughness = props.roughness;
-              if (props.metalness !== undefined)
-                physMaterial.metalness = props.metalness;
-              if (props.clearcoat !== undefined)
-                physMaterial.clearcoat = props.clearcoat;
-              if (props.clearcoatRoughness !== undefined)
-                physMaterial.clearcoatRoughness = props.clearcoatRoughness;
-              if (props.transmission !== undefined)
-                physMaterial.transmission = props.transmission;
-              if (props.ior !== undefined) physMaterial.ior = props.ior;
-              if (props.opacity !== undefined)
-                physMaterial.opacity = props.opacity;
-              if (props.sheen !== undefined) physMaterial.sheen = props.sheen;
-              if (props.sheenRoughness !== undefined)
-                physMaterial.sheenRoughness = props.sheenRoughness;
-
-              physMaterial.needsUpdate = true;
-            }
+            materialProcessingPromises.push(processMaterial(material));
           });
-        }
-        // Handle single material
-        else if (mesh.material && mesh.material.userData?.originalProperties) {
-          const physMaterial = mesh.material as THREE.MeshPhysicalMaterial;
-          const props = mesh.material.userData.originalProperties;
-
-          // Apply all stored properties
-          if (props.color !== undefined) physMaterial.color.setHex(props.color);
-          if (props.roughness !== undefined)
-            physMaterial.roughness = props.roughness;
-          if (props.metalness !== undefined)
-            physMaterial.metalness = props.metalness;
-          if (props.clearcoat !== undefined)
-            physMaterial.clearcoat = props.clearcoat;
-          if (props.clearcoatRoughness !== undefined)
-            physMaterial.clearcoatRoughness = props.clearcoatRoughness;
-          if (props.transmission !== undefined)
-            physMaterial.transmission = props.transmission;
-          if (props.ior !== undefined) physMaterial.ior = props.ior;
-          if (props.opacity !== undefined) physMaterial.opacity = props.opacity;
-          if (props.sheen !== undefined) physMaterial.sheen = props.sheen;
-          if (props.sheenRoughness !== undefined)
-            physMaterial.sheenRoughness = props.sheenRoughness;
-
-          physMaterial.needsUpdate = true;
+        } else if (mesh.material) {
+          materialProcessingPromises.push(processMaterial(mesh.material));
         }
       }
     });
+
+    await Promise.all(materialProcessingPromises);
 
     const exporter = new modules.GLTFExporter();
     const options = {
@@ -363,7 +485,6 @@ export async function exportToGLTF(
       embedImages: true,
       includeCustomExtensions: true,
       animations: [],
-      //Ensuring multiple materials are processed as individual materials to preserve colors
       forceIndices: true,
       processPendingMaterials: (
         materials: Map<THREE.Material, THREE.Material>,
@@ -406,6 +527,191 @@ export async function exportToGLTF(
     console.error(`Error exporting to ${format.toUpperCase()}:`, error);
     return false;
   }
+}
+
+export async function exportToGLTF(
+  model: THREE.Object3D,
+  fileName: string,
+  format: "gltf" | "glb" = "glb",
+): Promise<boolean> {
+  try {
+    const exportModel = prepareModelForExport(model, format);
+    const modules = await loadThreeModules();
+
+    exportModel.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        const mesh = object as THREE.Mesh;
+
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach((material) => {
+            if (material.userData?.originalProperties) {
+              const physMaterial = material as THREE.MeshPhysicalMaterial;
+              const props = material.userData.originalProperties;
+
+              if (props.color !== undefined)
+                physMaterial.color.setHex(props.color);
+              if (props.roughness !== undefined)
+                physMaterial.roughness = props.roughness;
+              if (props.metalness !== undefined)
+                physMaterial.metalness = props.metalness;
+              if (props.clearcoat !== undefined)
+                physMaterial.clearcoat = props.clearcoat;
+              if (props.clearcoatRoughness !== undefined)
+                physMaterial.clearcoatRoughness = props.clearcoatRoughness;
+              if (props.transmission !== undefined)
+                physMaterial.transmission = props.transmission;
+              if (props.ior !== undefined) physMaterial.ior = props.ior;
+              if (props.opacity !== undefined)
+                physMaterial.opacity = props.opacity;
+              if (props.sheen !== undefined) physMaterial.sheen = props.sheen;
+              if (props.sheenRoughness !== undefined)
+                physMaterial.sheenRoughness = props.sheenRoughness;
+
+              physMaterial.needsUpdate = true;
+            }
+          });
+        } else if (
+          mesh.material &&
+          mesh.material.userData?.originalProperties
+        ) {
+          const physMaterial = mesh.material as THREE.MeshPhysicalMaterial;
+          const props = mesh.material.userData.originalProperties;
+
+          if (props.color !== undefined) physMaterial.color.setHex(props.color);
+          if (props.roughness !== undefined)
+            physMaterial.roughness = props.roughness;
+          if (props.metalness !== undefined)
+            physMaterial.metalness = props.metalness;
+          if (props.clearcoat !== undefined)
+            physMaterial.clearcoat = props.clearcoat;
+          if (props.clearcoatRoughness !== undefined)
+            physMaterial.clearcoatRoughness = props.clearcoatRoughness;
+          if (props.transmission !== undefined)
+            physMaterial.transmission = props.transmission;
+          if (props.ior !== undefined) physMaterial.ior = props.ior;
+          if (props.opacity !== undefined) physMaterial.opacity = props.opacity;
+          if (props.sheen !== undefined) physMaterial.sheen = props.sheen;
+          if (props.sheenRoughness !== undefined)
+            physMaterial.sheenRoughness = props.sheenRoughness;
+
+          physMaterial.needsUpdate = true;
+        }
+      }
+    });
+
+    const exporter = new modules.GLTFExporter();
+    const options = {
+      binary: format === "glb",
+      trs: true,
+      onlyVisible: true,
+      embedImages: true,
+      includeCustomExtensions: true,
+      animations: [],
+      forceIndices: true,
+      processPendingMaterials: (
+        materials: Map<THREE.Material, THREE.Material>,
+      ) => {
+        return materials;
+      },
+    };
+
+    const gltfData = await new Promise<ArrayBuffer | object>((resolve) => {
+      exporter.parse(
+        exportModel,
+        (result: ArrayBuffer | object) => resolve(result),
+        (error: Error) => {
+          console.error("GLTFExporter error:", error);
+          throw error;
+        },
+        options,
+      );
+    });
+
+    cleanupExportedModel(exportModel);
+
+    let blob: Blob;
+    if (format === "glb") {
+      blob = new Blob([gltfData as ArrayBuffer], {
+        type: "application/octet-stream",
+      });
+    } else {
+      const jsonStr = JSON.stringify(gltfData, null, 2);
+      blob = new Blob([jsonStr], { type: "application/json" });
+    }
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+
+    return true;
+  } catch (error) {
+    console.error(`Error exporting to ${format.toUpperCase()}:`, error);
+    return false;
+  }
+}
+
+export async function exportToVideo(
+  canvas: HTMLCanvasElement,
+  fileName: string,
+  format: "mp4" | "gif",
+  duration: number = 5000,
+  fps: number = 30,
+): Promise<boolean> {
+  try {
+    if (!canvas) {
+      throw new Error("Canvas not found");
+    }
+
+    const recorder = new VideoRecorder(canvas, {
+      format,
+      fps,
+      quality: 0.9,
+    });
+
+    await recorder.start();
+
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        try {
+          const blob = await recorder.stop();
+
+          if (blob) {
+            const extension = format === "mp4" ? "webm" : "gif";
+            downloadRecording(blob, `${fileName}.${extension}`);
+            resolve(true);
+          } else {
+            throw new Error("Failed to generate video blob");
+          }
+        } catch (error) {
+          console.error("Recording error:", error);
+          resolve(false);
+        }
+      }, duration);
+    });
+  } catch (error) {
+    console.error("Export video error:", error);
+    toast.error(`Failed to export ${format.toUpperCase()}: ${error}`);
+    return false;
+  }
+}
+
+export async function exportToMP4(
+  canvas: HTMLCanvasElement,
+  fileName: string,
+  duration: number = 5000,
+  fps: number = 30,
+): Promise<boolean> {
+  return exportToVideo(canvas, fileName, "mp4", duration, fps);
+}
+
+export async function exportToGIF(
+  canvas: HTMLCanvasElement,
+  fileName: string,
+  duration: number = 3000,
+  fps: number = 15,
+): Promise<boolean> {
+  return exportToVideo(canvas, fileName, "gif", duration, fps);
 }
 
 export async function exportToPNG(
@@ -462,8 +768,14 @@ export async function exportToPNG(
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    // Cleanup temporary resources
     exportCanvas.remove();
-    URL.revokeObjectURL(dataURL);
+    if (ctx) {
+      ctx.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
+    }
+
+    // Note: Don't revoke dataURL from toDataURL as it's not a blob URL
     return true;
   } catch (error) {
     console.error("Error exporting PNG:", error);
@@ -472,11 +784,103 @@ export async function exportToPNG(
   }
 }
 
-export async function handleExport(
-  format: "stl" | "gltf" | "glb" | "png",
+export async function handleExportWithTextures(
+  format: "stl" | "gltf" | "glb" | "png" | "mp4" | "gif",
   modelGroupRef: React.RefObject<THREE.Group | null>,
   fileName: string,
   resolution: number = 1,
+  textureState?: TextureExportState,
+  canvas?: HTMLCanvasElement,
+): Promise<void> {
+  const baseName = fileName.replace(".svg", "");
+
+  if (!modelGroupRef.current || !fileName) {
+    console.error("Export failed: Model group or filename missing");
+    toast.error("Export failed: Model or filename missing");
+    return;
+  }
+
+  const model = modelGroupRef.current;
+
+  try {
+    let success = false;
+
+    switch (format) {
+      case "stl":
+        success = await exportToSTL(model, `${baseName}.stl`);
+        break;
+      case "gltf":
+        if (textureState?.textureEnabled) {
+          success = await exportToGLTFWithTextures(
+            model,
+            `${baseName}.gltf`,
+            "gltf",
+            textureState,
+          );
+        } else {
+          success = await exportToGLTF(model, `${baseName}.gltf`, "gltf");
+        }
+        break;
+      case "glb":
+        if (textureState?.textureEnabled) {
+          success = await exportToGLTFWithTextures(
+            model,
+            `${baseName}.glb`,
+            "glb",
+            textureState,
+          );
+        } else {
+          success = await exportToGLTF(model, `${baseName}.glb`, "glb");
+        }
+        break;
+      case "png":
+        success = await exportToPNG(modelGroupRef, baseName, resolution);
+        break;
+      case "mp4":
+        if (!canvas) {
+          console.error("Canvas not provided for video export");
+          toast.error("Error: Canvas not available for video export");
+          return;
+        }
+        success = await exportToMP4(canvas, baseName);
+        break;
+      case "gif":
+        if (!canvas) {
+          console.error("Canvas not provided for GIF export");
+          toast.error("Error: Canvas not available for GIF export");
+          return;
+        }
+        success = await exportToGIF(canvas, baseName);
+        break;
+      default:
+        console.error(`Unsupported export format: ${format}`);
+        toast.error(`Unsupported export format: ${format}`);
+        return;
+    }
+
+    if (success) {
+      toast.success(
+        `Successfully exported as ${format.toUpperCase()}${
+          textureState?.textureEnabled ? " with textures" : ""
+        }`,
+      );
+    } else {
+      toast.error(`Failed to export as ${format.toUpperCase()}`);
+    }
+  } catch (error) {
+    console.error(`Export error (${format}):`, error);
+    toast.error(
+      `Export failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
+}
+
+export async function handleExport(
+  format: "stl" | "gltf" | "glb" | "png" | "mp4" | "gif",
+  modelGroupRef: React.RefObject<THREE.Group | null>,
+  fileName: string,
+  resolution: number = 1,
+  canvas?: HTMLCanvasElement,
 ): Promise<void> {
   const baseName = fileName.replace(".svg", "");
 
@@ -491,6 +895,20 @@ export async function handleExport(
 
     if (format === "png") {
       success = await exportToPNG(modelGroupRef, baseName, resolution);
+    } else if (format === "mp4") {
+      if (!canvas) {
+        console.error("Canvas not provided for video export");
+        toast.error("Error: Canvas not available for video export");
+        return;
+      }
+      success = await exportToMP4(canvas, baseName);
+    } else if (format === "gif") {
+      if (!canvas) {
+        console.error("Canvas not provided for GIF export");
+        toast.error("Error: Canvas not available for GIF export");
+        return;
+      }
+      success = await exportToGIF(canvas, baseName);
     } else {
       const modelGroupClone = modelGroupRef.current.clone();
       modelGroupClone.updateMatrixWorld(true);
@@ -527,7 +945,6 @@ export async function handlePrint(
   format: "stl",
   modelGroupRef: React.RefObject<THREE.Group | null>,
   fileName: string,
-  // resolution: number = 1,
   printService: "m3d" | "bambu",
 ): Promise<void> {
   const baseName = fileName.replace(".svg", "");
@@ -557,10 +974,8 @@ export async function handlePrint(
           try {
             const form = new FormData();
 
-            // Convert blob to array buffer
             const fileBuffer = await blob.arrayBuffer();
 
-            // Append the file with the correct field name that the server expects
             form.append("file", new Blob([fileBuffer]), `${baseName}.stl`);
 
             form.append("external_source", "vecto3d");
@@ -572,7 +987,6 @@ export async function handlePrint(
             });
 
             const data = await response.json();
-            console.log(data);
 
             if (response.ok) {
               success = true;
@@ -587,7 +1001,6 @@ export async function handlePrint(
           }
         } else if (printService === "bambu") {
           try {
-            // Upload to vaultl.ink to get a public URL
             const response = await fetch(
               "https://vaultl.ink/api/headless-upload",
               {
@@ -602,13 +1015,10 @@ export async function handlePrint(
 
             const data = await response.json();
 
-            console.log(data);
-
             if (data.url) {
               const bambuUrl = `bambustudioopen://open?file=${encodeURIComponent(
                 data.url,
               )}`;
-              console.log(bambuUrl);
               window.location.href = bambuUrl;
             } else {
               throw new Error("Failed to get public URL");
