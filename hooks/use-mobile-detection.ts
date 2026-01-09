@@ -1,10 +1,5 @@
 import { useState, useEffect } from "react";
 
-/**
- * Hook to detect if the device is a mobile device based on screen width
- * @param breakpoint The breakpoint to consider as mobile (default: 768px)
- * @returns An object with mobile detection state and functions
- */
 export function useMobileDetection(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [continueOnMobile, setContinueOnMobile] = useState<boolean>(false);
@@ -55,10 +50,6 @@ export function useMobileDetection(breakpoint = 768) {
   };
 }
 
-/**
- * Hook to detect Safari browser
- * @returns boolean indicating if the browser is Safari
- */
 export function useSafariDetection() {
   const [isSafari, setIsSafari] = useState<boolean>(false);
 
@@ -76,10 +67,6 @@ export function useSafariDetection() {
   return isSafari;
 }
 
-/**
- * Hook to detect iOS devices
- * @returns boolean indicating if the device is iOS
- */
 export function useIOSDetection() {
   const [isIOS, setIsIOS] = useState<boolean>(false);
 
@@ -94,10 +81,6 @@ export function useIOSDetection() {
   return isIOS;
 }
 
-/**
- * Hook to detect if fullscreen API is supported
- * @returns boolean indicating if fullscreen API is available
- */
 export function useFullscreenSupport() {
   const [isFullscreenSupported, setIsFullscreenSupported] =
     useState<boolean>(false);

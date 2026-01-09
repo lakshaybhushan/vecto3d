@@ -68,24 +68,22 @@ class MemoryManager {
   }
 
   cleanup(): void {
-    console.log(`🧹 Cleaning up ${this.resources.size} tracked resources...`);
-
     const resourcesToDispose = Array.from(this.resources);
     this.resources.clear();
 
     resourcesToDispose.forEach((resource) => {
       try {
         this.disposeResource(resource);
-      } catch (error) {
-        console.warn("Error disposing resource:", error);
+      } catch {
+        // Resource disposal failed
       }
     });
 
     try {
       clearTextureCache();
       textureCache.clearCache();
-    } catch (error) {
-      console.warn("Error clearing texture caches:", error);
+    } catch {
+      // Texture cache clear failed
     }
 
     if (
@@ -128,7 +126,6 @@ class MemoryManager {
   }
 
   handleLowMemory(): void {
-    console.warn("⚠️ Low memory detected, initiating aggressive cleanup...");
     this.cleanup();
 
     if (typeof window !== "undefined") {
@@ -139,15 +136,12 @@ class MemoryManager {
 
         const loseExt = gl.getExtension("WEBGL_lose_context");
         if (loseExt) {
-          // Aggressively free GPU memory, then attempt to restore shortly after (Mindful Chase best-practice)
           loseExt.loseContext();
-
-          // Try to restore context after a short delay so the app can continue running without manual refresh
           setTimeout(() => {
             try {
               loseExt.restoreContext();
-            } catch (err) {
-              console.warn("Failed to restore WebGL context", err);
+            } catch {
+              // Context restoration failed
             }
           }, 1000);
         }
@@ -158,7 +152,6 @@ class MemoryManager {
 
 export const memoryManager = MemoryManager.getInstance();
 
-// Only attach browser-specific event listeners when in browser environment
 if (typeof window !== "undefined") {
   window.addEventListener("beforeunload", () => {
     memoryManager.cleanup();
@@ -170,7 +163,6 @@ if (typeof window !== "undefined") {
     }
   });
 
-  // Only monitor memory usage if performance.memory is available
   if (
     typeof performance !== "undefined" &&
     "memory" in performance &&

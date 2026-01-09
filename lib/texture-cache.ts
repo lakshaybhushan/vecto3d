@@ -18,7 +18,7 @@ interface TextureOptions {
 
 class TextureCache {
   private cache = new Map<string, CachedTexture>();
-  private readonly maxCacheSize = 100 * 1024 * 1024; // 100MB cache limit
+  private readonly maxCacheSize = 100 * 1024 * 1024;
   private currentCacheSize = 0;
   private loader = new THREE.TextureLoader();
 
@@ -26,14 +26,12 @@ class TextureCache {
     url: string,
     options: TextureOptions = {},
   ): Promise<THREE.Texture> {
-    // Prevent SSR issues by checking if we're in a browser environment
     if (typeof window === "undefined") {
       throw new Error(
         "Texture loading is only available in browser environment",
       );
     }
 
-    // Check if texture is already cached
     const cached = this.cache.get(url);
     if (cached) {
       cached.lastUsed = Date.now();
@@ -43,10 +41,8 @@ class TextureCache {
     }
 
     try {
-      // Load texture from Blob URL
       const texture = await this.loader.loadAsync(url);
 
-      // Apply default options
       const defaultOptions: TextureOptions = {
         wrapS: THREE.RepeatWrapping,
         wrapT: THREE.RepeatWrapping,
@@ -57,13 +53,9 @@ class TextureCache {
 
       this.applyTextureOptions(texture, defaultOptions);
 
-      // Estimate texture size (rough calculation)
       const estimatedSize = this.estimateTextureSize(texture);
-
-      // Check cache limits and clean if necessary
       this.ensureCacheSpace(estimatedSize);
 
-      // Cache the texture (clone for cache, return original)
       const cachedTexture = texture.clone();
       this.cache.set(url, {
         texture: cachedTexture,
@@ -75,7 +67,6 @@ class TextureCache {
 
       return texture;
     } catch (error) {
-      console.error(`Failed to load texture from ${url}:`, error);
       throw error;
     }
   }
@@ -98,12 +89,11 @@ class TextureCache {
   }
 
   private estimateTextureSize(texture: THREE.Texture): number {
-    // Rough estimation: width * height * 4 bytes (RGBA) + mipmaps (~33% extra)
     const image = texture.image as HTMLImageElement;
     if (image && image.width && image.height) {
       return image.width * image.height * 4 * 1.33;
     }
-    return 1024 * 1024 * 4; // Default fallback: 1MB
+    return 1024 * 1024 * 4;
   }
 
   private ensureCacheSpace(neededSize: number): void {
@@ -111,7 +101,6 @@ class TextureCache {
       this.currentCacheSize + neededSize > this.maxCacheSize &&
       this.cache.size > 0
     ) {
-      // Find least recently used texture
       let oldestUrl = "";
       let oldestTime = Date.now();
 
@@ -127,31 +116,24 @@ class TextureCache {
         if (removed) {
           removed.texture.dispose();
           this.currentCacheSize -= removed.size;
-          this.cache.delete(oldestUrl);
-        }
-      } else {
-        break; // Safety break
+        this.cache.delete(oldestUrl);
       }
+    } else {
+      break;
     }
   }
+}
 
   async preloadTextures(
     urls: string[],
     options: TextureOptions = {},
   ): Promise<void> {
-    // Prevent SSR issues by checking if we're in a browser environment
     if (typeof window === "undefined") {
-      console.warn(
-        "Texture preloading is only available in browser environment",
-      );
       return;
     }
 
     const promises = urls.map((url) =>
-      this.loadTexture(url, options).catch((error) => {
-        console.warn(`Failed to preload texture ${url}:`, error);
-        return null;
-      }),
+      this.loadTexture(url, options).catch(() => null),
     );
 
     await Promise.all(promises);
@@ -193,10 +175,8 @@ class TextureCache {
   }
 }
 
-// Export singleton instance
 export const textureCache = new TextureCache();
 
-// Helper function for easy texture loading
 export async function loadTexture(
   url: string,
   options: TextureOptions = {},
@@ -204,7 +184,6 @@ export async function loadTexture(
   return textureCache.loadTexture(url, options);
 }
 
-// Helper function for preloading multiple textures
 export async function preloadTextures(
   urls: string[],
   options: TextureOptions = {},
