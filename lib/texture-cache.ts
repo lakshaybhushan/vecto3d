@@ -40,35 +40,31 @@ class TextureCache {
       return clonedTexture;
     }
 
-    try {
-      const texture = await this.loader.loadAsync(url);
+    const texture = await this.loader.loadAsync(url);
 
-      const defaultOptions: TextureOptions = {
-        wrapS: THREE.RepeatWrapping,
-        wrapT: THREE.RepeatWrapping,
-        flipY: true,
-        generateMipmaps: true,
-        ...options,
-      };
+    const defaultOptions: TextureOptions = {
+      wrapS: THREE.RepeatWrapping,
+      wrapT: THREE.RepeatWrapping,
+      flipY: true,
+      generateMipmaps: true,
+      ...options,
+    };
 
-      this.applyTextureOptions(texture, defaultOptions);
+    this.applyTextureOptions(texture, defaultOptions);
 
-      const estimatedSize = this.estimateTextureSize(texture);
-      this.ensureCacheSpace(estimatedSize);
+    const estimatedSize = this.estimateTextureSize(texture);
+    this.ensureCacheSpace(estimatedSize);
 
-      const cachedTexture = texture.clone();
-      this.cache.set(url, {
-        texture: cachedTexture,
-        lastUsed: Date.now(),
-        size: estimatedSize,
-      });
+    const cachedTexture = texture.clone();
+    this.cache.set(url, {
+      texture: cachedTexture,
+      lastUsed: Date.now(),
+      size: estimatedSize,
+    });
 
-      this.currentCacheSize += estimatedSize;
+    this.currentCacheSize += estimatedSize;
 
-      return texture;
-    } catch (error) {
-      throw error;
-    }
+    return texture;
   }
 
   private applyTextureOptions(
@@ -116,13 +112,13 @@ class TextureCache {
         if (removed) {
           removed.texture.dispose();
           this.currentCacheSize -= removed.size;
-        this.cache.delete(oldestUrl);
+          this.cache.delete(oldestUrl);
+        }
+      } else {
+        break;
       }
-    } else {
-      break;
     }
   }
-}
 
   async preloadTextures(
     urls: string[],
