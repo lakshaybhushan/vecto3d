@@ -117,11 +117,8 @@ class TextureCache {
       } else {
         break;
       }
-    } else {
-      break;
     }
   }
-}
 
   async preloadTextures(
     urls: string[],
