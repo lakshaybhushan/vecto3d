@@ -147,7 +147,6 @@ export function sanitizeSvg(
   }
 
   const finalConfig = { ...DEFAULT_SVG_CONFIG, ...config };
-  // Create DOMPurify configuration
   const domPurifyConfig = {
     USE_PROFILES: { svg: true, svgFilters: true },
     ALLOWED_TAGS: finalConfig.allowedTags,
@@ -165,10 +164,8 @@ export function sanitizeSvg(
   };
 
   try {
-    // Sanitize the SVG content
     const sanitized = DOMPurify.sanitize(svgContent, domPurifyConfig);
 
-    // Additional safety check: ensure it's still valid SVG
     if (!sanitized.toString().includes("<svg")) {
       console.warn("Sanitization removed SVG root element");
       return "";
@@ -182,10 +179,8 @@ export function sanitizeSvg(
 }
 
 export function sanitizeSvgForPreview(svgContent: string): string {
-  // For preview purposes, we want to preserve styling but remove any scripts
   return sanitizeSvg(svgContent, {
     stripScripts: true,
-    // Allow style attributes for proper rendering
     allowedAttributes: {
       ...DEFAULT_SVG_CONFIG.allowedAttributes,
       "*": [
@@ -203,7 +198,6 @@ export function isValidSvg(content: string): boolean {
     return false;
   }
 
-  // Basic SVG validation
   const svgPattern = /<svg[^>]*>[\s\S]*<\/svg>/i;
   return svgPattern.test(content.trim());
 }

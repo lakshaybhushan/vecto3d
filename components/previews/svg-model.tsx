@@ -133,14 +133,12 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     const groupRef = useRef<THREE.Group>(null);
     const materialsRef = useRef<THREE.Material[]>([]);
 
-    // Get current texture preset configuration
     const currentTexturePreset = TEXTURE_PRESETS.find(
       (preset) => preset.name === texturePreset,
     );
 
     useImperativeHandle(ref, () => groupRef.current!, []);
 
-    // Parse SVG data
     useEffect(() => {
       if (!svgData) return;
 
@@ -206,7 +204,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       }
     }, [svgData, onLoadStart, onLoadComplete, onError]);
 
-    // Optimized geometry generation
     const geometryData = useMemo(() => {
       if (!paths.length) return [];
 
@@ -214,16 +211,9 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         .map((path, index) => {
           try {
             const shapes = SVGLoader.createShapes(path);
-            console.log(
-              `📐 Created ${shapes.length} shapes from path ${index}`,
-            );
 
-            const processedShapes = shapes.map((shape, shapeIndex) => {
-              const processed = applySpread(shape, false, spread);
-              console.log(
-                `   Shape ${shapeIndex}: ${processed.getPoints().length} points`,
-              );
-              return processed;
+            const processedShapes = shapes.map((shape) => {
+              return applySpread(shape, false, spread);
             });
 
             return {
@@ -245,7 +235,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       }>;
     }, [paths, spread]);
 
-    // Clean material creation function
     const createMaterial = useCallback(
       async (
         color: string | THREE.Color,
@@ -300,19 +289,12 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
           opacity: isHole ? 0.5 : 1.0,
         };
 
-        // Apply textures if enabled (only in browser environment)
         if (
           textureEnabled &&
           currentTexturePreset &&
           typeof window !== "undefined"
         ) {
           try {
-            // Debug logging
-            if (typeof window !== "undefined" && window.console) {
-              console.log(
-                `Loading textures for preset: ${currentTexturePreset.name}, depth: ${textureDepth}%`,
-              );
-            }
             const textureOptions = {
               wrapS: THREE.RepeatWrapping,
               wrapT: THREE.RepeatWrapping,
@@ -335,96 +317,43 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
             materialProps.map = diffuseTexture;
             materialProps.color = new THREE.Color(1, 1, 1).lerp(threeColor, 1);
 
-            // Load normal map if available
             if (currentTexturePreset.normalMap) {
-              console.log(
-                `🔍 Attempting to load normal map from: ${currentTexturePreset.normalMap}`,
-              );
-
-              // Test if the URL is accessible
-              fetch(currentTexturePreset.normalMap, { method: "HEAD" })
-                .then((response) => {
-                  if (response.ok) {
-                    console.log(
-                      `✅ Normal map URL is accessible: ${response.status}`,
-                    );
-                  } else {
-                    console.error(
-                      `❌ Normal map URL returned: ${response.status}`,
-                    );
-                  }
-                })
-                .catch((err) =>
-                  console.error(`❌ Failed to fetch normal map:`, err),
-                );
               try {
                 const normalTexture = await loadTexture(
                   currentTexturePreset.normalMap,
                   {
                     ...textureOptions,
-                    colorSpace: THREE.NoColorSpace, // Normal maps should not use color space conversion
+                    colorSpace: THREE.NoColorSpace,
                   },
-                );
-                console.log(
-                  `✅ Normal texture loaded successfully:`,
-                  normalTexture,
                 );
                 materialProps.normalMap = normalTexture;
                 const depthFactor = (textureDepth ?? 100) / 100;
-                // More aggressive scaling to ensure visibility
                 const scaledBumpScale =
                   (currentTexturePreset?.bumpScale || 0.05) * depthFactor * 3.0;
                 materialProps.normalScale = new THREE.Vector2(
                   scaledBumpScale,
                   scaledBumpScale,
                 );
-
-                console.log(`🎯 Normal map applied:`);
-                console.log(`   - Preset: ${currentTexturePreset.name}`);
-                console.log(
-                  `   - Base bumpScale: ${currentTexturePreset?.bumpScale || 0.05}`,
-                );
-                console.log(`   - Texture depth: ${textureDepth}%`);
-                console.log(`   - Depth factor: ${depthFactor}`);
-                console.log(
-                  `   - Final normal scale: ${scaledBumpScale.toFixed(4)}`,
-                );
-                console.log(
-                  `   - Normal texture size: ${(normalTexture.image as HTMLImageElement)?.width}x${(normalTexture.image as HTMLImageElement)?.height}`,
-                );
-              } catch (normalError) {
-                console.error(
-                  `❌ Failed to load normal map for ${currentTexturePreset.name}:`,
-                  normalError,
-                );
-                console.error(`   URL: ${currentTexturePreset.normalMap}`);
+              } catch {
+                // Normal map failed to load, continue without it
               }
-            } else {
-              console.warn(
-                `⚠️ No normal map defined for preset: ${currentTexturePreset.name}`,
-              );
             }
 
-            // Disable displacement maps to prevent geometry artifacts
-            // We'll use only normal maps for depth effect
-
-            // Load roughness map if available
             if (currentTexturePreset.roughnessMap) {
               const roughnessTexture = await loadTexture(
                 currentTexturePreset.roughnessMap,
                 {
                   ...textureOptions,
-                  colorSpace: THREE.NoColorSpace, // Roughness maps should not use color space conversion
+                  colorSpace: THREE.NoColorSpace,
                 },
               );
               materialProps.roughnessMap = roughnessTexture;
             }
 
-            // Load AO map if available
             if (currentTexturePreset.aoMap) {
               const aoTexture = await loadTexture(currentTexturePreset.aoMap, {
                 ...textureOptions,
-                colorSpace: THREE.NoColorSpace, // AO maps should not use color space conversion
+                colorSpace: THREE.NoColorSpace,
               });
               materialProps.aoMap = aoTexture;
               materialProps.aoMapIntensity = 1.0;
@@ -456,13 +385,10 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       ],
     );
 
-    // Clean up materials on component props change
     useEffect(() => {
-      // Dispose old materials safely
       const materialsToDispose = [...materialsRef.current];
       materialsRef.current = [];
 
-      // Dispose via requestAnimationFrame to ensure render pass is done
       requestAnimationFrame(() => {
         materialsToDispose.forEach((material) => {
           memoryManager.untrack(material);
@@ -482,11 +408,9 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       textureDepth,
     ]);
 
-    // Cleanup on unmount
     useEffect(() => {
       const currentGroup = groupRef.current;
       return () => {
-        // Clear materials safely
         const materialsToDispose = [...materialsRef.current];
         materialsRef.current = [];
 
@@ -525,7 +449,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       return isMobile ? baseScale * 0.7 : baseScale;
     }, [dimensions, isMobile]);
 
-    // Create a stable key for material changes
     const materialKey = useMemo(() => {
       return `${textureEnabled}-${texturePreset}-${roughness}-${metalness}-${clearcoat}-${transmission}-${envMapIntensity}-${textureScale.x}-${textureScale.y}-${textureDepth}`;
     }, [
@@ -565,7 +488,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
 
     box.setFromObject(tempGroup);
 
-    // Dispose temporary objects to prevent GPU memory leaks (see gpu_leaks.md)
     tempGroup.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         if (child.geometry) {
@@ -576,7 +498,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     });
     tempGroup.clear();
 
-    // Calculate the center of the bounding box to properly centre the model
     const center = new THREE.Vector3();
     box.getCenter(center);
 
@@ -625,7 +546,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
   },
 );
 
-// Helper component to handle async material loading
 function MaterializedMesh({
   shape,
   color,
@@ -672,7 +592,6 @@ function MaterializedMesh({
     });
   }, [createMaterial, color, isHole, onMaterialReady]);
 
-  // Dispose geometry on unmount to prevent GPU memory leaks (see gpu_leaks.md)
   useEffect(() => {
     return () => {
       if (geometryRef.current) {

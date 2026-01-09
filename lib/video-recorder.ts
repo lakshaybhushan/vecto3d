@@ -63,10 +63,7 @@ export class VideoRecorder {
         await this.startGIFRecording();
       }
 
-      // Start progress tracking
       this.startProgressTracking();
-
-      console.log(`Started recording ${this.options.format.toUpperCase()}`);
     } catch (error) {
       this._isRecording = false;
       throw error;
@@ -76,9 +73,7 @@ export class VideoRecorder {
   private async startMP4Recording(): Promise<void> {
     try {
       this.stream = this.canvas.captureStream(this.options.fps);
-
       const mimeType = this.getSupportedMimeType();
-      console.log("Starting MP4 recording with mimeType:", mimeType);
 
       this.mediaRecorder = new MediaRecorder(this.stream, {
         mimeType,
@@ -86,25 +81,11 @@ export class VideoRecorder {
       });
 
       this.mediaRecorder.ondataavailable = (event) => {
-        console.log("Data available:", event.data.size, "bytes");
         if (event.data.size > 0) {
           this.chunks.push(event.data);
         }
       };
 
-      this.mediaRecorder.onerror = (event) => {
-        console.error("MediaRecorder error:", event);
-      };
-
-      this.mediaRecorder.onstart = () => {
-        console.log("MediaRecorder started");
-      };
-
-      this.mediaRecorder.onstop = () => {
-        console.log("MediaRecorder stopped, chunks:", this.chunks.length);
-      };
-
-      // Start recording with shorter timeslice for more frequent data events
       this.mediaRecorder.start(250);
     } catch (error) {
       throw new Error(`Failed to start MP4 recording: ${error}`);
@@ -200,17 +181,12 @@ export class VideoRecorder {
   private async stopMP4Recording(): Promise<Blob | null> {
     return new Promise((resolve) => {
       if (!this.mediaRecorder) {
-        console.error("No mediaRecorder available");
         resolve(null);
         return;
       }
 
-      // Set up the stop handler before stopping
       this.mediaRecorder.onstop = () => {
-        console.log("Stop event fired, chunks length:", this.chunks.length);
-
         if (this.chunks.length === 0) {
-          console.error("No chunks collected");
           this.cleanup();
           resolve(null);
           return;
@@ -219,17 +195,9 @@ export class VideoRecorder {
         const mimeType = this.getSupportedMimeType();
         let blob = new Blob(this.chunks, { type: mimeType });
 
-        console.log("Created blob:", {
-          size: blob.size,
-          type: blob.type,
-          chunks: this.chunks.length,
-        });
-
-        // Try to create a proper MP4 blob if possible
         if (mimeType.includes("mp4")) {
           blob = new Blob(this.chunks, { type: "video/mp4" });
         } else if (mimeType.includes("webm")) {
-          // Keep as WebM but with clear type
           blob = new Blob(this.chunks, { type: "video/webm" });
         }
 
@@ -237,16 +205,9 @@ export class VideoRecorder {
         resolve(blob);
       };
 
-      // Check MediaRecorder state before stopping
-      console.log("MediaRecorder state before stop:", this.mediaRecorder.state);
-
       if (this.mediaRecorder.state === "recording") {
         this.mediaRecorder.stop();
       } else {
-        console.warn(
-          "MediaRecorder not in recording state:",
-          this.mediaRecorder.state,
-        );
         resolve(null);
       }
     });
@@ -263,7 +224,6 @@ export class VideoRecorder {
       this.cleanup();
       return gif;
     } catch (error) {
-      console.error("Failed to create GIF:", error);
       this.cleanup();
       throw error;
     }
@@ -393,7 +353,6 @@ export function downloadRecording(blob: Blob, filename: string): void {
   }, 100);
 }
 
-// Toast-based recording functions
 export interface ToastRecordingOptions {
   canvas: HTMLCanvasElement;
   format: "mp4" | "gif";
@@ -413,7 +372,6 @@ export async function recordWithToastProgress({
   let recorder: VideoRecorder;
 
   try {
-    // Create initial progress toast
     toastId = toast.loading(`Recording ${format.toUpperCase()} - 0.0s`, {
       duration: Infinity,
       dismissible: false,
@@ -436,46 +394,35 @@ export async function recordWithToastProgress({
 
     await recorder.start();
 
-    // Auto-stop after duration with a small buffer
     setTimeout(
       async () => {
         try {
-          // Update toast to processing
           toast.loading(`Processing ${format.toUpperCase()}...`, {
             id: toastId,
             duration: Infinity,
             dismissible: false,
           });
 
-          // Add a small delay to ensure recording has data
           await new Promise((resolve) => setTimeout(resolve, 200));
-
           const blob = await recorder.stop();
 
           if (blob && blob.size > 0) {
-            // Success toast
             toast.success(
               `Recording completed! (${(blob.size / 1024 / 1024).toFixed(2)} MB)`,
               { id: toastId, duration: 4000 },
             );
             onComplete?.(blob);
           } else {
-            console.error("Recording failed: blob is null or empty", {
-              blob,
-              size: blob?.size,
-            });
             throw new Error("Recording failed - no data captured");
           }
         } catch (error) {
-          console.error("Recording error:", error);
           toast.error("Recording failed", { id: toastId, duration: 4000 });
           onError?.(error as Error);
         }
       },
       duration * 1000 + 100,
-    ); // Add 100ms buffer
+    );
   } catch (error) {
-    console.error("Failed to start recording:", error);
     toast.error("Failed to start recording", { id: toastId! });
     onError?.(error as Error);
   }

@@ -769,13 +769,11 @@ export async function exportToPNG(
     link.click();
     document.body.removeChild(link);
 
-    // Cleanup temporary resources
     exportCanvas.remove();
     if (ctx) {
       ctx.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
     }
 
-    // Note: Don't revoke dataURL from toDataURL as it's not a blob URL
     return true;
   } catch (error) {
     console.error("Error exporting PNG:", error);
