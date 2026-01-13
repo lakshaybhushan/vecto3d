@@ -20,10 +20,21 @@ import { EditManagers } from "@/components/edit/edit-managers";
 import { MinimalControls } from "@/components/edit/minimal-controls";
 import { MinimalExport } from "@/components/edit/minimal-export";
 
+// Detect Safari mobile
+const isSafariMobile = (): boolean => {
+  if (typeof window === "undefined") return false;
+  const ua = window.navigator.userAgent;
+  const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua) && !/Edge/.test(ua);
+  const isMobileDevice = /iPhone|iPad|iPod/.test(ua);
+  return isSafari && isMobileDevice;
+};
+
 export default function EditPage() {
   const [isClientMounted, setIsClientMounted] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>("geometry");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showSafariWarning, setShowSafariWarning] = useState(false);
+  const [safariDismissed, setSafariDismissed] = useState(false);
 
   const svgData = useEditorStore((state) => state.svgData);
   const fileName = useEditorStore((state) => state.fileName);
@@ -48,6 +59,7 @@ export default function EditPage() {
 
   useEffect(() => {
     setIsClientMounted(true);
+    setShowSafariWarning(isSafariMobile());
 
     const modelGroup = modelGroupRef.current;
     const model = modelRef.current;
@@ -98,6 +110,39 @@ export default function EditPage() {
   };
 
   if (!isClientMounted) return null;
+
+  // Safari mobile warning screen
+  if (showSafariWarning && !safariDismissed) {
+    return (
+      <main className="flex h-screen w-full flex-col items-center justify-center bg-black px-6 font-mono text-[14px] tracking-wide text-white uppercase">
+        <div className="max-w-sm text-center">
+          <div className="mb-6 text-2xl">⚠</div>
+          <h1 className="mb-4 text-lg">SAFARI NOT SUPPORTED</h1>
+          <p className="mb-8 leading-relaxed text-neutral-500 normal-case">
+            Safari on iOS has limited WebGL support which causes performance
+            issues with 3D rendering.
+          </p>
+          <p className="mb-8 text-neutral-400">
+            For the best experience, use{" "}
+            <span className="text-white">Chrome</span> or{" "}
+            <span className="text-white">Firefox</span>
+          </p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleBack}
+              className="w-full border border-white bg-white px-6 py-3 text-black transition-colors hover:bg-neutral-200">
+              GO BACK
+            </button>
+            <button
+              onClick={() => setSafariDismissed(true)}
+              className="w-full border border-neutral-700 px-6 py-3 text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-300">
+              CONTINUE ANYWAY
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex h-screen w-full flex-col bg-black font-mono text-[14px] tracking-wide text-white uppercase md:flex-row">
