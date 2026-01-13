@@ -249,3 +249,23 @@ html {
 .scrollbar-hidden::-webkit-scrollbar {
   display: none;
 }
+
+/* Diagonal stripe pattern */
+.diagonal-lines {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 8px,
+    rgba(255, 255, 255, 0.02) 8px,
+    rgba(255, 255, 255, 0.02) 9px
+  );
+}
+
+/* Bento card hover effect */
+.bento-card {
+  transition: all 0.3s ease;
+}
+
+.bento-card:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}

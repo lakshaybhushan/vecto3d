@@ -62,6 +62,10 @@ interface EditorState {
   isRecording: boolean;
   recordingDuration: number;
   recordingStartTime: number | null;
+  recordingProgress: number;
+  recordingElapsedTime: number;
+  recordingFormat: "mp4" | "gif" | null;
+  recordingStatus: "idle" | "recording" | "processing" | "complete" | "error";
 
   // Video Modal State
   videoModalOpen: boolean;
@@ -118,6 +122,12 @@ interface EditorState {
   setIsRecording: (recording: boolean) => void;
   setRecordingDuration: (duration: number) => void;
   setRecordingStartTime: (time: number | null) => void;
+  setRecordingProgress: (progress: number, elapsedTime: number) => void;
+  setRecordingFormat: (format: "mp4" | "gif" | null) => void;
+  setRecordingStatus: (
+    status: "idle" | "recording" | "processing" | "complete" | "error",
+  ) => void;
+  resetRecordingState: () => void;
 
   // Video Modal Actions
   setVideoModalOpen: (open: boolean) => void;
@@ -183,6 +193,10 @@ export const useEditorStore = create<EditorState>((set) => ({
   isRecording: false,
   recordingDuration: 0,
   recordingStartTime: null,
+  recordingProgress: 0,
+  recordingElapsedTime: 0,
+  recordingFormat: null,
+  recordingStatus: "idle",
 
   // Video Modal State
   videoModalOpen: false,
@@ -241,6 +255,18 @@ export const useEditorStore = create<EditorState>((set) => ({
   setIsRecording: (recording) => set({ isRecording: recording }),
   setRecordingDuration: (duration) => set({ recordingDuration: duration }),
   setRecordingStartTime: (time) => set({ recordingStartTime: time }),
+  setRecordingProgress: (progress, elapsedTime) =>
+    set({ recordingProgress: progress, recordingElapsedTime: elapsedTime }),
+  setRecordingFormat: (format) => set({ recordingFormat: format }),
+  setRecordingStatus: (status) => set({ recordingStatus: status }),
+  resetRecordingState: () =>
+    set({
+      isRecording: false,
+      recordingProgress: 0,
+      recordingElapsedTime: 0,
+      recordingFormat: null,
+      recordingStatus: "idle",
+    }),
 
   // Video Modal Actions
   setVideoModalOpen: (open) => set({ videoModalOpen: open }),

@@ -94,7 +94,7 @@ export default function RootLayout({
           disableTransitionOnChange>
           {children}
           <Analytics />
-          <Toaster position="top-center" theme="system" />
+          <Toaster position="top-center" />
         </ThemeProvider>
       </body>
     </html>

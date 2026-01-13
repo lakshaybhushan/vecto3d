@@ -50,6 +50,21 @@ export interface ResolutionPreset {
   multiplier: number;
 }
 
+// Video resolution preset
+export interface VideoResolutionPreset {
+  label: string;
+  width: number;
+  height: number;
+  bitrate: number;
+}
+
+// Aspect ratio preset
+export interface AspectRatioPreset {
+  label: string;
+  value: string;
+  ratio: number; // width / height
+}
+
 // Texture export state for enhanced exports
 export interface TextureExportState {
   textureEnabled: boolean;

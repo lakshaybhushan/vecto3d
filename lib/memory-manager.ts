@@ -131,19 +131,28 @@ class MemoryManager {
     if (typeof window !== "undefined") {
       const canvases = document.querySelectorAll("canvas");
       canvases.forEach((canvas) => {
-        const gl = canvas.getContext("webgl") || canvas.getContext("webgl2");
-        if (!gl) return;
+        try {
+          // Try to get existing WebGL context without creating a new one
+          const gl =
+            canvas.getContext("webgl", {
+              failIfMajorPerformanceCaveat: true,
+            }) ||
+            canvas.getContext("webgl2", { failIfMajorPerformanceCaveat: true });
+          if (!gl) return;
 
-        const loseExt = gl.getExtension("WEBGL_lose_context");
-        if (loseExt) {
-          loseExt.loseContext();
-          setTimeout(() => {
-            try {
-              loseExt.restoreContext();
-            } catch {
-              // Context restoration failed
-            }
-          }, 1000);
+          const loseExt = gl.getExtension("WEBGL_lose_context");
+          if (loseExt) {
+            loseExt.loseContext();
+            setTimeout(() => {
+              try {
+                loseExt.restoreContext();
+              } catch {
+                // Context restoration failed
+              }
+            }, 1000);
+          }
+        } catch {
+          // Canvas may have a different context type, skip it
         }
       });
     }

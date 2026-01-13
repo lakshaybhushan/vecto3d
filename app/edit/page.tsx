@@ -1,57 +1,28 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Maximize2, Minimize2, RotateCcw } from "lucide-react";
-import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-} from "@/components/ui/resizable";
 import type * as THREE from "three";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { RotateCcw, Maximize2, Minimize2, ArrowLeft } from "lucide-react";
 
-import { GeometryControls } from "@/components/controls/geometry-controls";
-import { MaterialControls } from "@/components/controls/material-controls";
-import { TextureControls } from "@/components/controls/texture-controls";
-import { EnvironmentControls } from "@/components/controls/environment-controls";
-import { BackgroundControls } from "@/components/controls/background-controls";
-
+import { useEditorStore } from "@/lib/store";
 import {
   useMobileDetection,
-  useIOSDetection,
   useFullscreenSupport,
 } from "@/hooks/use-mobile-detection";
 import { useTexturePreloader } from "@/hooks/use-texture-preloader";
-import { useEditorStore } from "@/lib/store";
 import { memoryManager } from "@/lib/memory-manager";
 
-import { AnimatedTabs } from "@/components/edit/animated-tabs";
-import { MobileTabBar } from "@/components/edit/mobile-tab-bar";
-import { EditHeader } from "@/components/edit/edit-header";
+import { ModelPreview } from "@/components/previews/model-preview";
 import { EditManagers } from "@/components/edit/edit-managers";
-import { ModelViewport } from "@/components/edit/model-viewport";
-
-// extracted components are imported above
+import { MinimalControls } from "@/components/edit/minimal-controls";
+import { MinimalExport } from "@/components/edit/minimal-export";
 
 export default function EditPage() {
   const [isClientMounted, setIsClientMounted] = useState(false);
-  const [activeMobileTab, setActiveMobileTab] = useState("geometry");
-  const [activeTab, setActiveTab] = useState("geometry");
+  const [activeSection, setActiveSection] = useState<string | null>("geometry");
+
   const svgData = useEditorStore((state) => state.svgData);
   const fileName = useEditorStore((state) => state.fileName);
   const isModelLoading = useEditorStore((state) => state.isModelLoading);
@@ -69,378 +40,156 @@ export default function EditPage() {
 
   const router = useRouter();
   const { isMobile, clearMobilePreference } = useMobileDetection();
-  const isIOS = useIOSDetection();
   const isFullscreenSupported = useFullscreenSupport();
 
-  // Initialize texture preloader
   useTexturePreloader(true);
 
   useEffect(() => {
     setIsClientMounted(true);
 
-    // Track model refs with memory manager
     const modelGroup = modelGroupRef.current;
     const model = modelRef.current;
 
-    if (modelGroup) {
-      memoryManager.track(modelGroup);
-    }
-    if (model) {
-      memoryManager.track(model);
-    }
+    if (modelGroup) memoryManager.track(modelGroup);
+    if (model) memoryManager.track(model);
 
-    // Cleanup session storage when component unmounts (user navigates away)
     return () => {
-      // Cleanup tracked models
-      if (modelGroup) {
-        memoryManager.untrack(modelGroup);
-      }
-      if (model) {
-        memoryManager.untrack(model);
-      }
+      if (modelGroup) memoryManager.untrack(modelGroup);
+      if (model) memoryManager.untrack(model);
 
-      // Only clear if user is not reloading (which would cause immediate unmount/mount)
       const currentPath = window.location.pathname;
       if (currentPath !== "/edit") {
         sessionStorage.removeItem("vecto3d_svgData");
         sessionStorage.removeItem("vecto3d_fileName");
-        // Trigger memory cleanup when leaving edit page
         memoryManager.scheduleCleanup();
       }
     };
   }, []);
 
-  const handleBackToHome = () => {
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement !== null);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, [setIsFullscreen]);
+
+  const handleBack = () => {
     clearMobilePreference();
-    // Clear session storage when intentionally navigating back to home
     sessionStorage.removeItem("vecto3d_svgData");
     sessionStorage.removeItem("vecto3d_fileName");
     router.push("/");
   };
 
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(document.fullscreenElement !== null);
-    };
+  const handleReset = () => {
+    resetEditor();
+    toast.success("RESET COMPLETE");
+  };
 
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    };
-  }, [setIsFullscreen]);
+  const handleFullscreen = () => {
+    if (isFullscreen) {
+      document.exitFullscreen();
+    } else if (previewContainerRef.current) {
+      previewContainerRef.current.requestFullscreen();
+    }
+  };
 
-  if (!isClientMounted) {
-    return null;
-  }
+  if (!isClientMounted) return null;
 
   return (
-    <main className="bg-background safari-fix relative flex h-screen w-full flex-col overflow-hidden">
+    <main className="flex h-screen w-full bg-black font-mono text-[14px] tracking-wide text-white uppercase">
       <EditManagers />
 
-      <EditHeader
-        isMobile={isMobile}
-        isFullscreenSupported={isFullscreenSupported}
-        isIOS={isIOS}
-        isFullscreen={isFullscreen}
-        onBack={handleBackToHome}
-        onReset={() => {
-          resetEditor();
-          toast.success("Editor settings reset to default");
-        }}
-        onToggleFullscreen={() => {
-          if (isFullscreen) {
-            document.exitFullscreen();
-          } else if (previewContainerRef.current) {
-            previewContainerRef.current.requestFullscreen();
-          }
-        }}
-        svgData={svgData}
-        fileName={fileName}
-        modelGroupRef={modelGroupRef}
-        canvasRef={canvasRef}
-      />
-
-      <div
-        className={`flex-1 ${isMobile ? "flex flex-col gap-0 overflow-hidden" : "px-4 py-4"}`}>
-        {isMobile ? (
-          <div
-            key="editor-content"
-            className={`grid grid-cols-1 ${isMobile ? "h-[calc(100vh-8rem)] overflow-hidden" : "gap-6 md:gap-8"} xl:grid-cols-12`}>
-            {/* Mobile: Show preview or controls based on screen */}
-            <div
-              className={`col relative ${isMobile ? "order-first h-[40vh] overflow-hidden" : "order-first xl:order-last"} ${isMobile ? "" : "h-[70dvh]"} overflow-hidden xl:order-last xl:col-span-7 xl:h-[calc(100vh-8rem)] ${isMobile ? "md:block" : ""}`}>
-              <Card
-                className={`flex h-full w-full flex-col overflow-hidden ${isMobile ? "rounded-none border-0" : "border"}`}>
-                {!isMobile && (
-                  <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 backdrop-blur-xs [.border-b]:pb-4">
-                    <div>
-                      <CardTitle className="text-xl font-medium">
-                        Preview
-                      </CardTitle>
-                      <CardDescription className="mt-1 text-xs">
-                        {!svgData
-                          ? "Loading SVG data..."
-                          : isModelLoading
-                            ? "Processing SVG..."
-                            : "Interact with your 3D model"}
-                      </CardDescription>
-                    </div>
-                    <TooltipProvider>
-                      <div className="flex gap-2">
-                        <Tooltip delayDuration={100}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => {
-                                resetEditor();
-                                toast.success(
-                                  "Editor settings reset to default",
-                                );
-                              }}
-                              aria-label="Reset editor settings">
-                              <RotateCcw className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="bottom"
-                            align="center"
-                            sideOffset={10}
-                            className="px-4 text-sm">
-                            Reset all settings
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip delayDuration={100}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => {
-                                if (isFullscreen) {
-                                  document.exitFullscreen();
-                                } else if (previewContainerRef.current) {
-                                  previewContainerRef.current.requestFullscreen();
-                                }
-                              }}
-                              aria-label={
-                                isFullscreen
-                                  ? "Exit fullscreen"
-                                  : "Enter fullscreen"
-                              }>
-                              {isFullscreen ? (
-                                <Minimize2 className="h-4 w-4" />
-                              ) : (
-                                <Maximize2 className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="bottom"
-                            align="center"
-                            sideOffset={10}
-                            className="px-4 text-sm">
-                            Full Screen
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </TooltipProvider>
-                  </CardHeader>
-                )}
-                <ModelViewport
-                  svgData={svgData}
-                  isMobile={isMobile}
-                  isModelLoading={isModelLoading}
-                  svgProcessingError={svgProcessingError}
-                  isFullscreen={isFullscreen}
-                  isFullscreenSupported={isFullscreenSupported}
-                  isIOS={isIOS}
-                  modelGroupRef={modelGroupRef}
-                  modelRef={modelRef}
-                  canvasRef={canvasRef}
-                  containerRef={previewContainerRef}
-                />
-              </Card>
-            </div>
-            {/* Desktop Controls */}
-            <div className="order-last hidden space-y-6 md:block xl:order-first xl:col-span-5">
-              <Card className="flex max-h-[50dvh] w-full flex-col overflow-hidden border lg:max-h-[55dvh] xl:max-h-[calc(100vh-8rem)]">
-                <CardHeader className="bg-background/80 z-10 flex flex-row items-center justify-between border-b p-4 pb-4 backdrop-blur-xs [.border-b]:pb-4">
-                  <div>
-                    <CardTitle className="text-xl font-medium">
-                      Customize
-                    </CardTitle>
-                    <CardDescription className="mt-1 truncate text-xs">
-                      {fileName || "Loading..."}
-                    </CardDescription>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col overflow-hidden p-0">
-                  <div className="flex flex-1 flex-col overflow-y-hidden">
-                    <AnimatedTabs
-                      activeTab={activeTab}
-                      onTabChange={setActiveTab}
-                    />
-
-                    <div className="flex-1 overflow-y-auto p-4">
-                      {activeTab === "geometry" && <GeometryControls />}
-                      {activeTab === "material" && <MaterialControls />}
-                      {activeTab === "textures" && <TextureControls />}
-                      {activeTab === "environment" && <EnvironmentControls />}
-                      {activeTab === "background" && <BackgroundControls />}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+      {/* PREVIEW PANEL */}
+      <div className="flex flex-1 flex-col border-r border-neutral-800">
+        {/* Header */}
+        <div className="flex h-10 items-center justify-between border-b border-neutral-800 px-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleBack}
+              className="text-neutral-500 transition-colors hover:text-white"
+              title="Back to home">
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <span className="text-neutral-400">PREVIEW</span>
           </div>
-        ) : (
-          <ResizablePanelGroup
-            direction="horizontal"
-            className="h-full w-full gap-1.5">
-            <ResizablePanel
-              defaultSize={40}
-              minSize={35}
-              maxSize={80}
-              className="flex flex-col xl:order-first xl:col-span-5">
-              <Card className="flex h-fit w-full flex-col overflow-hidden border">
-                <CardHeader className="bg-background/80 z-10 flex min-h-13 flex-row items-center justify-between border-b backdrop-blur-xs">
-                  <div className="flex w-full items-center justify-between">
-                    <CardTitle className="px-1 text-xl font-medium">
-                      Customize
-                    </CardTitle>
-                    <span className="bg-muted text-muted-foreground mx-1 truncate rounded-sm px-1.5 py-0.5 text-xs">
-                      {fileName || "Loading..."}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col overflow-hidden p-0">
-                  <div className="flex flex-1 flex-col overflow-y-hidden">
-                    <AnimatedTabs
-                      activeTab={activeTab}
-                      onTabChange={setActiveTab}
-                    />
-
-                    <div className="flex-1 overflow-y-auto p-4">
-                      {activeTab === "geometry" && <GeometryControls />}
-                      {activeTab === "material" && <MaterialControls />}
-                      {activeTab === "textures" && <TextureControls />}
-                      {activeTab === "environment" && <EnvironmentControls />}
-                      {activeTab === "background" && <BackgroundControls />}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </ResizablePanel>
-            <ResizableHandle className="hidden xl:flex" />
-            <ResizablePanel
-              defaultSize={58}
-              minSize={30}
-              maxSize={80}
-              className="flex flex-col xl:order-last xl:col-span-7">
-              <Card className="flex h-full w-full flex-col overflow-hidden border">
-                {!isMobile && (
-                  <CardHeader className="bg-background/80 z-10 flex min-h-13 flex-row items-center justify-between border-b backdrop-blur-xs">
-                    <div className="flex w-full items-center justify-between">
-                      <CardTitle className="px-1 text-xl font-medium">
-                        Preview
-                      </CardTitle>
-                    </div>
-                    <TooltipProvider>
-                      <div className="flex items-center gap-2">
-                        <Tooltip delayDuration={100}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => {
-                                resetEditor();
-                                toast.success(
-                                  "Editor settings reset to default",
-                                );
-                              }}
-                              aria-label="Reset editor settings">
-                              <RotateCcw className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="bottom"
-                            align="center"
-                            sideOffset={10}
-                            className="px-4 text-sm">
-                            Reset all settings
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip delayDuration={100}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => {
-                                if (isFullscreen) {
-                                  document.exitFullscreen();
-                                } else if (previewContainerRef.current) {
-                                  previewContainerRef.current.requestFullscreen();
-                                }
-                              }}
-                              aria-label={
-                                isFullscreen
-                                  ? "Exit fullscreen"
-                                  : "Enter fullscreen"
-                              }>
-                              {isFullscreen ? (
-                                <Minimize2 className="h-4 w-4" />
-                              ) : (
-                                <Maximize2 className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="bottom"
-                            align="center"
-                            sideOffset={10}
-                            className="px-4 text-sm">
-                            Full Screen
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </TooltipProvider>
-                  </CardHeader>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleReset}
+              className="text-neutral-500 transition-colors hover:text-white"
+              title="Reset">
+              <RotateCcw className="h-4 w-4" />
+            </button>
+            {isFullscreenSupported && (
+              <button
+                onClick={handleFullscreen}
+                className="text-neutral-500 transition-colors hover:text-white"
+                title="Fullscreen">
+                {isFullscreen ? (
+                  <Minimize2 className="h-4 w-4" />
+                ) : (
+                  <Maximize2 className="h-4 w-4" />
                 )}
-                <ModelViewport
-                  svgData={svgData}
-                  isMobile={isMobile}
-                  isModelLoading={isModelLoading}
-                  svgProcessingError={svgProcessingError}
-                  isFullscreen={isFullscreen}
-                  isFullscreenSupported={isFullscreenSupported}
-                  isIOS={isIOS}
-                  modelGroupRef={modelGroupRef}
-                  modelRef={modelRef}
-                  canvasRef={canvasRef}
-                  containerRef={previewContainerRef}
-                />
-              </Card>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        )}
-
-        {/* Mobile Controls Sheet */}
-        {isMobile && (
-          <div className="bg-background/98 border-border/50 h-[calc(100vh-8rem-40vh)] flex-shrink-0 border-t backdrop-blur-xl">
-            <div className="h-full space-y-4 overflow-y-auto p-3">
-              {activeMobileTab === "geometry" && <GeometryControls />}
-              {activeMobileTab === "material" && <MaterialControls />}
-              {activeMobileTab === "textures" && <TextureControls />}
-              {activeMobileTab === "environment" && <EnvironmentControls />}
-              {activeMobileTab === "background" && <BackgroundControls />}
-            </div>
+              </button>
+            )}
           </div>
-        )}
+        </div>
+
+        {/* Preview Area */}
+        <div ref={previewContainerRef} className="relative flex-1 bg-black">
+          {svgData && !isModelLoading && !svgProcessingError ? (
+            <ModelPreview
+              svgData={svgData}
+              modelGroupRef={modelGroupRef}
+              modelRef={modelRef}
+              isMobile={isMobile}
+              canvasRef={canvasRef}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              {svgProcessingError ? (
+                <div className="text-center">
+                  <p className="text-red-500">ERROR</p>
+                  <p className="mt-2 text-[12px] text-neutral-500">
+                    {svgProcessingError}
+                  </p>
+                </div>
+              ) : (
+                <p className="animate-pulse text-neutral-500">LOADING...</p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-      <MobileTabBar
-        activeTab={activeMobileTab}
-        onTabChange={setActiveMobileTab}
-      />
+
+      {/* CONTROLS PANEL */}
+      <div className="flex w-[280px] flex-col bg-black">
+        {/* Header */}
+        <div className="flex h-10 items-center justify-between border-b border-neutral-800 px-4">
+          <span className="text-neutral-400">CONTROLS</span>
+          <span className="max-w-[120px] truncate text-[12px] text-neutral-600">
+            {fileName || "..."}
+          </span>
+        </div>
+
+        {/* Controls */}
+        <div className="flex-1 overflow-y-auto">
+          <MinimalControls
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+          />
+        </div>
+
+        {/* Export */}
+        <div className="border-t border-neutral-800">
+          <MinimalExport
+            fileName={fileName}
+            modelGroupRef={modelGroupRef}
+            canvasRef={canvasRef}
+          />
+        </div>
+      </div>
     </main>
   );
 }
