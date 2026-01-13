@@ -80,9 +80,7 @@ export function ExportButtons({
     }
 
     if (!autoRotate) {
-      toast.error(
-        "Please enable auto-rotate in Geometry settings before recording video",
-      );
+      toast.error("ENABLE AUTO-ROTATE IN GEOMETRY SETTINGS FIRST");
       return;
     }
 
@@ -92,6 +90,7 @@ export function ExportButtons({
       canvas: canvasRef.current,
       format,
       duration,
+      bitrate: 8000000,
       onComplete: (blob) => {
         setCompletedVideo(blob, format, fileName);
         setVideoModalOpen(true);
@@ -124,6 +123,8 @@ export function ExportButtons({
     setIsDropdownOpen(false);
   };
 
+  const monoStyle = "font-mono text-[14px] uppercase tracking-wide";
+
   return (
     <div className="flex items-center gap-2">
       <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -131,64 +132,66 @@ export function ExportButtons({
           <Button
             size="sm"
             variant="default"
-            className="flex items-center gap-1">
+            className={`flex items-center gap-1 ${monoStyle}`}>
             <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">Export</span>
+            <span className="hidden sm:inline">EXPORT</span>
             <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-[420px] overflow-hidden rounded-xl p-0 shadow-2xl">
+          className="w-[380px] overflow-hidden rounded-xl p-0 shadow-2xl">
           <Tabs defaultValue="png" className="w-full">
             <div className="border-b p-3">
               <TabsList className="bg-muted/60 grid w-full grid-cols-3 gap-1 rounded-lg p-1">
                 <TabsTrigger
                   value="png"
-                  className="data-[state=active]:bg-background flex items-center gap-1 rounded-md data-[state=active]:shadow-sm">
+                  className={`data-[state=active]:bg-background flex items-center gap-1 rounded-md data-[state=active]:shadow-sm ${monoStyle}`}>
                   <Image className="h-4 w-4" />
                   PNG
                 </TabsTrigger>
                 <TabsTrigger
                   value="video"
-                  className="data-[state=active]:bg-background flex items-center gap-1 rounded-md data-[state=active]:shadow-sm">
+                  className={`data-[state=active]:bg-background flex items-center gap-1 rounded-md data-[state=active]:shadow-sm ${monoStyle}`}>
                   <Video className="h-4 w-4" />
-                  Video
+                  VIDEO
                 </TabsTrigger>
                 <TabsTrigger
                   value="3d"
-                  className="data-[state=active]:bg-background flex items-center gap-1 rounded-md data-[state=active]:shadow-sm">
+                  className={`data-[state=active]:bg-background flex items-center gap-1 rounded-md data-[state=active]:shadow-sm ${monoStyle}`}>
                   <ThreeDExportIcon />
-                  3D Model
+                  3D
                 </TabsTrigger>
               </TabsList>
             </div>
 
             <TabsContent value="png" className="space-y-4 p-4">
               <div className="space-y-2">
-                <h4 className="text-sm font-medium">Export PNG Image</h4>
-                <p className="text-muted-foreground text-xs">
-                  Export a crisp, transparent PNG of your 3D model.
+                <h4 className={`font-medium ${monoStyle}`}>EXPORT PNG</h4>
+                <p className={`text-muted-foreground ${monoStyle} text-[12px]`}>
+                  CRISP, TRANSPARENT PNG OF YOUR 3D MODEL
                 </p>
               </div>
               <Button
                 onClick={handlePngExport}
-                className="flex w-full items-center justify-center gap-2">
+                className={`flex w-full items-center justify-center gap-2 ${monoStyle}`}>
                 <ImageDownloadIcon />
-                Export High Quality PNG
+                EXPORT HIGH QUALITY PNG
               </Button>
             </TabsContent>
 
             <TabsContent value="video" className="space-y-4 p-4">
               <div className="space-y-2">
-                <h4 className="text-sm font-medium">Export Video</h4>
-                <p className="text-muted-foreground text-xs">
-                  Choose a duration and format. Auto‑rotate must be enabled.
+                <h4 className={`font-medium ${monoStyle}`}>EXPORT VIDEO</h4>
+                <p className={`text-muted-foreground ${monoStyle} text-[12px]`}>
+                  AUTO-ROTATE MUST BE ENABLED
                 </p>
               </div>
+
               <div>
-                <label className="text-muted-foreground mb-2 block text-xs">
-                  Video Duration: {videoDuration[0]} seconds
+                <label
+                  className={`text-muted-foreground mb-2 block ${monoStyle} text-[12px]`}>
+                  DURATION: {videoDuration[0]}S
                 </label>
                 <Slider
                   value={videoDuration}
@@ -198,18 +201,20 @@ export function ExportButtons({
                   step={1}
                   className="w-full"
                 />
-                <div className="text-muted-foreground mt-1 flex justify-between text-[11px]">
-                  <span>5s</span>
-                  <span>30s</span>
+                <div
+                  className={`text-muted-foreground mt-1 flex justify-between ${monoStyle} text-[11px]`}>
+                  <span>5S</span>
+                  <span>30S</span>
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+
+              <div className="grid grid-cols-2 gap-2">
                 <Button
                   onClick={() => handleVideoExport("mp4", videoDuration[0])}
                   disabled={!canvasRef?.current || !autoRotate}
-                  className="flex w-full items-center gap-2">
+                  className={`flex w-full items-center gap-2 ${monoStyle}`}>
                   <Video className="h-4 w-4" />
-                  Export MP4 ({videoDuration[0]}s)
+                  MP4
                 </Button>
                 <Button
                   onClick={() =>
@@ -217,46 +222,47 @@ export function ExportButtons({
                   }
                   disabled={!canvasRef?.current || !autoRotate}
                   variant="outline"
-                  className="flex w-full items-center gap-2">
+                  className={`flex w-full items-center gap-2 ${monoStyle}`}>
                   <FileImage className="h-4 w-4" />
-                  Export GIF ({Math.min(videoDuration[0], 10)}s max)
+                  GIF
                 </Button>
               </div>
               {!autoRotate && (
-                <div className="text-muted-foreground bg-muted rounded-md px-3 py-2 text-xs">
-                  Enable auto‑rotate in Geometry settings to record videos.
+                <div
+                  className={`text-muted-foreground bg-muted rounded-md px-3 py-2 ${monoStyle} text-[12px]`}>
+                  ENABLE AUTO-ROTATE IN GEOMETRY SETTINGS
                 </div>
               )}
             </TabsContent>
 
             <TabsContent value="3d" className="space-y-4 p-4">
               <div className="space-y-2">
-                <h4 className="text-sm font-medium">Export 3D Model</h4>
-                <p className="text-muted-foreground text-xs">
-                  Choose a format for printing or sharing in 3D apps.
+                <h4 className={`font-medium ${monoStyle}`}>EXPORT 3D MODEL</h4>
+                <p className={`text-muted-foreground ${monoStyle} text-[12px]`}>
+                  FOR PRINTING OR 3D APPS
                 </p>
               </div>
               <div className="space-y-2">
                 <Button
                   onClick={() => handle3DExport("stl")}
                   variant="outline"
-                  className="flex w-full items-center justify-start gap-2">
+                  className={`flex w-full items-center justify-start gap-2 ${monoStyle}`}>
                   <File className="h-4 w-4" />
-                  STL (3D Printing)
+                  STL
                 </Button>
                 <Button
                   onClick={() => handle3DExport("glb")}
                   variant="outline"
-                  className="flex w-full items-center justify-start gap-2">
+                  className={`flex w-full items-center justify-start gap-2 ${monoStyle}`}>
                   <File className="h-4 w-4" />
-                  GLB{textureEnabled ? " + Textures" : ""} (Binary)
+                  GLB{textureEnabled ? " + TEX" : ""}
                 </Button>
                 <Button
                   onClick={() => handle3DExport("gltf")}
                   variant="outline"
-                  className="flex w-full items-center justify-start gap-2">
+                  className={`flex w-full items-center justify-start gap-2 ${monoStyle}`}>
                   <File className="h-4 w-4" />
-                  GLTF{textureEnabled ? " + Textures" : ""} (JSON)
+                  GLTF{textureEnabled ? " + TEX" : ""}
                 </Button>
               </div>
             </TabsContent>
@@ -267,7 +273,7 @@ export function ExportButtons({
       {isUS === true && (
         <Button
           size="sm"
-          className="flex items-center gap-1 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          className={`flex items-center gap-1 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 ${monoStyle}`}
           onClick={handlePrintClick}
           disabled={isPrinting}>
           {isPrinting ? (
@@ -276,12 +282,12 @@ export function ExportButtons({
             <ThreeDPrintIcon />
           )}
           <span className="hidden sm:inline">
-            {isPrinting ? "Processing..." : "3D Print"}
+            {isPrinting ? "PROCESSING..." : "3D PRINT"}
           </span>
         </Button>
       )}
 
-      <VideoResultModal onStartNewRecording={handleNewRecording} />
+      <VideoResultModal />
     </div>
   );
 }

@@ -1,10 +1,12 @@
 import { toast } from "sonner";
+import { useEditorStore } from "@/lib/store";
 
 export interface RecordingOptions {
   duration?: number;
   fps?: number;
   format: "mp4" | "gif";
   quality?: number;
+  bitrate?: number;
   onProgress?: (progress: number, elapsedTime: number) => void;
 }
 
@@ -34,6 +36,7 @@ export class VideoRecorder {
     this.options = {
       fps: options.format === "gif" ? 15 : 60,
       quality: 0.8,
+      bitrate: 8000000,
       ...options,
     };
   }
@@ -77,7 +80,7 @@ export class VideoRecorder {
 
       this.mediaRecorder = new MediaRecorder(this.stream, {
         mimeType,
-        videoBitsPerSecond: 2500000,
+        videoBitsPerSecond: this.options.bitrate || 8000000,
       });
 
       this.mediaRecorder.ondataavailable = (event) => {
@@ -357,6 +360,7 @@ export interface ToastRecordingOptions {
   canvas: HTMLCanvasElement;
   format: "mp4" | "gif";
   duration: number;
+  bitrate?: number;
   onComplete?: (blob: Blob) => void;
   onError?: (error: Error) => void;
 }
@@ -365,6 +369,7 @@ export async function recordWithToastProgress({
   canvas,
   format,
   duration,
+  bitrate,
   onComplete,
   onError,
 }: ToastRecordingOptions): Promise<void> {
@@ -382,6 +387,7 @@ export async function recordWithToastProgress({
       fps: format === "gif" ? 15 : 60,
       quality: format === "gif" ? 0.8 : 0.9,
       duration,
+      bitrate,
       onProgress: (progress, elapsedTime) => {
         const progressText = `Recording ${format.toUpperCase()} - ${elapsedTime.toFixed(1)}s (${progress.toFixed(0)}%)`;
         toast.loading(progressText, {
@@ -424,6 +430,82 @@ export async function recordWithToastProgress({
     );
   } catch (error) {
     toast.error("Failed to start recording", { id: toastId! });
+    onError?.(error as Error);
+  }
+}
+
+export interface StoreRecordingOptions {
+  canvas: HTMLCanvasElement;
+  format: "mp4" | "gif";
+  duration: number;
+  bitrate?: number;
+  onComplete?: (blob: Blob) => void;
+  onError?: (error: Error) => void;
+}
+
+export async function recordWithStoreProgress({
+  canvas,
+  format,
+  duration,
+  bitrate,
+  onComplete,
+  onError,
+}: StoreRecordingOptions): Promise<void> {
+  const {
+    setIsRecording,
+    setRecordingFormat,
+    setRecordingStatus,
+    setRecordingProgress,
+    resetRecordingState,
+  } = useEditorStore.getState();
+
+  let recorder: VideoRecorder;
+
+  try {
+    setIsRecording(true);
+    setRecordingFormat(format);
+    setRecordingStatus("recording");
+    setRecordingProgress(0, 0);
+
+    recorder = new VideoRecorder(canvas, {
+      format,
+      fps: format === "gif" ? 15 : 60,
+      quality: format === "gif" ? 0.8 : 0.9,
+      duration,
+      bitrate,
+      onProgress: (progress, elapsedTime) => {
+        setRecordingProgress(progress, elapsedTime);
+      },
+    });
+
+    await recorder.start();
+
+    setTimeout(
+      async () => {
+        try {
+          setRecordingStatus("processing");
+
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          const blob = await recorder.stop();
+
+          if (blob && blob.size > 0) {
+            setRecordingStatus("complete");
+            resetRecordingState();
+            onComplete?.(blob);
+          } else {
+            throw new Error("Recording failed - no data captured");
+          }
+        } catch (error) {
+          setRecordingStatus("error");
+          resetRecordingState();
+          onError?.(error as Error);
+        }
+      },
+      duration * 1000 + 100,
+    );
+  } catch (error) {
+    setRecordingStatus("error");
+    resetRecordingState();
     onError?.(error as Error);
   }
 }

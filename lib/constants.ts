@@ -5,6 +5,8 @@ import type {
   BevelPreset,
   ResolutionPreset,
   TexturePreset,
+  VideoResolutionPreset,
+  AspectRatioPreset,
 } from "./types";
 
 // Environment presets with EXR files from @pmndrs/assets
@@ -139,6 +141,24 @@ export const PNG_RESOLUTIONS: ResolutionPreset[] = [
   { label: "Low Quality", multiplier: 1 },
   { label: "Medium Quality", multiplier: 2 },
   { label: "High Quality", multiplier: 3 },
+];
+
+// Video export resolutions (high quality first)
+export const VIDEO_RESOLUTIONS: VideoResolutionPreset[] = [
+  { label: "4K (2160p)", width: 3840, height: 2160, bitrate: 20000000 },
+  { label: "1440p", width: 2560, height: 1440, bitrate: 12000000 },
+  { label: "1080p", width: 1920, height: 1080, bitrate: 8000000 },
+  { label: "720p", width: 1280, height: 720, bitrate: 5000000 },
+  { label: "480p", width: 854, height: 480, bitrate: 2500000 },
+];
+
+// Video aspect ratios
+export const ASPECT_RATIOS: AspectRatioPreset[] = [
+  { label: "16:9", value: "16:9", ratio: 16 / 9 },
+  { label: "3:2", value: "3:2", ratio: 3 / 2 },
+  { label: "4:3", value: "4:3", ratio: 4 / 3 },
+  { label: "1:1", value: "1:1", ratio: 1 },
+  { label: "9:16", value: "9:16", ratio: 9 / 16 },
 ];
 
 // Bevel presets
