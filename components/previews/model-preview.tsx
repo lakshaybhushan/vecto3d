@@ -263,7 +263,7 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
           fov: isMobile ? 65 : 50,
         }}
         dpr={dpr}
-        frameloop="always"
+        frameloop={isSafariMobileDevice ? "demand" : "always"}
         performance={{ min: isSafariMobileDevice ? 0.3 : 0.5 }}
         gl={{
           antialias: !isSafariMobileDevice, // Disable antialias on Safari mobile
@@ -311,30 +311,39 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
             castShadow={false}
           />
 
-          {environment}
+          {/* Disable environment on Safari mobile to prevent freezing */}
+          {!isSafariMobileDevice && environment}
 
           <group ref={modelGroupRef} rotation={[0, modelRotationY, 0]}>
             <SVGModel
               svgData={svgData}
               depth={depth * 5}
-              bevelEnabled={bevelEnabled}
+              bevelEnabled={isSafariMobileDevice ? false : bevelEnabled}
               bevelThickness={bevelThickness}
               bevelSize={bevelSize}
-              bevelSegments={isMobile ? 3 : bevelSegments}
+              bevelSegments={
+                isSafariMobileDevice ? 1 : isMobile ? 3 : bevelSegments
+              }
               customColor={useCustomColor ? customColor : undefined}
               roughness={roughness}
               metalness={metalness}
-              clearcoat={clearcoat}
-              transmission={transmission}
-              envMapIntensity={useEnvironment ? envMapIntensity : 0.2}
+              clearcoat={isSafariMobileDevice ? 0 : clearcoat}
+              transmission={isSafariMobileDevice ? 0 : transmission}
+              envMapIntensity={
+                isSafariMobileDevice
+                  ? 0
+                  : useEnvironment
+                    ? envMapIntensity
+                    : 0.2
+              }
               receiveShadow={false}
               castShadow={false}
               isHollowSvg={isHollowSvg}
               spread={0}
               isMobile={isMobile}
               ref={modelRef}
-              // Texture settings
-              textureEnabled={textureEnabled}
+              // Texture settings - disable on Safari mobile
+              textureEnabled={isSafariMobileDevice ? false : textureEnabled}
               texturePreset={texturePreset}
               textureScale={textureScale}
               textureDepth={textureDepth}
@@ -345,7 +354,7 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
         {effects}
 
         <OrbitControls
-          autoRotate={autoRotate}
+          autoRotate={isSafariMobileDevice ? false : autoRotate}
           autoRotateSpeed={autoRotateSpeed}
           minDistance={isMobile ? 80 : 50}
           maxDistance={isMobile ? 500 : 400}
