@@ -198,7 +198,12 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
         );
       }
 
-      return null;
+      // Always enable MSAA even without bloom for smoother edges
+      return (
+        <EffectComposer multisampling={msaaSamples}>
+          <BrightnessContrast brightness={0} contrast={0} />
+        </EffectComposer>
+      );
     }, [useBloom, bloomIntensity, bloomMipmapBlur, isMobile]);
 
     const environment = useMemo(() => {
