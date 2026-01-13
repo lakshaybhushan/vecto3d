@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, Suspense } from "react";
+import React, { useEffect, useMemo, useRef, Suspense, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
@@ -13,6 +13,15 @@ import { BlendFunction } from "postprocessing";
 import { SVGModel } from "./svg-model";
 import { useEditorStore } from "@/lib/store";
 import { memoryManager } from "@/lib/memory-manager";
+
+// Detect Safari mobile for performance optimizations
+const isSafariMobile = (): boolean => {
+  if (typeof window === "undefined") return false;
+  const ua = window.navigator.userAgent;
+  const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua) && !/Edge/.test(ua);
+  const isMobileDevice = /iPhone|iPad|iPod/.test(ua) || window.innerWidth < 768;
+  return isSafari && isMobileDevice;
+};
 
 export interface ModelPreviewProps {
   svgData: string;
@@ -109,6 +118,13 @@ function CanvasCapture({
 
 export const ModelPreview = React.memo<ModelPreviewProps>(
   ({ svgData, modelGroupRef, modelRef, isMobile, canvasRef }) => {
+    // Detect Safari mobile once on mount for performance optimizations
+    const [isSafariMobileDevice, setIsSafariMobileDevice] = useState(false);
+
+    useEffect(() => {
+      setIsSafariMobileDevice(isSafariMobile());
+    }, []);
+
     // Use fine-grained selectors for all state
     const depth = useEditorStore((state) => state.depth);
     const modelRotationY = useEditorStore((state) => state.modelRotationY);
@@ -177,6 +193,12 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
     }, []);
 
     const effects = useMemo(() => {
+      // Disable EffectComposer entirely on Safari mobile to prevent freezing
+      // Safari mobile has known issues with WebGL multisampling and postprocessing
+      if (isSafariMobileDevice) {
+        return null;
+      }
+
       const msaaSamples = isMobile ? 4 : 8; // 4 samples for mobile, 8 for desktop
 
       if (useBloom) {
@@ -204,7 +226,13 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
           <BrightnessContrast brightness={0} contrast={0} />
         </EffectComposer>
       );
-    }, [useBloom, bloomIntensity, bloomMipmapBlur, isMobile]);
+    }, [
+      useBloom,
+      bloomIntensity,
+      bloomMipmapBlur,
+      isMobile,
+      isSafariMobileDevice,
+    ]);
 
     const environment = useMemo(() => {
       if (!useEnvironment) return null;
@@ -217,27 +245,35 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
       );
     }, [useEnvironment, environmentPreset, customHdriUrl]);
 
+    // Safari mobile optimizations: lower DPR, demand frameloop
+    const dpr = useMemo(() => {
+      if (typeof window === "undefined") return 1.5;
+      const deviceDpr = window.devicePixelRatio || 1.5;
+      // Cap DPR at 2 for Safari mobile to prevent GPU overload
+      return isSafariMobileDevice ? Math.min(deviceDpr, 2) : deviceDpr;
+    }, [isSafariMobileDevice]);
+
     if (!svgData) return null;
 
     return (
       <Canvas
-        shadows
+        shadows={!isSafariMobileDevice} // Disable shadows on Safari mobile
         camera={{
           position: isMobile ? [0, 20, 180] : [0, 0, 150],
           fov: isMobile ? 65 : 50,
         }}
-        dpr={
-          typeof window !== "undefined" ? window?.devicePixelRatio || 1.5 : 1.5
-        }
+        dpr={dpr}
         frameloop="always"
-        performance={{ min: 0.5 }}
+        performance={{ min: isSafariMobileDevice ? 0.3 : 0.5 }}
         gl={{
-          antialias: true,
+          antialias: !isSafariMobileDevice, // Disable antialias on Safari mobile
           outputColorSpace: "srgb",
           toneMapping: THREE.AgXToneMapping,
           toneMappingExposure: 1.0,
           preserveDrawingBuffer: true,
-          powerPreference: "high-performance",
+          powerPreference: isSafariMobileDevice
+            ? "default"
+            : "high-performance",
           alpha: true,
           logarithmicDepthBuffer: false,
           precision: isMobile ? "mediump" : "highp",
