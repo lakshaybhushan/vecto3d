@@ -4,8 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import type * as THREE from "three";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { RotateCcw, Maximize2, Minimize2, ArrowLeft, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { RotateCcw, Maximize2, Minimize2, ArrowLeft } from "lucide-react";
 
 import { useEditorStore } from "@/lib/store";
 import {
@@ -23,7 +22,6 @@ import { MinimalExport } from "@/components/edit/minimal-export";
 export default function EditPage() {
   const [isClientMounted, setIsClientMounted] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>("geometry");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const svgData = useEditorStore((state) => state.svgData);
   const fileName = useEditorStore((state) => state.fileName);
@@ -100,13 +98,13 @@ export default function EditPage() {
   if (!isClientMounted) return null;
 
   return (
-    <main className="flex h-screen w-full flex-col bg-black font-mono text-[14px] tracking-wide text-white uppercase md:flex-row">
+    <main className="flex h-screen w-full bg-black font-mono text-[14px] tracking-wide text-white uppercase">
       <EditManagers />
 
       {/* PREVIEW PANEL */}
-      <div className="flex flex-1 flex-col md:border-r md:border-neutral-800">
+      <div className="flex flex-1 flex-col border-r border-neutral-800">
         {/* Header */}
-        <div className="flex h-12 items-center justify-between border-b border-neutral-800 px-4 md:h-10">
+        <div className="flex h-10 items-center justify-between border-b border-neutral-800 px-4">
           <div className="flex items-center gap-3">
             <button
               onClick={handleBack}
@@ -135,12 +133,6 @@ export default function EditPage() {
                 )}
               </button>
             )}
-            {/* Mobile menu toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="border border-neutral-700 px-3 py-1 text-[11px] text-neutral-400 transition-colors hover:border-white hover:text-white md:hidden">
-              EDIT
-            </button>
           </div>
         </div>
 
@@ -171,8 +163,8 @@ export default function EditPage() {
         </div>
       </div>
 
-      {/* CONTROLS PANEL - Desktop */}
-      <div className="hidden w-[280px] flex-col bg-black md:flex">
+      {/* CONTROLS PANEL */}
+      <div className="flex w-[280px] flex-col bg-black">
         {/* Header */}
         <div className="flex h-10 items-center justify-between border-b border-neutral-800 px-4">
           <span className="text-neutral-400">CONTROLS</span>
@@ -198,56 +190,6 @@ export default function EditPage() {
           />
         </div>
       </div>
-
-      {/* CONTROLS PANEL - Mobile Overlay */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              className="fixed inset-0 z-40 bg-black/80 md:hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMobileMenuOpen(false)}
-            />
-            {/* Panel */}
-            <motion.div
-              className="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col bg-black md:hidden"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}>
-              {/* Header */}
-              <div className="flex h-12 shrink-0 items-center justify-between border-b border-neutral-800 px-4">
-                <span className="text-neutral-400">CONTROLS</span>
-                <button
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-neutral-500 transition-colors hover:text-white">
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              {/* Controls */}
-              <div className="flex-1 overflow-y-auto">
-                <MinimalControls
-                  activeSection={activeSection}
-                  onSectionChange={setActiveSection}
-                />
-              </div>
-
-              {/* Export */}
-              <div className="shrink-0 border-t border-neutral-800">
-                <MinimalExport
-                  fileName={fileName}
-                  modelGroupRef={modelGroupRef}
-                  canvasRef={canvasRef}
-                />
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </main>
   );
 }
