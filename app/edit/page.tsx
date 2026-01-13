@@ -20,13 +20,11 @@ import { EditManagers } from "@/components/edit/edit-managers";
 import { MinimalControls } from "@/components/edit/minimal-controls";
 import { MinimalExport } from "@/components/edit/minimal-export";
 
-// Detect Safari mobile
-const isSafariMobile = (): boolean => {
+// Detect Safari (all versions - desktop and mobile have WebGL issues)
+const isSafari = (): boolean => {
   if (typeof window === "undefined") return false;
   const ua = window.navigator.userAgent;
-  const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua) && !/Edge/.test(ua);
-  const isMobileDevice = /iPhone|iPad|iPod/.test(ua);
-  return isSafari && isMobileDevice;
+  return /Safari/.test(ua) && !/Chrome/.test(ua) && !/Edge/.test(ua);
 };
 
 export default function EditPage() {
@@ -59,7 +57,7 @@ export default function EditPage() {
 
   useEffect(() => {
     setIsClientMounted(true);
-    setShowSafariWarning(isSafariMobile());
+    setShowSafariWarning(isSafari());
 
     const modelGroup = modelGroupRef.current;
     const model = modelRef.current;
@@ -119,8 +117,8 @@ export default function EditPage() {
           <div className="mb-6 text-2xl">⚠</div>
           <h1 className="mb-4 text-lg">SAFARI NOT SUPPORTED</h1>
           <p className="mb-8 leading-relaxed text-neutral-500 normal-case">
-            Safari on iOS has limited WebGL support which causes performance
-            issues with 3D rendering.
+            Safari has limited WebGL support which causes performance issues
+            with 3D rendering.
           </p>
           <p className="mb-8 text-neutral-400">
             For the best experience, use{" "}
