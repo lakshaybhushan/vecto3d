@@ -205,16 +205,11 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
         return (
           <EffectComposer multisampling={msaaSamples}>
             <Bloom
-              intensity={bloomIntensity * 0.7}
-              luminanceThreshold={0.4}
-              luminanceSmoothing={0.95}
+              intensity={bloomIntensity * 0.8}
+              luminanceThreshold={0.9}
+              luminanceSmoothing={0.3}
               mipmapBlur={bloomMipmapBlur}
-              radius={0.9}
-            />
-            <BrightnessContrast
-              brightness={0.07}
-              contrast={0.05}
-              blendFunction={BlendFunction.NORMAL}
+              radius={0.4}
             />
           </EffectComposer>
         );
