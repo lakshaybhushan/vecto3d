@@ -3,6 +3,7 @@ import { Slider } from "@/components/ui/slider";
 import { BEVEL_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 
 const MIN_ACTUAL_DEPTH = 0.01;
 const MAX_ACTUAL_DEPTH = 50;
@@ -83,7 +84,7 @@ export function GeometryControls() {
       <div className="space-y-4">
         <Label htmlFor="depth" className="flex items-center justify-between">
           <span>Adjust Thickness</span>
-          <span className="text-primary font-mono">{depth.toFixed(2)}</span>
+          <span className="text-primary">{depth.toFixed(2)}</span>
         </Label>
         <Slider
           id="depth"
@@ -99,7 +100,8 @@ export function GeometryControls() {
         <Label htmlFor="bevelPreset">Bevel Style</Label>
         <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-5">
           {BEVEL_PRESETS.map((preset) => (
-            <button
+            <Button
+              variant="ghost"
               key={preset.name}
               className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                 bevelPreset === preset.name
@@ -171,7 +173,7 @@ export function GeometryControls() {
                   </p>
                 </div>
               </div>
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -182,7 +184,7 @@ export function GeometryControls() {
                 htmlFor="bevelThickness"
                 className="flex items-center justify-between">
                 <span>Bevel Thickness</span>
-                <span className="text-primary font-mono">
+                <span className="text-primary">
                   {bevelThickness.toFixed(2)}
                 </span>
               </Label>
@@ -203,9 +205,7 @@ export function GeometryControls() {
                 htmlFor="bevelSize"
                 className="flex items-center justify-between">
                 <span>Bevel Size</span>
-                <span className="text-primary font-mono">
-                  {bevelSize.toFixed(2)}
-                </span>
+                <span className="text-primary">{bevelSize.toFixed(2)}</span>
               </Label>
               <Slider
                 id="bevelSize"
@@ -224,9 +224,7 @@ export function GeometryControls() {
                 htmlFor="bevelSegments"
                 className="flex items-center justify-between">
                 <span>Bevel Quality</span>
-                <span className="text-primary font-mono">
-                  {bevelSegments.toFixed(2)}
-                </span>
+                <span className="text-primary">{bevelSegments.toFixed(2)}</span>
               </Label>
               <Slider
                 id="bevelSegments"
@@ -261,7 +259,7 @@ export function GeometryControls() {
               htmlFor="autoRotateSpeed"
               className="flex items-center justify-between">
               <span>Rotation Speed</span>
-              <span className="text-primary font-mono">
+              <span className="text-primary">
                 {actualToDisplayRotation(autoRotateSpeed).toFixed(2)}
               </span>
             </Label>

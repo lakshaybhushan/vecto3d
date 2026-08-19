@@ -5,6 +5,7 @@ import { TEXTURE_PRESETS } from "@/lib/constants";
 import { useEditorStore } from "@/lib/store";
 import Image from "next/image";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export function TextureControls() {
   const textureEnabled = useEditorStore((state) => state.textureEnabled);
@@ -91,7 +92,8 @@ export function TextureControls() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
             {TEXTURE_PRESETS.map((texture) => (
-              <button
+              <Button
+                variant="ghost"
                 key={texture.name}
                 className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                   texturePreset === texture.name
@@ -128,7 +130,7 @@ export function TextureControls() {
                     </p>
                   </div>
                 </div>
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -141,7 +143,7 @@ export function TextureControls() {
                     htmlFor="textureScaleX"
                     className="flex justify-between text-sm">
                     <span>X Scale</span>
-                    <span className="text-primary font-mono">
+                    <span className="text-primary">
                       {textureScale.x.toFixed(0)}x
                     </span>
                   </Label>
@@ -161,7 +163,7 @@ export function TextureControls() {
                     htmlFor="textureScaleY"
                     className="flex justify-between text-sm">
                     <span>Y Scale</span>
-                    <span className="text-primary font-mono">
+                    <span className="text-primary">
                       {textureScale.y.toFixed(0)}x
                     </span>
                   </Label>
@@ -184,7 +186,7 @@ export function TextureControls() {
                     htmlFor="textureDepth"
                     className="flex justify-between">
                     <span>Texture Depth</span>
-                    <span className="text-primary font-mono">
+                    <span className="text-primary">
                       {textureDepth.toFixed(0)}%
                     </span>
                   </Label>

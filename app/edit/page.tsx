@@ -19,6 +19,7 @@ import { ModelPreview } from "@/components/previews/model-preview";
 import { EditManagers } from "@/components/edit/edit-managers";
 import { MinimalControls } from "@/components/edit/minimal-controls";
 import { MinimalExport } from "@/components/edit/minimal-export";
+import { Button } from "@/components/ui/button";
 
 // Detect Safari (all versions - desktop and mobile have WebGL issues)
 const isSafari = (): boolean => {
@@ -96,7 +97,7 @@ export default function EditPage() {
 
   const handleReset = () => {
     resetEditor();
-    toast.success("RESET COMPLETE");
+    toast.success("Reset complete");
   };
 
   const handleFullscreen = () => {
@@ -112,11 +113,11 @@ export default function EditPage() {
   // Safari mobile warning screen
   if (showSafariWarning && !safariDismissed) {
     return (
-      <main className="flex h-screen w-full flex-col items-center justify-center bg-black px-6 font-mono text-[14px] tracking-wide text-white uppercase">
+      <main className="flex h-screen w-full flex-col items-center justify-center bg-black px-6 text-[14px] text-white">
         <div className="max-w-sm text-center">
           <div className="mb-6 text-2xl">⚠</div>
-          <h1 className="mb-4 text-lg">SAFARI NOT SUPPORTED</h1>
-          <p className="mb-8 leading-relaxed text-neutral-500 normal-case">
+          <h1 className="mb-4 text-lg font-medium">Safari is not supported</h1>
+          <p className="mb-8 leading-relaxed text-neutral-500">
             Safari has limited WebGL support which causes performance issues
             with 3D rendering.
           </p>
@@ -126,16 +127,15 @@ export default function EditPage() {
             <span className="text-white">Firefox</span>
           </p>
           <div className="flex flex-col gap-3">
-            <button
-              onClick={handleBack}
-              className="w-full border border-white bg-white px-6 py-3 text-black transition-colors hover:bg-neutral-200">
-              GO BACK
-            </button>
-            <button
+            <Button onClick={handleBack} className="w-full">
+              Go back
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => setSafariDismissed(true)}
-              className="w-full border border-neutral-700 px-6 py-3 text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-300">
-              CONTINUE ANYWAY
-            </button>
+              className="w-full">
+              Continue anyway
+            </Button>
           </div>
         </div>
       </main>
@@ -143,47 +143,52 @@ export default function EditPage() {
   }
 
   return (
-    <main className="flex h-screen w-full flex-col bg-black font-mono text-[14px] tracking-wide text-white uppercase md:flex-row">
+    <main className="flex h-screen w-full flex-col bg-black text-[14px] text-white md:flex-row">
       <EditManagers />
 
       {/* PREVIEW PANEL */}
-      <div className="flex flex-1 flex-col md:border-r md:border-neutral-800">
+      <div className="flex flex-1 flex-col md:border-r md:border-white/[0.08]">
         {/* Header */}
-        <div className="flex h-12 items-center justify-between border-b border-neutral-800 px-4 md:h-10">
+        <div className="flex h-12 items-center justify-between border-b border-white/[0.08] px-4 md:h-11">
           <div className="flex items-center gap-3">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleBack}
-              className="text-neutral-500 transition-colors hover:text-white"
               title="Back to home">
               <ArrowLeft className="h-4 w-4" />
-            </button>
-            <span className="text-neutral-400">PREVIEW</span>
+            </Button>
+            <span className="font-medium text-neutral-300">Preview</span>
           </div>
           <div className="flex items-center gap-4">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleReset}
-              className="text-neutral-500 transition-colors hover:text-white"
               title="Reset">
               <RotateCcw className="h-4 w-4" />
-            </button>
+            </Button>
             {isFullscreenSupported && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={handleFullscreen}
-                className="text-neutral-500 transition-colors hover:text-white"
                 title="Fullscreen">
                 {isFullscreen ? (
                   <Minimize2 className="h-4 w-4" />
                 ) : (
                   <Maximize2 className="h-4 w-4" />
                 )}
-              </button>
+              </Button>
             )}
             {/* Mobile menu toggle */}
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setMobileMenuOpen(true)}
-              className="border border-neutral-700 px-3 py-1 text-[11px] text-neutral-400 transition-colors hover:border-white hover:text-white md:hidden">
-              EDIT
-            </button>
+              className="md:hidden">
+              Edit
+            </Button>
           </div>
         </div>
 
@@ -201,13 +206,13 @@ export default function EditPage() {
             <div className="flex h-full w-full items-center justify-center">
               {svgProcessingError ? (
                 <div className="text-center">
-                  <p className="text-red-500">ERROR</p>
+                  <p className="text-red-400">Something went wrong</p>
                   <p className="mt-2 text-[12px] text-neutral-500">
                     {svgProcessingError}
                   </p>
                 </div>
               ) : (
-                <p className="animate-pulse text-neutral-500">LOADING...</p>
+                <p className="animate-pulse text-neutral-500">Loading…</p>
               )}
             </div>
           )}
@@ -215,10 +220,10 @@ export default function EditPage() {
       </div>
 
       {/* CONTROLS PANEL - Desktop */}
-      <div className="hidden w-[280px] flex-col bg-black md:flex">
+      <div className="hidden w-[300px] flex-col bg-black md:flex">
         {/* Header */}
-        <div className="flex h-10 items-center justify-between border-b border-neutral-800 px-4">
-          <span className="text-neutral-400">CONTROLS</span>
+        <div className="flex h-11 items-center justify-between border-b border-white/[0.08] px-4">
+          <span className="font-medium text-neutral-300">Controls</span>
           <span className="max-w-[120px] truncate text-[12px] text-neutral-600">
             {fileName || "..."}
           </span>
@@ -233,7 +238,7 @@ export default function EditPage() {
         </div>
 
         {/* Export */}
-        <div className="border-t border-neutral-800">
+        <div className="border-t border-white/[0.08]">
           <MinimalExport
             fileName={fileName}
             modelGroupRef={modelGroupRef}
@@ -256,19 +261,21 @@ export default function EditPage() {
             />
             {/* Panel */}
             <motion.div
-              className="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col bg-black md:hidden"
+              className="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-lg border-t border-white/10 bg-neutral-950 md:hidden"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}>
+              transition={{ type: "spring", bounce: 0, duration: 0.4 }}>
               {/* Header */}
-              <div className="flex h-12 shrink-0 items-center justify-between border-b border-neutral-800 px-4">
-                <span className="text-neutral-400">CONTROLS</span>
-                <button
+              <div className="flex h-12 shrink-0 items-center justify-between border-b border-white/[0.08] px-4">
+                <span className="font-medium text-neutral-300">Controls</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-neutral-500 transition-colors hover:text-white">
+                  aria-label="Close controls">
                   <X className="h-5 w-5" />
-                </button>
+                </Button>
               </div>
 
               {/* Controls */}
@@ -280,7 +287,7 @@ export default function EditPage() {
               </div>
 
               {/* Export */}
-              <div className="shrink-0 border-t border-neutral-800">
+              <div className="shrink-0 border-t border-white/[0.08]">
                 <MinimalExport
                   fileName={fileName}
                   modelGroupRef={modelGroupRef}

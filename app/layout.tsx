@@ -1,30 +1,17 @@
 import "@/lib/polyfills";
 import type React from "react";
 import "@/styles/globals.css";
-import { Geist_Mono, Instrument_Serif } from "next/font/google";
-import LocalFont from "next/font/local";
+import { Geist } from "next/font/google";
 import { ThemeProvider } from "@/components/layouts/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 
-const instrumentSerif = Instrument_Serif({
+const geist = Geist({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-serif",
-});
-
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-mono",
-});
-
-const clashGrotesk = LocalFont({
-  src: "../public/fonts/ClashGrotesk-Variable.woff2",
   display: "swap",
-  variable: "--font-sans",
+  variable: "--font-geist-sans",
 });
 
 export const metadata: Metadata = {
@@ -80,17 +67,13 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={cn(
-          clashGrotesk.className,
-          instrumentSerif.variable,
-          geistMono.variable,
-          "overflow-x-hidden",
-        )}
+        className={cn(geist.className, geist.variable, "overflow-x-hidden")}
         suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          forcedTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange>
           {children}
           <Analytics />

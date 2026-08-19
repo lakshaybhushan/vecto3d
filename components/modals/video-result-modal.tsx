@@ -1,10 +1,20 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X, Video, FileImage, Download } from "lucide-react";
+import { Video, FileImage, Download } from "lucide-react";
 import { downloadRecording } from "@/lib/video-recorder";
 import { useEditorStore } from "@/lib/store";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export function VideoResultModal() {
   const {
@@ -44,13 +54,7 @@ export function VideoResultModal() {
 
     const cleanFileName = completedVideoFileName.replace(".svg", "");
     downloadRecording(completedVideoBlob, `${cleanFileName}.${extension}`);
-    toast.success(
-      `DOWNLOADED ${cleanFileName.toUpperCase()}.${extension.toUpperCase()}`,
-    );
-  };
-
-  const handleClose = () => {
-    setVideoModalOpen(false);
+    toast.success(`Downloaded ${cleanFileName}.${extension}`);
   };
 
   const getActualFormat = () => {
@@ -70,21 +74,13 @@ export function VideoResultModal() {
     return null;
   }
 
-  if (!videoModalOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-        onClick={handleClose}
-      />
-
-      {/* Modal - Landscape */}
-      <div className="relative z-10 w-full max-w-2xl border border-neutral-800 bg-black font-mono text-[14px] tracking-wide uppercase">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
-          <div className="flex items-center gap-2 text-white">
+    <Dialog open={videoModalOpen} onOpenChange={setVideoModalOpen}>
+      <DialogContent
+        className="max-w-2xl gap-0 overflow-hidden border-white/10 bg-neutral-950 p-0 text-[14px] shadow-2xl"
+        showCloseButton>
+        <DialogHeader className="border-b border-white/[0.08] px-4 py-3 pr-12">
+          <DialogTitle className="flex items-center gap-2 text-sm font-medium text-white">
             {completedVideoFormat === "mp4" ? (
               <Video className="h-4 w-4" />
             ) : (
@@ -94,18 +90,15 @@ export function VideoResultModal() {
               {completedVideoFileName?.replace(".svg", "")}.
               {getActualFormat().toLowerCase()}
             </span>
-          </div>
-          <button
-            onClick={handleClose}
-            className="text-neutral-500 transition-colors hover:text-white">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Preview and download the completed recording.
+          </DialogDescription>
+        </DialogHeader>
 
-        {/* Preview - Landscape 16:9 */}
         <div className="p-4">
           {previewUrl && (
-            <div className="aspect-video w-full border border-neutral-800 bg-neutral-900">
+            <div className="aspect-video w-full overflow-hidden rounded-md border border-white/[0.08] bg-neutral-900">
               {completedVideoFormat === "gif" ? (
                 <img
                   src={previewUrl}
@@ -126,15 +119,17 @@ export function VideoResultModal() {
           )}
 
           {/* File Info */}
-          <div className="mt-4 flex items-center justify-between border border-neutral-800 px-3 py-2">
+          <div className="mt-4 flex items-center justify-between rounded-md border border-white/[0.08] px-3 py-2">
             <span className="text-white">
               {completedVideoFileName?.replace(".svg", "")}.
               {getActualFormat().toLowerCase()}
             </span>
             <div className="flex items-center gap-3">
-              <span className="border border-neutral-700 px-2 py-0.5 text-[12px] text-neutral-400">
+              <Badge
+                variant="outline"
+                className="border-white/10 text-neutral-400">
                 {getActualFormat()}
-              </span>
+              </Badge>
               <span className="text-[12px] text-neutral-500">
                 {getFileSize()}
               </span>
@@ -142,16 +137,13 @@ export function VideoResultModal() {
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="border-t border-neutral-800 p-4">
-          <button
-            onClick={handleDownload}
-            className="flex w-full items-center justify-center gap-2 border border-white bg-white py-2.5 text-[12px] text-black transition-colors hover:bg-neutral-200">
+        <DialogFooter className="border-t border-white/[0.08] p-4">
+          <Button onClick={handleDownload} className="w-full">
             <Download className="h-3.5 w-3.5" />
-            DOWNLOAD
-          </button>
-        </div>
-      </div>
-    </div>
+            Download
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

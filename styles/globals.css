@@ -40,10 +40,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* font */
-  --font-sans: Clash Grotesk, sans-serif;
-  --font-serif: Instrument Serif, serif;
-  --font-mono: Geist Mono, monospace;
+  --font-sans: var(--font-geist-sans), sans-serif;
 
   --animate-rainbow: rainbow var(--speed, 2s) infinite linear;
 
@@ -136,7 +133,13 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-black font-sans text-white antialiased;
+    font-optical-sizing: auto;
+  }
+
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -261,11 +264,13 @@ html {
   );
 }
 
-/* Bento card hover effect */
-.bento-card {
-  transition: all 0.3s ease;
-}
-
-.bento-card:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

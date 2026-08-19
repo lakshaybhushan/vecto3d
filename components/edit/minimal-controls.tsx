@@ -1,12 +1,13 @@
 "use client";
 
 import { useEditorStore } from "@/lib/store";
-import {
-  MATERIAL_PRESETS,
-  ENVIRONMENT_PRESETS,
-  BEVEL_PRESETS,
-} from "@/lib/constants";
+import { MATERIAL_PRESETS, ENVIRONMENT_PRESETS } from "@/lib/constants";
 import { ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 
 interface MinimalControlsProps {
   activeSection: string | null;
@@ -22,7 +23,7 @@ export function MinimalControls({
   };
 
   return (
-    <div className="font-mono text-[14px] tracking-wide uppercase">
+    <div className="text-[14px]">
       <GeometrySection
         isOpen={activeSection === "geometry"}
         onToggle={() => toggleSection("geometry")}
@@ -53,14 +54,16 @@ function SectionHeader({
   onToggle: () => void;
 }) {
   return (
-    <button
+    <Button
+      type="button"
+      variant="ghost"
       onClick={onToggle}
-      className="flex w-full items-center justify-between border-b border-neutral-800 px-4 py-3 text-left text-neutral-400 transition-colors hover:text-white">
+      className="h-auto w-full justify-between rounded-none border-b border-white/[0.08] px-4 py-3 text-left font-medium text-neutral-300 hover:bg-white/[0.03] hover:text-white active:scale-100">
       <span>{title}</span>
       <ChevronDown
         className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
       />
-    </button>
+    </Button>
   );
 }
 
@@ -72,12 +75,9 @@ function AnimatedSection({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={`grid transition-all duration-200 ease-out ${
-        isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-      }`}>
-      <div className="overflow-hidden">{children}</div>
-    </div>
+    <Collapsible open={isOpen}>
+      <CollapsibleContent>{children}</CollapsibleContent>
+    </Collapsible>
   );
 }
 
@@ -100,14 +100,14 @@ function SliderRow({
     <div className="flex items-center justify-between py-2">
       <span className="text-neutral-500">{label}</span>
       <div className="flex items-center gap-3">
-        <input
-          type="range"
+        <Slider
           min={min}
           max={max}
           step={step}
-          value={value}
-          onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="h-1 w-24 cursor-pointer appearance-none bg-neutral-800 accent-white [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:bg-white"
+          value={[value]}
+          onValueChange={([nextValue]) => onChange(nextValue)}
+          aria-label={label}
+          className="w-24"
         />
         <span className="w-12 text-right text-neutral-400">
           {typeof value === "number" ? value.toFixed(step < 1 ? 1 : 0) : value}
@@ -129,13 +129,7 @@ function ToggleRow({
   return (
     <div className="flex items-center justify-between py-2">
       <span className="text-neutral-500">{label}</span>
-      <button
-        onClick={() => onChange(!value)}
-        className={`relative h-5 w-10 border transition-colors ${value ? "border-white bg-white" : "border-neutral-700 bg-neutral-900"}`}>
-        <div
-          className={`absolute top-0 h-full w-1/2 transition-all ${value ? "left-1/2 bg-black" : "left-0 bg-neutral-600"}`}
-        />
-      </button>
+      <Switch checked={value} onCheckedChange={onChange} aria-label={label} />
     </div>
   );
 }
@@ -156,16 +150,15 @@ function SelectRow({
       <span className="mb-2 block text-neutral-500">{label}</span>
       <div className="flex flex-wrap gap-1">
         {options.map((opt) => (
-          <button
+          <Button
             key={opt.value}
+            type="button"
+            size="sm"
+            variant={value === opt.value ? "default" : "outline"}
             onClick={() => onChange(opt.value)}
-            className={`border px-2 py-1 text-[12px] transition-colors ${
-              value === opt.value
-                ? "border-white bg-white text-black"
-                : "border-neutral-700 text-neutral-400 hover:border-neutral-500"
-            }`}>
+            className="h-8 px-2.5 text-[12px]">
             {opt.label}
-          </button>
+          </Button>
         ))}
       </div>
     </div>
@@ -192,11 +185,11 @@ function GeometrySection({
 
   return (
     <div>
-      <SectionHeader title="GEOMETRY" isOpen={isOpen} onToggle={onToggle} />
+      <SectionHeader title="Geometry" isOpen={isOpen} onToggle={onToggle} />
       <AnimatedSection isOpen={isOpen}>
-        <div className="border-b border-neutral-800 px-4 py-2">
+        <div className="border-b border-white/[0.08] px-4 py-2">
           <SliderRow
-            label="DEPTH"
+            label="Depth"
             value={depth}
             onChange={setDepth}
             min={0.1}
@@ -204,14 +197,14 @@ function GeometrySection({
             step={0.1}
           />
           <ToggleRow
-            label="BEVEL"
+            label="Bevel"
             value={bevelEnabled}
             onChange={setBevelEnabled}
           />
           <AnimatedSection isOpen={bevelEnabled}>
             <div className="space-y-0">
               <SliderRow
-                label="THICKNESS"
+                label="Thickness"
                 value={bevelThickness}
                 onChange={setBevelThickness}
                 min={0}
@@ -219,7 +212,7 @@ function GeometrySection({
                 step={0.1}
               />
               <SliderRow
-                label="SIZE"
+                label="Size"
                 value={bevelSize}
                 onChange={setBevelSize}
                 min={0}
@@ -227,7 +220,7 @@ function GeometrySection({
                 step={0.1}
               />
               <SliderRow
-                label="SMOOTHNESS"
+                label="Smoothness"
                 value={bevelSegments}
                 onChange={setBevelSegments}
                 min={1}
@@ -264,7 +257,7 @@ function MaterialSection({
 
   const presetOptions = MATERIAL_PRESETS.map((p) => ({
     value: p.name,
-    label: p.label.toUpperCase(),
+    label: p.label,
   }));
 
   const handlePresetChange = (name: string) => {
@@ -279,17 +272,17 @@ function MaterialSection({
 
   return (
     <div>
-      <SectionHeader title="MATERIAL" isOpen={isOpen} onToggle={onToggle} />
+      <SectionHeader title="Material" isOpen={isOpen} onToggle={onToggle} />
       <AnimatedSection isOpen={isOpen}>
-        <div className="border-b border-neutral-800 px-4 py-2">
+        <div className="border-b border-white/[0.08] px-4 py-2">
           <SelectRow
-            label="PRESET"
+            label="Preset"
             value={materialPreset}
             options={presetOptions}
             onChange={handlePresetChange}
           />
           <SliderRow
-            label="ROUGHNESS"
+            label="Roughness"
             value={roughness}
             onChange={setRoughness}
             min={0}
@@ -297,7 +290,7 @@ function MaterialSection({
             step={0.01}
           />
           <SliderRow
-            label="METALNESS"
+            label="Metalness"
             value={metalness}
             onChange={setMetalness}
             min={0}
@@ -305,7 +298,7 @@ function MaterialSection({
             step={0.01}
           />
           <SliderRow
-            label="CLEARCOAT"
+            label="Clearcoat"
             value={clearcoat}
             onChange={setClearcoat}
             min={0}
@@ -313,18 +306,18 @@ function MaterialSection({
             step={0.01}
           />
           <ToggleRow
-            label="CUSTOM COLOR"
+            label="Custom color"
             value={useCustomColor}
             onChange={setUseCustomColor}
           />
           <AnimatedSection isOpen={useCustomColor}>
             <div className="flex items-center justify-between py-2">
-              <span className="text-neutral-500">COLOR</span>
-              <input
+              <span className="text-neutral-500">Color</span>
+              <Input
                 type="color"
                 value={customColor}
                 onChange={(e) => setCustomColor(e.target.value)}
-                className="h-8 w-16 cursor-pointer border border-neutral-700 bg-transparent"
+                className="h-8 w-16 cursor-pointer rounded-md border border-white/10 bg-transparent"
               />
             </div>
           </AnimatedSection>
@@ -350,29 +343,29 @@ function EnvironmentSection({
 
   const envOptions = ENVIRONMENT_PRESETS.map((e) => ({
     value: e.name,
-    label: e.label.toUpperCase(),
+    label: e.label,
   }));
 
   return (
     <div>
-      <SectionHeader title="ENVIRONMENT" isOpen={isOpen} onToggle={onToggle} />
+      <SectionHeader title="Environment" isOpen={isOpen} onToggle={onToggle} />
       <AnimatedSection isOpen={isOpen}>
-        <div className="border-b border-neutral-800 px-4 py-2">
+        <div className="border-b border-white/[0.08] px-4 py-2">
           <ToggleRow
-            label="ENABLED"
+            label="Enabled"
             value={useEnvironment}
             onChange={setUseEnvironment}
           />
           <AnimatedSection isOpen={useEnvironment}>
             <div className="space-y-0">
               <SelectRow
-                label="PRESET"
+                label="Preset"
                 value={environmentPreset}
                 options={envOptions}
                 onChange={setEnvironmentPreset}
               />
               <SliderRow
-                label="INTENSITY"
+                label="Intensity"
                 value={envMapIntensity}
                 onChange={setEnvMapIntensity}
                 min={0}
@@ -403,22 +396,22 @@ function DisplaySection({
 
   return (
     <div>
-      <SectionHeader title="DISPLAY" isOpen={isOpen} onToggle={onToggle} />
+      <SectionHeader title="Display" isOpen={isOpen} onToggle={onToggle} />
       <AnimatedSection isOpen={isOpen}>
-        <div className="border-b border-neutral-800 px-4 py-2">
+        <div className="border-b border-white/[0.08] px-4 py-2">
           <div className="flex items-center justify-between py-2">
-            <span className="text-neutral-500">BACKGROUND</span>
-            <input
+            <span className="text-neutral-500">Background</span>
+            <Input
               type="color"
               value={backgroundColor}
               onChange={(e) => setBackgroundColor(e.target.value)}
-              className="h-8 w-16 cursor-pointer border border-neutral-700 bg-transparent"
+              className="h-8 w-16 cursor-pointer rounded-md border border-white/10 bg-transparent"
             />
           </div>
-          <ToggleRow label="BLOOM" value={useBloom} onChange={setUseBloom} />
+          <ToggleRow label="Bloom" value={useBloom} onChange={setUseBloom} />
           <AnimatedSection isOpen={useBloom}>
             <SliderRow
-              label="INTENSITY"
+              label="Intensity"
               value={bloomIntensity}
               onChange={setBloomIntensity}
               min={0}

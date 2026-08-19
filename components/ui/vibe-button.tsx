@@ -1,4 +1,5 @@
 import React, { useRef, useCallback } from "react";
+import { Button } from "@/components/ui/button";
 
 interface VibeButtonProps {
   text: string;
@@ -56,11 +57,13 @@ const VibeButton = ({
   const gradientStyle = `linear-gradient(to right, ${gradientColors.join(", ")})`;
 
   return (
-    <button
+    <Button
+      type="button"
+      variant="ghost"
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
-      className={`group relative z-0 overflow-hidden rounded-xl focus:outline-none ${className}`}
+      className={`group relative z-0 h-auto overflow-hidden rounded-xl ${className}`}
       style={
         {
           background: "rgba(17, 24, 39, 0.8)",
@@ -84,7 +87,7 @@ const VibeButton = ({
       )}
 
       <span className="relative z-10 font-light">{text}</span>
-    </button>
+    </Button>
   );
 };
 

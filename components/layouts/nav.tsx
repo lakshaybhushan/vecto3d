@@ -65,7 +65,7 @@ export default function Nav() {
               <Star size={16} />
               <AnimatedNumber
                 value={stars}
-                className="inline-flex items-center font-mono text-[13px]"
+                className="inline-flex items-center text-[13px]"
                 springOptions={{
                   bounce: 0,
                   duration: 2400,

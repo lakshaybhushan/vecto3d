@@ -11,14 +11,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-black group-[.toaster]:text-white group-[.toaster]:border-neutral-800 group-[.toaster]:shadow-lg group-[.toaster]:font-mono group-[.toaster]:text-[14px] group-[.toaster]:tracking-wide group-[.toaster]:uppercase group-[.toaster]:rounded-none",
-          title: "group-[.toast]:text-white group-[.toast]:font-mono",
-          description:
-            "group-[.toast]:text-neutral-400 group-[.toast]:font-mono",
+            "group toast group-[.toaster]:rounded-md group-[.toaster]:border-white/10 group-[.toaster]:bg-neutral-950 group-[.toaster]:text-[14px] group-[.toaster]:text-white group-[.toaster]:shadow-2xl",
+          title: "group-[.toast]:text-white",
+          description: "group-[.toast]:text-neutral-400",
           actionButton:
-            "group-[.toast]:bg-white group-[.toast]:text-black group-[.toast]:font-mono group-[.toast]:rounded-none",
+            "group-[.toast]:rounded-md group-[.toast]:bg-white group-[.toast]:text-black",
           cancelButton:
-            "group-[.toast]:bg-neutral-800 group-[.toast]:text-neutral-400 group-[.toast]:font-mono group-[.toast]:rounded-none",
+            "group-[.toast]:rounded-md group-[.toast]:bg-neutral-800 group-[.toast]:text-neutral-300",
           success: "group-[.toaster]:border-neutral-700",
           error:
             "group-[.toaster]:border-red-900 group-[.toaster]:text-red-400",

@@ -2,6 +2,7 @@
 
 import { memo } from "react";
 import { Box, Palette, Image, Mountain, Monitor } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type MobileTabBarProps = {
   activeTab: string;
@@ -26,10 +27,12 @@ export const MobileTabBar = memo(
             const isActive = activeTab === tab.id;
 
             return (
-              <button
+              <Button
+                type="button"
+                variant="ghost"
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 ${
+                className={`h-auto min-w-0 flex-1 flex-col gap-1 px-1 py-2 ${
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground/70 hover:text-foreground"
@@ -39,7 +42,7 @@ export const MobileTabBar = memo(
                   className={`text-[9px] leading-none font-medium ${isActive ? "text-primary" : "text-muted-foreground/60"}`}>
                   {tab.label}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>

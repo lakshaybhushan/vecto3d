@@ -8,6 +8,10 @@ import { handleExport, handleExportWithTextures } from "@/lib/exporters";
 import { recordWithStoreProgress } from "@/lib/video-recorder";
 import { toast } from "sonner";
 import { VideoResultModal } from "@/components/modals/video-result-modal";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 
 interface MinimalExportProps {
   fileName: string;
@@ -23,12 +27,9 @@ function AnimatedSection({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={`grid transition-all duration-200 ease-out ${
-        isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-      }`}>
-      <div className="overflow-hidden">{children}</div>
-    </div>
+    <Collapsible open={isOpen}>
+      <CollapsibleContent>{children}</CollapsibleContent>
+    </Collapsible>
   );
 }
 
@@ -64,7 +65,7 @@ export function MinimalExport({
     if (!canvasRef?.current) return;
 
     if (!autoRotate) {
-      toast.error("ENABLE AUTO-ROTATE FIRST");
+      toast.error("Enable auto-rotate first");
       return;
     }
 
@@ -79,7 +80,7 @@ export function MinimalExport({
       },
       onError: (error) => {
         console.error("Recording failed:", error);
-        toast.error("RECORDING FAILED");
+        toast.error("Recording failed");
       },
     });
   };
@@ -99,29 +100,27 @@ export function MinimalExport({
   return (
     <>
       {/* Auto-Rotate Controls - Always Visible */}
-      <div className="border-b border-neutral-800 px-4 py-3 font-mono text-[14px] tracking-wide uppercase">
+      <div className="border-b border-white/[0.08] px-4 py-3 text-[14px]">
         <div className="flex items-center justify-between">
-          <span className="text-neutral-500">AUTO ROTATE</span>
-          <button
-            onClick={() => setAutoRotate(!autoRotate)}
-            className={`relative h-5 w-10 border transition-colors ${autoRotate ? "border-white bg-white" : "border-neutral-700 bg-neutral-900"}`}>
-            <div
-              className={`absolute top-0 h-full w-1/2 transition-all ${autoRotate ? "left-1/2 bg-black" : "left-0 bg-neutral-600"}`}
-            />
-          </button>
+          <span className="text-neutral-500">Auto rotate</span>
+          <Switch
+            checked={autoRotate}
+            onCheckedChange={setAutoRotate}
+            aria-label="Auto rotate"
+          />
         </div>
         <AnimatedSection isOpen={autoRotate}>
           <div className="mt-3 flex items-center justify-between">
-            <span className="text-neutral-500">SPEED</span>
+            <span className="text-neutral-500">Speed</span>
             <div className="flex items-center gap-3">
-              <input
-                type="range"
+              <Slider
                 min={0.5}
                 max={10}
                 step={0.5}
-                value={autoRotateSpeed}
-                onChange={(e) => setAutoRotateSpeed(parseFloat(e.target.value))}
-                className="h-1 w-24 cursor-pointer appearance-none bg-neutral-800 accent-white [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:bg-white"
+                value={[autoRotateSpeed]}
+                onValueChange={([value]) => setAutoRotateSpeed(value)}
+                aria-label="Rotation speed"
+                className="w-24"
               />
               <span className="w-12 text-right text-neutral-400">
                 {autoRotateSpeed.toFixed(1)}
@@ -132,65 +131,79 @@ export function MinimalExport({
       </div>
 
       {/* Export Section */}
-      <button
+      <Button
+        type="button"
+        variant="ghost"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between px-4 py-3 font-mono text-[14px] tracking-wide text-neutral-400 uppercase transition-colors hover:text-white">
+        className="h-auto w-full justify-between rounded-none px-4 py-3 text-[14px] font-medium text-neutral-300 hover:bg-white/[0.03] hover:text-white active:scale-100">
         <div className="flex items-center gap-2">
           <Download className="h-4 w-4" />
-          <span>EXPORT</span>
+          <span>Export</span>
         </div>
         <ChevronDown
           className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
         />
-      </button>
+      </Button>
 
       <AnimatedSection isOpen={isOpen}>
-        <div className="border-t border-neutral-800 px-4 py-3 font-mono text-[14px] tracking-wide uppercase">
+        <div className="border-t border-white/[0.08] px-4 py-3 text-[14px]">
           {/* IMAGE Section */}
           <div className="mb-4">
             <span className="mb-2 block text-[12px] text-neutral-500">
-              IMAGE
+              Image
             </span>
-            <button
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
               onClick={handlePngExport}
-              className="w-full border border-neutral-700 py-2 text-neutral-400 transition-colors hover:border-white hover:text-white">
+              className="w-full">
               PNG
-            </button>
+            </Button>
           </div>
 
           {/* 3D Section */}
           <div className="mb-4">
             <span className="mb-2 block text-[12px] text-neutral-500">3D</span>
             <div className="grid grid-cols-3 gap-2">
-              <button
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => handle3DExport("stl")}
-                className="border border-neutral-700 py-2 text-neutral-400 transition-colors hover:border-white hover:text-white">
+                className="w-full">
                 STL
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => handle3DExport("glb")}
-                className="border border-neutral-700 py-2 text-neutral-400 transition-colors hover:border-white hover:text-white">
+                className="w-full">
                 GLB
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => handle3DExport("gltf")}
-                className="border border-neutral-700 py-2 text-neutral-400 transition-colors hover:border-white hover:text-white">
+                className="w-full">
                 GLTF
-              </button>
+              </Button>
             </div>
           </div>
 
           {/* VIDEO Section */}
           <div>
             <div className="mb-2 flex items-center gap-2">
-              <span className="text-[12px] text-neutral-500">VIDEO</span>
+              <span className="text-[12px] text-neutral-500">Video</span>
               {isRecording && (
                 <>
                   <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
                   <span className="text-[10px] text-red-400">
                     {recordingStatus === "processing"
-                      ? "PROCESSING..."
-                      : `${recordingElapsedTime.toFixed(1)}S`}
+                      ? "Processing…"
+                      : `${recordingElapsedTime.toFixed(1)}s`}
                   </span>
                   <div className="h-1 w-12 overflow-hidden bg-neutral-800">
                     <div
@@ -205,37 +218,42 @@ export function MinimalExport({
             {/* Duration - Only in VIDEO section */}
             <div className="mb-3">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-neutral-500">DURATION</span>
-                <span className="text-neutral-400">{videoDuration}S</span>
+                <span className="text-neutral-500">Duration</span>
+                <span className="text-neutral-400">{videoDuration}s</span>
               </div>
-              <input
-                type="range"
+              <Slider
                 min={3}
                 max={30}
                 step={1}
-                value={videoDuration}
-                onChange={(e) => setVideoDuration(parseInt(e.target.value))}
-                className="h-1 w-full cursor-pointer appearance-none bg-neutral-800 accent-white [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:bg-white"
+                value={[videoDuration]}
+                onValueChange={([value]) => setVideoDuration(value)}
+                aria-label="Video duration"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <button
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => handleVideoExport("mp4")}
                 disabled={!autoRotate || isRecording}
-                className="border border-neutral-700 py-2 text-neutral-400 transition-colors hover:border-white hover:text-white disabled:cursor-not-allowed disabled:opacity-30">
+                className="w-full">
                 MP4
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => handleVideoExport("gif")}
                 disabled={!autoRotate || isRecording}
-                className="border border-neutral-700 py-2 text-neutral-400 transition-colors hover:border-white hover:text-white disabled:cursor-not-allowed disabled:opacity-30">
+                className="w-full">
                 GIF
-              </button>
+              </Button>
             </div>
             {!autoRotate && (
               <p className="mt-2 text-[10px] text-neutral-600">
-                ENABLE AUTO-ROTATE TO RECORD
+                Enable auto-rotate to record
               </p>
             )}
           </div>
