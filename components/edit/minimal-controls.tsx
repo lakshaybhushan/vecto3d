@@ -5,9 +5,24 @@ import { MATERIAL_PRESETS, ENVIRONMENT_PRESETS } from "@/lib/constants";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
-import { Input } from "@/components/ui/input";
+import { PopoverPicker } from "@/components/ui/color-picker";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
+
+const materialPresetOptions = MATERIAL_PRESETS.map((preset) => ({
+  value: preset.name,
+  label: preset.label,
+}));
+
+const environmentPresetOptions = ENVIRONMENT_PRESETS.map((preset) => ({
+  value: preset.name,
+  label: preset.label,
+}));
+
+const sectionContentClass = "border-b border-white/[0.05] px-3.5 py-2";
+const sliderClass =
+  "mt-2 w-full [&_[data-slot=slider-track]]:h-1 [&_[data-slot=slider-track]]:bg-white/[0.08] [&_[data-slot=slider-range]]:bg-white [&_[data-slot=slider-thumb]]:size-3.5 [&_[data-slot=slider-thumb]]:border-white/70 [&_[data-slot=slider-thumb]]:bg-[#121212] [&_[data-slot=slider-thumb]]:hover:ring-2";
 
 interface MinimalControlsProps {
   activeSection: string | null;
@@ -58,10 +73,17 @@ function SectionHeader({
       type="button"
       variant="ghost"
       onClick={onToggle}
-      className="h-auto w-full justify-between rounded-none border-b border-white/[0.08] px-4 py-3 text-left font-medium text-neutral-300 hover:bg-white/[0.03] hover:text-white active:scale-100">
+      aria-expanded={isOpen}
+      className={cn(
+        "h-10 w-full justify-between rounded-none border-b border-white/[0.05] px-3.5 py-0 text-left text-[14px] font-medium text-[#aaa] hover:bg-white/[0.03] hover:text-white active:scale-100",
+        isOpen && "bg-white/[0.025] text-white",
+      )}>
       <span>{title}</span>
       <ChevronDown
-        className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        className={cn(
+          "size-3.5 text-[#666] transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]",
+          isOpen && "rotate-180 text-[#999]",
+        )}
       />
     </Button>
   );
@@ -76,7 +98,9 @@ function AnimatedSection({
 }) {
   return (
     <Collapsible open={isOpen}>
-      <CollapsibleContent>{children}</CollapsibleContent>
+      <CollapsibleContent className="overflow-hidden">
+        {children}
+      </CollapsibleContent>
     </Collapsible>
   );
 }
@@ -96,23 +120,25 @@ function SliderRow({
   max?: number;
   step?: number;
 }) {
+  const precision = step < 0.1 ? 2 : step < 1 ? 1 : 0;
+
   return (
-    <div className="flex items-center justify-between py-2">
-      <span className="text-neutral-500">{label}</span>
-      <div className="flex items-center gap-3">
-        <Slider
-          min={min}
-          max={max}
-          step={step}
-          value={[value]}
-          onValueChange={([nextValue]) => onChange(nextValue)}
-          aria-label={label}
-          className="w-24"
-        />
-        <span className="w-12 text-right text-neutral-400">
-          {typeof value === "number" ? value.toFixed(step < 1 ? 1 : 0) : value}
+    <div className="py-2.5">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[#888]">{label}</span>
+        <span className="text-[#c8c8c8] tabular-nums">
+          {value.toFixed(precision)}
         </span>
       </div>
+      <Slider
+        min={min}
+        max={max}
+        step={step}
+        value={[value]}
+        onValueChange={([nextValue]) => onChange(nextValue)}
+        aria-label={label}
+        className={sliderClass}
+      />
     </div>
   );
 }
@@ -127,9 +153,14 @@ function ToggleRow({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between py-2">
-      <span className="text-neutral-500">{label}</span>
-      <Switch checked={value} onCheckedChange={onChange} aria-label={label} />
+    <div className="flex items-center justify-between py-2.5">
+      <span className="text-[#888]">{label}</span>
+      <Switch
+        checked={value}
+        onCheckedChange={onChange}
+        aria-label={label}
+        className="border-white/10 data-[state=checked]:bg-white data-[state=unchecked]:bg-white/10"
+      />
     </div>
   );
 }
@@ -146,21 +177,46 @@ function SelectRow({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="py-2">
-      <span className="mb-2 block text-neutral-500">{label}</span>
-      <div className="flex flex-wrap gap-1">
+    <div className="py-2.5">
+      <span className="mb-2 block text-[#888]">{label}</span>
+      <div className="grid grid-cols-2 gap-1.5">
         {options.map((opt) => (
           <Button
             key={opt.value}
             type="button"
-            size="sm"
-            variant={value === opt.value ? "default" : "outline"}
+            variant="ghost"
+            aria-pressed={value === opt.value}
             onClick={() => onChange(opt.value)}
-            className="h-8 px-2.5 text-[12px]">
+            className={cn(
+              "h-8 justify-start rounded-md border px-2.5 text-[14px] font-normal",
+              value === opt.value
+                ? "border-white/25 bg-white text-[#101010] hover:bg-[#e8e8e8] hover:text-[#101010]"
+                : "border-white/[0.08] bg-white/[0.025] text-[#999] hover:border-white/15 hover:bg-white/[0.05] hover:text-white",
+            )}>
             {opt.label}
           </Button>
         ))}
       </div>
+    </div>
+  );
+}
+
+function ColorRow({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-2.5">
+      <span className="text-[#888]">{label}</span>
+      <span className="flex items-center gap-2">
+        <span className="text-[#777] tabular-nums">{value}</span>
+        <PopoverPicker color={value} label={label} onChange={onChange} />
+      </span>
     </div>
   );
 }
@@ -187,7 +243,7 @@ function GeometrySection({
     <div>
       <SectionHeader title="Geometry" isOpen={isOpen} onToggle={onToggle} />
       <AnimatedSection isOpen={isOpen}>
-        <div className="border-b border-white/[0.08] px-4 py-2">
+        <div className={sectionContentClass}>
           <SliderRow
             label="Depth"
             value={depth}
@@ -255,11 +311,6 @@ function MaterialSection({
   const customColor = useEditorStore((s) => s.customColor);
   const setCustomColor = useEditorStore((s) => s.setCustomColor);
 
-  const presetOptions = MATERIAL_PRESETS.map((p) => ({
-    value: p.name,
-    label: p.label,
-  }));
-
   const handlePresetChange = (name: string) => {
     setMaterialPreset(name);
     const preset = MATERIAL_PRESETS.find((p) => p.name === name);
@@ -274,11 +325,11 @@ function MaterialSection({
     <div>
       <SectionHeader title="Material" isOpen={isOpen} onToggle={onToggle} />
       <AnimatedSection isOpen={isOpen}>
-        <div className="border-b border-white/[0.08] px-4 py-2">
+        <div className={sectionContentClass}>
           <SelectRow
             label="Preset"
             value={materialPreset}
-            options={presetOptions}
+            options={materialPresetOptions}
             onChange={handlePresetChange}
           />
           <SliderRow
@@ -311,15 +362,11 @@ function MaterialSection({
             onChange={setUseCustomColor}
           />
           <AnimatedSection isOpen={useCustomColor}>
-            <div className="flex items-center justify-between py-2">
-              <span className="text-neutral-500">Color</span>
-              <Input
-                type="color"
-                value={customColor}
-                onChange={(e) => setCustomColor(e.target.value)}
-                className="h-8 w-16 cursor-pointer rounded-md border border-white/10 bg-transparent"
-              />
-            </div>
+            <ColorRow
+              label="Color"
+              value={customColor}
+              onChange={setCustomColor}
+            />
           </AnimatedSection>
         </div>
       </AnimatedSection>
@@ -341,16 +388,11 @@ function EnvironmentSection({
   const envMapIntensity = useEditorStore((s) => s.envMapIntensity);
   const setEnvMapIntensity = useEditorStore((s) => s.setEnvMapIntensity);
 
-  const envOptions = ENVIRONMENT_PRESETS.map((e) => ({
-    value: e.name,
-    label: e.label,
-  }));
-
   return (
     <div>
       <SectionHeader title="Environment" isOpen={isOpen} onToggle={onToggle} />
       <AnimatedSection isOpen={isOpen}>
-        <div className="border-b border-white/[0.08] px-4 py-2">
+        <div className={sectionContentClass}>
           <ToggleRow
             label="Enabled"
             value={useEnvironment}
@@ -361,7 +403,7 @@ function EnvironmentSection({
               <SelectRow
                 label="Preset"
                 value={environmentPreset}
-                options={envOptions}
+                options={environmentPresetOptions}
                 onChange={setEnvironmentPreset}
               />
               <SliderRow
@@ -398,16 +440,12 @@ function DisplaySection({
     <div>
       <SectionHeader title="Display" isOpen={isOpen} onToggle={onToggle} />
       <AnimatedSection isOpen={isOpen}>
-        <div className="border-b border-white/[0.08] px-4 py-2">
-          <div className="flex items-center justify-between py-2">
-            <span className="text-neutral-500">Background</span>
-            <Input
-              type="color"
-              value={backgroundColor}
-              onChange={(e) => setBackgroundColor(e.target.value)}
-              className="h-8 w-16 cursor-pointer rounded-md border border-white/10 bg-transparent"
-            />
-          </div>
+        <div className={sectionContentClass}>
+          <ColorRow
+            label="Background"
+            value={backgroundColor}
+            onChange={setBackgroundColor}
+          />
           <ToggleRow label="Bloom" value={useBloom} onChange={setUseBloom} />
           <AnimatedSection isOpen={useBloom}>
             <SliderRow

@@ -220,6 +220,37 @@ html {
   scrollbar-color: hsl(var(--muted-foreground) / 0.4) transparent;
 }
 
+/* Compact editor color picker */
+.simple-color-picker.react-colorful {
+  width: 188px;
+  height: 132px;
+}
+
+.simple-color-picker .react-colorful__saturation {
+  border-bottom: 8px solid #181818;
+  border-radius: 5px 5px 0 0;
+}
+
+.simple-color-picker .react-colorful__hue {
+  height: 14px;
+  border-radius: 0 0 5px 5px;
+}
+
+.simple-color-picker .react-colorful__pointer {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 35%);
+}
+
+.simple-color-picker
+  .react-colorful__interactive:focus-visible
+  .react-colorful__pointer {
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 35%),
+    0 0 0 3px rgb(255 255 255 / 22%);
+}
+
 /* Webkit browsers */
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;

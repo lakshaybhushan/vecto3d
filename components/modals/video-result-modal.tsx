@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Video, FileImage, Download } from "lucide-react";
 import { downloadRecording } from "@/lib/video-recorder";
 import { useEditorStore } from "@/lib/store";
@@ -17,25 +17,30 @@ import {
 } from "@/components/ui/dialog";
 
 export function VideoResultModal() {
-  const {
-    videoModalOpen,
-    setVideoModalOpen,
-    completedVideoBlob,
-    completedVideoFormat,
-    completedVideoFileName,
-  } = useEditorStore();
+  const videoModalOpen = useEditorStore((state) => state.videoModalOpen);
+  const setVideoModalOpen = useEditorStore((state) => state.setVideoModalOpen);
+  const completedVideoBlob = useEditorStore(
+    (state) => state.completedVideoBlob,
+  );
+  const completedVideoFormat = useEditorStore(
+    (state) => state.completedVideoFormat,
+  );
+  const completedVideoFileName = useEditorStore(
+    (state) => state.completedVideoFileName,
+  );
 
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const previewElementRef = useRef<HTMLImageElement | HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (completedVideoBlob && videoModalOpen) {
-      const url = URL.createObjectURL(completedVideoBlob);
-      setPreviewUrl(url);
-      return () => {
-        URL.revokeObjectURL(url);
-      };
+    if (!completedVideoBlob || !videoModalOpen || !previewElementRef.current) {
+      return;
     }
-  }, [completedVideoBlob, videoModalOpen]);
+
+    const url = URL.createObjectURL(completedVideoBlob);
+    previewElementRef.current.src = url;
+
+    return () => URL.revokeObjectURL(url);
+  }, [completedVideoBlob, completedVideoFormat, videoModalOpen]);
 
   const handleDownload = () => {
     if (!completedVideoBlob || !completedVideoFileName || !completedVideoFormat)
@@ -77,7 +82,7 @@ export function VideoResultModal() {
   return (
     <Dialog open={videoModalOpen} onOpenChange={setVideoModalOpen}>
       <DialogContent
-        className="max-w-2xl gap-0 overflow-hidden border-white/10 bg-neutral-950 p-0 text-[14px] shadow-2xl"
+        className="max-w-2xl gap-0 overflow-hidden rounded-md border-white/[0.08] bg-[#121212] p-0 text-[14px] shadow-2xl"
         showCloseButton>
         <DialogHeader className="border-b border-white/[0.08] px-4 py-3 pr-12">
           <DialogTitle className="flex items-center gap-2 text-sm font-medium text-white">
@@ -97,17 +102,21 @@ export function VideoResultModal() {
         </DialogHeader>
 
         <div className="p-4">
-          {previewUrl && (
-            <div className="aspect-video w-full overflow-hidden rounded-md border border-white/[0.08] bg-neutral-900">
+          {videoModalOpen ? (
+            <div className="aspect-video w-full overflow-hidden rounded-md border border-white/[0.08] bg-[#101010]">
               {completedVideoFormat === "gif" ? (
                 <img
-                  src={previewUrl}
+                  ref={(element) => {
+                    previewElementRef.current = element;
+                  }}
                   alt="Recorded GIF preview"
                   className="h-full w-full object-contain"
                 />
               ) : (
                 <video
-                  src={previewUrl}
+                  ref={(element) => {
+                    previewElementRef.current = element;
+                  }}
                   controls
                   autoPlay
                   loop
@@ -116,7 +125,7 @@ export function VideoResultModal() {
                 />
               )}
             </div>
-          )}
+          ) : null}
 
           {/* File Info */}
           <div className="mt-4 flex items-center justify-between rounded-md border border-white/[0.08] px-3 py-2">
@@ -127,12 +136,10 @@ export function VideoResultModal() {
             <div className="flex items-center gap-3">
               <Badge
                 variant="outline"
-                className="border-white/10 text-neutral-400">
+                className="border-white/10 text-[14px] text-[#999]">
                 {getActualFormat()}
               </Badge>
-              <span className="text-[12px] text-neutral-500">
-                {getFileSize()}
-              </span>
+              <span className="text-[#777]">{getFileSize()}</span>
             </div>
           </div>
         </div>
