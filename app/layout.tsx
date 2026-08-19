@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
+import { InteractionSounds } from "@/components/ui/interaction-sounds";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -75,6 +76,7 @@ export default function RootLayout({
           forcedTheme="dark"
           enableSystem={false}
           disableTransitionOnChange>
+          <InteractionSounds />
           {children}
           <Analytics />
           <Toaster position="top-center" />

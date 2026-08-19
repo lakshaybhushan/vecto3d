@@ -1,76 +1,132 @@
-<h1 align="center">Vecto3d</h1>
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./public/logo_dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="./public/logo_light.svg">
+    <img alt="Vecto3d logo" src="./public/logo_light.svg" width="64" height="64">
+  </picture>
 
-<p align="center">
+  <h1>Vecto3d</h1>
+  <p>Turn SVGs into 3D objects, directly in your browser.</p>
+  <p>
+    <a href="https://vecto3d.xyz">Open Vecto3d</a>
+    ·
+    <a href="https://github.com/lakshaybhushan/vecto3d">GitHub</a>
+  </p>
 
-<img src ="https://img.shields.io/badge/Next.js-000000.svg?style=for-the-badge&logo=nextdotjs&logoColor=white">
-<img src ="https://img.shields.io/badge/Three.js-000000.svg?style=for-the-badge&logo=threedotjs&logoColor=white">
-<img src ="https://img.shields.io/badge/v0-000000.svg?style=for-the-badge&logo=v0&logoColor=white">
-<img src ="https://img.shields.io/badge/shadcn/ui-000000.svg?style=for-the-badge&logo=shadcn/ui&logoColor=white">
-<img src ="https://img.shields.io/badge/TailwindCSS-000000.svg?style=for-the-badge&logo=TailwindCSS&logoColor=white">
-<img src ="https://img.shields.io/badge/Vercel-000000.svg?style=for-the-badge&logo=Vercel&logoColor=white">
+  <a href="https://vercel.com/oss">
+    <img alt="Vercel OSS Program" src="https://vercel.com/oss/program-badge.svg" height="32">
+  </a>
+</div>
 
-</p>
+Vecto3d is a free, open-source tool for giving flat SVG artwork depth, material, lighting, and motion. There is nothing to install and no account is required. Uploaded files stay in your browser.
 
-![GithubBanner](https://vecto3d.xyz/opengraph-image-v1.png)
+## Features
 
-<a href="https://vercel.com/oss">
-  <img alt="Vercel OSS Program" src="https://vercel.com/oss/program-badge.svg" />
-</a>
+- Upload, drag and drop, or paste an SVG.
+- Start quickly with built-in example artwork.
+- Adjust depth, bevel thickness, bevel size, and smoothness in real time.
+- Choose a material preset or tune roughness, metalness, clearcoat, and color.
+- Preview the model in multiple lighting environments and adjust their intensity.
+- Set a custom preview background and add a bloom effect.
+- Rotate the model directly in the viewport, reset changes, or enter fullscreen.
+- Export a still image, an animation, or a production-ready 3D file.
+- Use the same compact controls on desktop and mobile.
 
-<br/>
+## Workflow
 
-A super simple tool to convert your simple SVGs, mostly logos, to 3D models.
-Check it out at [https://vecto3d.xyz](https://vecto3d.xyz)
+1. **Add an SVG.** Drop, paste, or select a file on the landing page. You can also choose one of the included examples.
+2. **Shape it.** Adjust the model depth and bevel until the geometry feels right.
+3. **Finish it.** Choose a material, color, environment, background, and optional bloom.
+4. **Export it.** Save the result in the format that fits your workflow.
 
-## But why?
+## Editor controls
 
-So, one day I was bored and decided to open Blender. I loaded up a logo that I designed in Figma (check it out [here](https://x.com/blakssh/status/1895902171788689741)) and then started playing around with the different tools to make it 3D. I knew that you can convert any SVG to 3D models in Blender, but I wanted to make it easier and faster. So I checked out the web and found a few tools, but they were either paid or lacked a 3D model export feature. So I thought, why not make a tool that can do this easily and quickly?
+| Section     | Controls                                                            |
+| ----------- | ------------------------------------------------------------------- |
+| Geometry    | Depth, bevel, thickness, size, and smoothness                       |
+| Material    | Presets, roughness, metalness, clearcoat, and a custom color picker |
+| Environment | Lighting presets and intensity                                      |
+| Display     | Background color and bloom intensity                                |
+| Export      | Image, 3D model, and recorded animation formats                     |
 
-## Project Structure
+## Export formats
 
+| Format | Output                                         |
+| ------ | ---------------------------------------------- |
+| PNG    | High-resolution still image                    |
+| MP4    | Recorded model rotation                        |
+| GIF    | Short looping model rotation                   |
+| STL    | Mesh for 3D printing and fabrication workflows |
+| GLB    | Portable binary 3D model                       |
+| GLTF   | Portable JSON-based 3D model                   |
+
+MP4 and GIF recording use the live WebGL preview. Turn on auto-rotate in the export panel, then choose the speed and duration before recording.
+
+## Local development
+
+Vecto3d uses [Bun](https://bun.sh) as its package manager.
+
+```bash
+git clone https://github.com/lakshaybhushan/vecto3d.git
+cd vecto3d
+bun install
+bun run dev
 ```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+Run the checks before opening a pull request:
+
+```bash
+bun run lint
+NODE_ENV=production bun run build
+```
+
+## Tech stack
+
+- [Next.js](https://nextjs.org) and [React](https://react.dev)
+- [Three.js](https://threejs.org) and [React Three Fiber](https://r3f.docs.pmnd.rs)
+- [TypeScript](https://www.typescriptlang.org)
+- [Tailwind CSS](https://tailwindcss.com)
+- [shadcn/ui](https://ui.shadcn.com) and [Radix UI](https://www.radix-ui.com)
+- [Zustand](https://zustand.docs.pmnd.rs) for editor state
+- [Framer Motion](https://motion.dev) for interface motion
+- [Cuelume](https://cuelume-site.pages.dev) for synthesized interaction sounds
+- [react-colorful](https://github.com/omgovich/react-colorful) for the color picker
+
+## Project structure
+
+```text
 vecto3d/
-├── public/                 # Static assets
-├── app/                    # Next.js App Router
-│   └──edit/                # SVG editor route
-├── components/             # React components
-│   ├── ui/                 # UI components
-│   └── controls/           # Control panel components
-├── lib/                    # Libraries and utilities
-├── hooks/                  # Custom React hooks
-├── styles/                 # Styles CSS
-└── ...config files         # e.g., next.config.ts, tsconfig.json, package.json...
+├── app/
+│   ├── page.tsx                 # Landing and SVG input flow
+│   └── edit/page.tsx            # 3D editor
+├── components/
+│   ├── edit/                    # Editor controls and export panel
+│   ├── previews/                # Three.js model and preset previews
+│   └── ui/                      # Shared interface primitives
+├── hooks/                       # Browser and device hooks
+├── lib/
+│   ├── exporters.ts             # PNG and 3D export helpers
+│   ├── video-recorder.ts        # MP4 and GIF recording
+│   ├── store.ts                 # Editor state
+│   └── svg-sanitizer.ts         # SVG validation and sanitization
+├── public/                      # Logos, workers, and texture assets
+└── styles/                      # Global styles
 ```
 
-## What can you do with this?
+## Privacy and browser support
 
-- Convert your simple SVGs to 3D models.
-- Multiple customization options, which include Geometry, Materials, Environment, and Background, with a simple, intuitive UI.
-- Customize your 3D models with your desired thickness or bevels.
-- Experiment with different colors and materials (Glass, Metal, Plastic, etc.).
-- Preview your 3D models in different environments and also add your own custom environment using any image you want.
-- Download 3D models in STL, GLB, and GLTF formats.
-- Export images in PNG in HD, 2K, and 4K quality.
-- Change the background color of the preview panel to see the 3D model in different colors.
+SVG processing and editing happen locally in the browser. The current file is kept in session storage so it can move from the landing page into the editor without being uploaded.
 
-## Vibe Mode
+Chrome and Firefox are recommended. Safari can have WebGL rendering and performance issues, so the editor shows a warning before continuing.
 
-Since vibe coding is currently in trend, I thought, why not add a "vibe mode" to this app? So I added a button to toggle this mode. This mode allows you to add a dreamy effect with bloom and soft shadows to your preview panel.
+## Contributing
 
-## Acknowledgements
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before getting started.
 
-I've used multiple tools to make this app, especially [V0.dev](https://v0.dev) for quick prototyping, [shadcn/ui](https://ui.shadcn.com), and [Magic UI](https://magicui.design/) for the amazing UI components.
+Vecto3d is available under the [MIT License](LICENSE).
 
-## License & Contributing
+## Author
 
-This project uses the MIT License. See the [LICENSE](LICENSE) file for details. For contributing, please read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
-
-## Support
-
-If you like the app, please star the repository and share it with your friends and acquaintances. You can also support me by [buying me a coffee](https://www.buymeacoffee.com/lakshaybhushan).
-
-<a href="https://www.buymeacoffee.com/lakshaybhushan" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50" width="200"></a>
-
-## Contact
-
-You can contact me on [X (Twitter)](https://x.com/blakssh). I'll be happy to help you!
+Made by [@blakssh](https://x.com/blakssh).

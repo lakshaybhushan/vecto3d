@@ -202,7 +202,7 @@ export default function Home() {
   };
 
   const textAction =
-    "h-auto rounded-none p-0 text-[14px] font-normal text-[#bcbcbc] underline decoration-[#666] underline-offset-4 hover:text-white hover:no-underline";
+    "h-auto rounded-none p-0 text-[14px] font-normal text-[#bcbcbc] underline decoration-[#666] underline-offset-4 hover:text-white hover:underline hover:decoration-[#999]";
 
   return (
     <main
@@ -225,29 +225,38 @@ export default function Home() {
         <header className="flex items-center justify-between gap-6">
           <Link
             href="/"
+            data-cuelume-press="press"
+            data-cuelume-release="release"
             className="flex items-center gap-2 rounded-sm font-medium text-white outline-none focus-visible:ring-2 focus-visible:ring-white/50">
             <Logo className="size-5" />
             Vecto3d
           </Link>
           <nav className="flex items-center gap-4" aria-label="Primary">
-            <Button asChild variant="link" className={textAction}>
-              <Link
-                href="https://github.com/lakshaybhushan/vecto3d"
-                target="_blank"
-                rel="noopener noreferrer">
-                <span
-                  aria-hidden="true"
-                  className="size-4 shrink-0 text-current"
-                  dangerouslySetInnerHTML={{
-                    __html: prepareIconSvg(GITHUB_SVG),
-                  }}
-                />
-                GitHub
+            <Link
+              href="https://github.com/lakshaybhushan/vecto3d"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-cuelume-press="press"
+              data-cuelume-release="release"
+              aria-label={
+                stars === null
+                  ? "View Vecto3d on GitHub"
+                  : `View Vecto3d on GitHub, ${stars.toLocaleString()} ${stars === 1 ? "star" : "stars"}`
+              }
+              className="flex items-center gap-2 rounded-sm text-[#bcbcbc] underline decoration-[#666] underline-offset-4 transition-[color,text-decoration-color] duration-150 outline-none hover:text-white hover:decoration-[#999] focus-visible:ring-2 focus-visible:ring-white/50">
+              <span
+                aria-hidden="true"
+                className="size-4 shrink-0 text-current"
+                dangerouslySetInnerHTML={{
+                  __html: prepareIconSvg(GITHUB_SVG),
+                }}
+              />
+              <span>
                 {stars === null
-                  ? null
-                  : ` · ${stars.toLocaleString()} ${stars === 1 ? "star" : "stars"}`}
-              </Link>
-            </Button>
+                  ? "…"
+                  : `${stars.toLocaleString()} ${stars === 1 ? "star" : "stars"}`}
+              </span>
+            </Link>
           </nav>
         </header>
 

@@ -19,6 +19,8 @@ export function PopoverPicker({
       <PopoverPrimitive.Trigger asChild>
         <button
           type="button"
+          data-cuelume-press="press"
+          data-cuelume-release="release"
           aria-label={`Choose ${label.toLowerCase()}`}
           title={color}
           className="size-6 shrink-0 cursor-pointer rounded-[5px] border border-white/15 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.16)] transition-[border-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] outline-none hover:border-white/30 focus-visible:ring-2 focus-visible:ring-white/30 active:scale-[0.95]"
