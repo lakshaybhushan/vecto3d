@@ -57,6 +57,12 @@ interface EditorState {
   useBloom: boolean;
   bloomIntensity: number;
   bloomMipmapBlur: boolean;
+  useChromaticAberration: boolean;
+  chromaticAberrationIntensity: number;
+  useGrain: boolean;
+  grainIntensity: number;
+  useVignette: boolean;
+  vignetteIntensity: number;
 
   // Recording Options
   isRecording: boolean;
@@ -118,6 +124,12 @@ interface EditorState {
   setUseBloom: (bloom: boolean) => void;
   setBloomIntensity: (intensity: number) => void;
   setBloomMipmapBlur: (blur: boolean) => void;
+  setUseChromaticAberration: (enabled: boolean) => void;
+  setChromaticAberrationIntensity: (intensity: number) => void;
+  setUseGrain: (enabled: boolean) => void;
+  setGrainIntensity: (intensity: number) => void;
+  setUseVignette: (enabled: boolean) => void;
+  setVignetteIntensity: (intensity: number) => void;
 
   setIsRecording: (recording: boolean) => void;
   setRecordingDuration: (duration: number) => void;
@@ -175,7 +187,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   textureDepth: 100,
 
   useEnvironment: true,
-  environmentPreset: "apartment",
+  environmentPreset: "studio",
   customHdriUrl: null,
 
   userSelectedBackground: false,
@@ -187,8 +199,14 @@ export const useEditorStore = create<EditorState>((set) => ({
 
   isFullscreen: false,
   useBloom: false,
-  bloomIntensity: 1.0,
+  bloomIntensity: 0.35,
   bloomMipmapBlur: true,
+  useChromaticAberration: false,
+  chromaticAberrationIntensity: 0.0015,
+  useGrain: false,
+  grainIntensity: 0.08,
+  useVignette: false,
+  vignetteIntensity: 0.35,
 
   isRecording: false,
   recordingDuration: 0,
@@ -251,6 +269,14 @@ export const useEditorStore = create<EditorState>((set) => ({
   setUseBloom: (bloom) => set({ useBloom: bloom }),
   setBloomIntensity: (intensity) => set({ bloomIntensity: intensity }),
   setBloomMipmapBlur: (blur) => set({ bloomMipmapBlur: blur }),
+  setUseChromaticAberration: (enabled) =>
+    set({ useChromaticAberration: enabled }),
+  setChromaticAberrationIntensity: (intensity) =>
+    set({ chromaticAberrationIntensity: intensity }),
+  setUseGrain: (enabled) => set({ useGrain: enabled }),
+  setGrainIntensity: (intensity) => set({ grainIntensity: intensity }),
+  setUseVignette: (enabled) => set({ useVignette: enabled }),
+  setVignetteIntensity: (intensity) => set({ vignetteIntensity: intensity }),
 
   setIsRecording: (recording) => set({ isRecording: recording }),
   setRecordingDuration: (duration) => set({ recordingDuration: duration }),
@@ -337,7 +363,7 @@ export const useEditorStore = create<EditorState>((set) => ({
       textureDepth: 100,
 
       useEnvironment: true,
-      environmentPreset: "apartment",
+      environmentPreset: "studio",
       customHdriUrl: null,
 
       userSelectedBackground: false,
@@ -346,7 +372,13 @@ export const useEditorStore = create<EditorState>((set) => ({
       autoRotateSpeed: 3,
 
       useBloom: false,
-      bloomIntensity: 1.0,
+      bloomIntensity: 0.35,
       bloomMipmapBlur: true,
+      useChromaticAberration: false,
+      chromaticAberrationIntensity: 0.0015,
+      useGrain: false,
+      grainIntensity: 0.08,
+      useVignette: false,
+      vignetteIntensity: 0.35,
     })),
 }));

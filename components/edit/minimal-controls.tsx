@@ -120,7 +120,8 @@ function SliderRow({
   max?: number;
   step?: number;
 }) {
-  const precision = step < 0.1 ? 2 : step < 1 ? 1 : 0;
+  const precision =
+    step < 0.001 ? 4 : step < 0.01 ? 3 : step < 0.1 ? 2 : step < 1 ? 1 : 0;
 
   return (
     <div className="py-2.5">
@@ -306,6 +307,14 @@ function MaterialSection({
   const setMetalness = useEditorStore((s) => s.setMetalness);
   const clearcoat = useEditorStore((s) => s.clearcoat);
   const setClearcoat = useEditorStore((s) => s.setClearcoat);
+  const transmission = useEditorStore((s) => s.transmission);
+  const setTransmission = useEditorStore((s) => s.setTransmission);
+  const setEnvMapIntensity = useEditorStore((s) => s.setEnvMapIntensity);
+  const bevelEnabled = useEditorStore((s) => s.bevelEnabled);
+  const setBevelEnabled = useEditorStore((s) => s.setBevelEnabled);
+  const setBevelThickness = useEditorStore((s) => s.setBevelThickness);
+  const setBevelSize = useEditorStore((s) => s.setBevelSize);
+  const setBevelSegments = useEditorStore((s) => s.setBevelSegments);
   const useCustomColor = useEditorStore((s) => s.useCustomColor);
   const setUseCustomColor = useEditorStore((s) => s.setUseCustomColor);
   const customColor = useEditorStore((s) => s.customColor);
@@ -318,6 +327,15 @@ function MaterialSection({
       setRoughness(preset.roughness);
       setMetalness(preset.metalness);
       setClearcoat(preset.clearcoat);
+      setTransmission(preset.transmission);
+      setEnvMapIntensity(preset.envMapIntensity);
+
+      if (name === "glass_smoked" && !bevelEnabled) {
+        setBevelEnabled(true);
+        setBevelThickness(0.8);
+        setBevelSize(0.55);
+        setBevelSegments(8);
+      }
     }
   };
 
@@ -356,6 +374,16 @@ function MaterialSection({
             max={1}
             step={0.01}
           />
+          {transmission > 0 || materialPreset === "custom" ? (
+            <SliderRow
+              label="Transmission"
+              value={transmission}
+              onChange={setTransmission}
+              min={0}
+              max={1}
+              step={0.01}
+            />
+          ) : null}
           <ToggleRow
             label="Custom color"
             value={useCustomColor}
@@ -435,6 +463,26 @@ function DisplaySection({
   const setUseBloom = useEditorStore((s) => s.setUseBloom);
   const bloomIntensity = useEditorStore((s) => s.bloomIntensity);
   const setBloomIntensity = useEditorStore((s) => s.setBloomIntensity);
+  const useChromaticAberration = useEditorStore(
+    (s) => s.useChromaticAberration,
+  );
+  const setUseChromaticAberration = useEditorStore(
+    (s) => s.setUseChromaticAberration,
+  );
+  const chromaticAberrationIntensity = useEditorStore(
+    (s) => s.chromaticAberrationIntensity,
+  );
+  const setChromaticAberrationIntensity = useEditorStore(
+    (s) => s.setChromaticAberrationIntensity,
+  );
+  const useGrain = useEditorStore((s) => s.useGrain);
+  const setUseGrain = useEditorStore((s) => s.setUseGrain);
+  const grainIntensity = useEditorStore((s) => s.grainIntensity);
+  const setGrainIntensity = useEditorStore((s) => s.setGrainIntensity);
+  const useVignette = useEditorStore((s) => s.useVignette);
+  const setUseVignette = useEditorStore((s) => s.setUseVignette);
+  const vignetteIntensity = useEditorStore((s) => s.vignetteIntensity);
+  const setVignetteIntensity = useEditorStore((s) => s.setVignetteIntensity);
 
   return (
     <div>
@@ -453,8 +501,49 @@ function DisplaySection({
               value={bloomIntensity}
               onChange={setBloomIntensity}
               min={0}
-              max={3}
-              step={0.1}
+              max={1.5}
+              step={0.05}
+            />
+          </AnimatedSection>
+          <ToggleRow
+            label="Chromatic aberration"
+            value={useChromaticAberration}
+            onChange={setUseChromaticAberration}
+          />
+          <AnimatedSection isOpen={useChromaticAberration}>
+            <SliderRow
+              label="Amount"
+              value={chromaticAberrationIntensity}
+              onChange={setChromaticAberrationIntensity}
+              min={0.0005}
+              max={0.008}
+              step={0.0005}
+            />
+          </AnimatedSection>
+          <ToggleRow label="Grain" value={useGrain} onChange={setUseGrain} />
+          <AnimatedSection isOpen={useGrain}>
+            <SliderRow
+              label="Amount"
+              value={grainIntensity}
+              onChange={setGrainIntensity}
+              min={0.01}
+              max={0.25}
+              step={0.01}
+            />
+          </AnimatedSection>
+          <ToggleRow
+            label="Vignette"
+            value={useVignette}
+            onChange={setUseVignette}
+          />
+          <AnimatedSection isOpen={useVignette}>
+            <SliderRow
+              label="Amount"
+              value={vignetteIntensity}
+              onChange={setVignetteIntensity}
+              min={0.1}
+              max={1}
+              step={0.05}
             />
           </AnimatedSection>
         </div>

@@ -113,6 +113,7 @@ export interface SVGModelProps {
   bevelSize?: number;
   bevelSegments?: number;
   customColor?: string;
+  materialPreset?: string;
   roughness?: number;
   metalness?: number;
   clearcoat?: number;
@@ -165,6 +166,12 @@ export interface ModelPreviewProps {
   useBloom: boolean;
   bloomIntensity: number;
   bloomMipmapBlur: boolean;
+  useChromaticAberration: boolean;
+  chromaticAberrationIntensity: number;
+  useGrain: boolean;
+  grainIntensity: number;
+  useVignette: boolean;
+  vignetteIntensity: number;
   isMobile: boolean;
 }
 

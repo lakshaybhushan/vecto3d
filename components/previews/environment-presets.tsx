@@ -7,7 +7,7 @@ import { ENVIRONMENT_PRESETS } from "@/lib/constants";
 import { memoryManager } from "@/lib/memory-manager";
 
 const textureCache = new Map<string, THREE.Texture>();
-let isPreloading = false;
+const textureLoadPromises = new Map<string, Promise<THREE.Texture>>();
 
 const clearTextureCache = () => {
   for (const [, texture] of textureCache.entries()) {
@@ -15,46 +15,31 @@ const clearTextureCache = () => {
     texture.dispose();
   }
   textureCache.clear();
+  textureLoadPromises.clear();
 };
 
-const preloadDefaultEnvironment = async () => {
-  try {
-    const apartment = await import("@pmndrs/assets/hdri/apartment.exr.js");
-    const loader = new EXRLoader();
+const loadEnvironmentTexture = (exrFile: string) => {
+  const cachedTexture = textureCache.get(exrFile);
+  if (cachedTexture) return Promise.resolve(cachedTexture);
 
-    loader.load(apartment.default, (texture) => {
+  const pendingTexture = textureLoadPromises.get(exrFile);
+  if (pendingTexture) return pendingTexture;
+
+  const loadPromise = import(`@pmndrs/assets/hdri/${exrFile}`)
+    .then(async (asset) => {
+      const loader = new EXRLoader();
+      const texture = await loader.loadAsync(asset.default);
       texture.mapping = THREE.EquirectangularReflectionMapping;
       memoryManager.track(texture);
-      textureCache.set("apartment.exr.js", texture);
+      textureCache.set(exrFile, texture);
+      return texture;
+    })
+    .finally(() => {
+      textureLoadPromises.delete(exrFile);
     });
-  } catch (error) {
-    console.error("Failed to preload default environment:", error);
-  }
-};
 
-preloadDefaultEnvironment();
-
-const preloadEXRTextures = async () => {
-  if (isPreloading) return;
-  isPreloading = true;
-
-  const loader = new EXRLoader();
-
-  for (const preset of ENVIRONMENT_PRESETS) {
-    if (preset.exrFile && !textureCache.has(preset.exrFile)) {
-      try {
-        const asset = await import(`@pmndrs/assets/hdri/${preset.exrFile}`);
-
-        loader.load(asset.default, (texture) => {
-          texture.mapping = THREE.EquirectangularReflectionMapping;
-          memoryManager.track(texture);
-          textureCache.set(preset.exrFile!, texture);
-        });
-      } catch (error) {
-        console.error(`Failed to preload EXR: ${preset.exrFile}`, error);
-      }
-    }
-  }
+  textureLoadPromises.set(exrFile, loadPromise);
+  return loadPromise;
 };
 
 export function CustomEnvironment({ imageUrl }: CustomEnvironmentProps) {
@@ -63,15 +48,19 @@ export function CustomEnvironment({ imageUrl }: CustomEnvironmentProps) {
   useEffect(() => {
     const loader = new THREE.TextureLoader();
     let loadedTexture: THREE.Texture | null = null;
+    let isMounted = true;
 
     loader.load(imageUrl, (loadedTextureFromFile) => {
       loadedTextureFromFile.mapping = THREE.EquirectangularReflectionMapping;
       loadedTexture = loadedTextureFromFile;
       memoryManager.track(loadedTexture);
-      setTexture(loadedTextureFromFile);
+      if (isMounted) {
+        setTexture(loadedTextureFromFile);
+      }
     });
 
     return () => {
+      isMounted = false;
       if (loadedTexture) {
         memoryManager.untrack(loadedTexture);
         loadedTexture.dispose();
@@ -90,42 +79,19 @@ export function EXREnvironment({ exrFile }: { exrFile: string }) {
   );
 
   useEffect(() => {
-    preloadEXRTextures();
-
-    if (textureCache.has(exrFile)) {
-      const cachedTexture = textureCache.get(exrFile)!;
-      if (texture !== cachedTexture) {
-        setTexture(cachedTexture);
-      }
-      return;
-    }
-
     let isMounted = true;
-    const loadEXR = async () => {
-      try {
-        const asset = await import(`@pmndrs/assets/hdri/${exrFile}`);
-        if (!isMounted) return;
-
-        const loader = new EXRLoader();
-        loader.load(asset.default, (loadedTextureFromFile) => {
-          if (!isMounted) return;
-          loadedTextureFromFile.mapping =
-            THREE.EquirectangularReflectionMapping;
-          memoryManager.track(loadedTextureFromFile);
-          textureCache.set(exrFile, loadedTextureFromFile);
-          setTexture(loadedTextureFromFile);
-        });
-      } catch (error) {
+    loadEnvironmentTexture(exrFile)
+      .then((loadedTexture) => {
+        if (isMounted) setTexture(loadedTexture);
+      })
+      .catch((error) => {
         console.error(`Failed to load EXR: ${exrFile}`, error);
-      }
-    };
-
-    loadEXR();
+      });
 
     return () => {
       isMounted = false;
     };
-  }, [exrFile, texture]);
+  }, [exrFile]);
 
   return texture ? (
     <Environment key={exrFile} map={texture} background={false} />

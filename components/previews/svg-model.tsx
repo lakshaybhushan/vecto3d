@@ -24,6 +24,7 @@ interface SVGModelProps {
   bevelSize?: number;
   bevelSegments?: number;
   customColor?: string;
+  materialPreset?: string;
   roughness?: number;
   metalness?: number;
   clearcoat?: number;
@@ -107,6 +108,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       bevelSize = 0.5,
       bevelSegments = 3,
       customColor,
+      materialPreset = "custom",
       roughness = 0.3,
       metalness = 0.5,
       clearcoat = 0,
@@ -131,10 +133,10 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     const groupRef = useRef<THREE.Group>(null);
-    const materialsRef = useRef<THREE.Material[]>([]);
 
-    const currentTexturePreset = TEXTURE_PRESETS.find(
-      (preset) => preset.name === texturePreset,
+    const currentTexturePreset = useMemo(
+      () => TEXTURE_PRESETS.find((preset) => preset.name === texturePreset),
+      [texturePreset],
     );
 
     useImperativeHandle(ref, () => groupRef.current!, []);
@@ -147,7 +149,8 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       try {
         const processedSvgData = svgData
           .replace(/[™®©]/g, "")
-          .replace(/&trade;|&reg;|&copy;/g, "");
+          .replace(/&trade;|&reg;|&copy;/g, "")
+          .replace(/currentColor/gi, "#ffffff");
 
         const parser = new DOMParser();
         const svgDoc = parser.parseFromString(
@@ -210,7 +213,7 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       return paths
         .map((path, index) => {
           try {
-            const shapes = SVGLoader.createShapes(path);
+            const shapes = path.toShapes();
 
             const processedShapes = shapes.map((shape) => {
               return applySpread(shape, false, spread);
@@ -242,9 +245,17 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       ): Promise<THREE.MeshPhysicalMaterial> => {
         const threeColor =
           color instanceof THREE.Color ? color : new THREE.Color(color);
+        const isTransmissive = transmission > 0;
+        const isSmokedGlass = materialPreset === "glass_smoked";
+        const materialColor =
+          isSmokedGlass && !customColor
+            ? new THREE.Color("#050608")
+            : isTransmissive && !customColor
+              ? new THREE.Color("#ffffff")
+              : threeColor;
 
         const materialProps: THREE.MeshPhysicalMaterialParameters = {
-          color: threeColor,
+          color: materialColor,
           roughness: Math.max(
             0.01,
             textureEnabled &&
@@ -263,13 +274,23 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
             clearcoat > 0 ? roughness * 0.3 : 0.01,
           ),
           reflectivity: metalness > 0.5 ? 1.0 : 0.5,
-          ior: transmission > 0 ? 1.5 : 1.4,
-          thickness: transmission > 0 ? 5.0 : 0.0,
-          attenuationDistance: transmission > 0 ? 0.5 : Infinity,
-          attenuationColor:
-            transmission > 0
+          ior: isSmokedGlass ? 1.52 : isTransmissive ? 1.45 : 1.4,
+          thickness: isSmokedGlass
+            ? Math.max(0.7, depth * 0.22)
+            : isTransmissive
+              ? Math.max(0.25, depth * 0.15)
+              : 0,
+          attenuationDistance: isSmokedGlass
+            ? Math.max(0.35, depth * 0.12)
+            : Infinity,
+          attenuationColor: isSmokedGlass
+            ? new THREE.Color("#090406")
+            : isTransmissive
               ? new THREE.Color(1, 1, 1)
               : new THREE.Color(0, 0, 0),
+          specularIntensity: isTransmissive ? 1 : 0.5,
+          specularColor: new THREE.Color("#ffffff"),
+          dispersion: isSmokedGlass ? 0.012 : 0,
           sheen: metalness < 0.1 && roughness > 0.5 ? 0.1 : 0.0,
           sheenRoughness: metalness < 0.1 && roughness > 0.5 ? 0.8 : 0.0,
           sheenColor:
@@ -285,8 +306,9 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
           polygonOffsetUnits: isHole ? -1 : 1,
           flatShading: false,
           wireframe: false,
-          transparent: transmission > 0 || isHole,
+          transparent: isHole,
           opacity: isHole ? 0.5 : 1.0,
+          depthWrite: true,
         };
 
         if (
@@ -374,6 +396,9 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
         textureEnabled,
         currentTexturePreset,
         texturePreset,
+        customColor,
+        materialPreset,
+        depth,
         roughness,
         metalness,
         clearcoat,
@@ -386,56 +411,14 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
     );
 
     useEffect(() => {
-      const materialsToDispose = [...materialsRef.current];
-      materialsRef.current = [];
-
-      requestAnimationFrame(() => {
-        materialsToDispose.forEach((material) => {
-          memoryManager.untrack(material);
-          material.dispose();
-        });
-      });
-    }, [
-      roughness,
-      metalness,
-      clearcoat,
-      transmission,
-      envMapIntensity,
-      textureEnabled,
-      texturePreset,
-      textureScale.x,
-      textureScale.y,
-      textureDepth,
-    ]);
-
-    useEffect(() => {
       const currentGroup = groupRef.current;
       return () => {
-        const materialsToDispose = [...materialsRef.current];
-        materialsRef.current = [];
-
-        materialsToDispose.forEach((material) => {
-          memoryManager.untrack(material);
-          material.dispose();
-        });
-
         if (currentGroup) {
           currentGroup.traverse((object) => {
             if (object instanceof THREE.Mesh) {
               if (object.geometry) {
                 memoryManager.untrack(object.geometry);
                 object.geometry.dispose();
-              }
-              if (object.material) {
-                if (Array.isArray(object.material)) {
-                  object.material.forEach((mat) => {
-                    memoryManager.untrack(mat);
-                    mat.dispose();
-                  });
-                } else {
-                  memoryManager.untrack(object.material);
-                  object.material.dispose();
-                }
               }
             }
           });
@@ -449,60 +432,49 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
       return isMobile ? baseScale * 0.7 : baseScale;
     }, [dimensions, isMobile]);
 
-    const materialKey = useMemo(() => {
-      return `${textureEnabled}-${texturePreset}-${roughness}-${metalness}-${clearcoat}-${transmission}-${envMapIntensity}-${textureScale.x}-${textureScale.y}-${textureDepth}`;
-    }, [
-      textureEnabled,
-      texturePreset,
-      roughness,
-      metalness,
-      clearcoat,
-      transmission,
-      envMapIntensity,
-      textureScale.x,
-      textureScale.y,
-      textureDepth,
-    ]);
+    const extrudeSettings = useMemo(() => {
+      const makeSettings = (isHole: boolean) => ({
+        depth,
+        bevelEnabled,
+        bevelThickness: isHole ? bevelThickness * 1.05 : bevelThickness,
+        bevelSize: isHole ? bevelSize * 1.05 : bevelSize,
+        bevelSegments: bevelEnabled
+          ? Math.min(12, Math.max(1, bevelSegments))
+          : 1,
+        curveSegments: Math.min(48, Math.max(16, bevelSegments * 2)),
+      });
+
+      return {
+        solid: makeSettings(false),
+        hole: makeSettings(true),
+      };
+    }, [depth, bevelEnabled, bevelThickness, bevelSize, bevelSegments]);
+
+    const [xOffset, yOffset] = useMemo(() => {
+      if (geometryData.length === 0) return [0, 0];
+
+      const box = new THREE.Box3();
+      const tempGroup = new THREE.Group();
+
+      geometryData.forEach((shapeItem) => {
+        shapeItem.shapes.forEach((shape) => {
+          const geometry = new THREE.ShapeGeometry(shape);
+          tempGroup.add(new THREE.Mesh(geometry));
+        });
+      });
+
+      box.setFromObject(tempGroup);
+      tempGroup.traverse((child) => {
+        if (child instanceof THREE.Mesh) child.geometry.dispose();
+      });
+      tempGroup.clear();
+
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      return [-center.x, -center.y];
+    }, [geometryData]);
 
     if (geometryData.length === 0) return null;
-
-    const getExtrudeSettings = (isHole: boolean) => ({
-      depth,
-      bevelEnabled,
-      bevelThickness: isHole ? bevelThickness * 1.05 : bevelThickness,
-      bevelSize: isHole ? bevelSize * 1.05 : bevelSize,
-      bevelSegments: Math.max(4, bevelSegments),
-      curveSegments: Math.max(32, bevelSegments * 4), // Increased for smoother geometry
-    });
-
-    const box = new THREE.Box3();
-    const tempGroup = new THREE.Group();
-
-    geometryData.forEach((shapeItem) => {
-      shapeItem.shapes.forEach((shape) => {
-        const geometry = new THREE.ShapeGeometry(shape);
-        const mesh = new THREE.Mesh(geometry);
-        tempGroup.add(mesh);
-      });
-    });
-
-    box.setFromObject(tempGroup);
-
-    tempGroup.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        if (child.geometry) {
-          memoryManager.untrack(child.geometry as THREE.BufferGeometry);
-          child.geometry.dispose();
-        }
-      }
-    });
-    tempGroup.clear();
-
-    const center = new THREE.Vector3();
-    box.getCenter(center);
-
-    const xOffset = -center.x;
-    const yOffset = -center.y;
 
     return (
       <Center>
@@ -514,15 +486,17 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
           {geometryData.map((shapeItem, i) => (
             <group key={i} renderOrder={shapeItem.renderOrder}>
               {shapeItem.shapes.map((shape, j) => (
-                <React.Suspense
-                  key={`${materialKey}-${i}-${j}`}
-                  fallback={null}>
+                <React.Suspense key={`${i}-${j}`} fallback={null}>
                   <MaterializedMesh
-                    key={`${materialKey}-${i}-${j}`}
+                    key={`${i}-${j}`}
                     shape={shape}
                     color={customColor || shapeItem.color}
                     isHole={shapeItem.isHole}
-                    extrudeSettings={getExtrudeSettings(shapeItem.isHole)}
+                    extrudeSettings={
+                      shapeItem.isHole
+                        ? extrudeSettings.hole
+                        : extrudeSettings.solid
+                    }
                     position={[
                       xOffset,
                       yOffset,
@@ -531,9 +505,6 @@ export const SVGModel = forwardRef<THREE.Group, SVGModelProps>(
                     castShadow={castShadow}
                     receiveShadow={receiveShadow}
                     renderOrder={shapeItem.renderOrder}
-                    onMaterialReady={(mat) => {
-                      materialsRef.current.push(mat);
-                    }}
                     createMaterial={createMaterial}
                   />
                 </React.Suspense>
@@ -555,7 +526,6 @@ function MaterializedMesh({
   castShadow,
   receiveShadow,
   renderOrder,
-  onMaterialReady,
   createMaterial,
 }: {
   shape: THREE.Shape;
@@ -573,7 +543,6 @@ function MaterializedMesh({
   castShadow: boolean;
   receiveShadow: boolean;
   renderOrder: number;
-  onMaterialReady: (material: THREE.MeshPhysicalMaterial) => void;
   createMaterial: (
     color: string | THREE.Color,
     isHole: boolean,
@@ -584,16 +553,44 @@ function MaterializedMesh({
   );
 
   const geometryRef = useRef<THREE.ExtrudeGeometry | null>(null);
+  const materialRef = useRef<THREE.MeshPhysicalMaterial | null>(null);
 
   useEffect(() => {
-    createMaterial(color, isHole).then((mat) => {
-      setMaterial(mat);
-      onMaterialReady(mat);
-    });
-  }, [createMaterial, color, isHole, onMaterialReady]);
+    let isActive = true;
+
+    createMaterial(color, isHole)
+      .then((nextMaterial) => {
+        if (!isActive) {
+          memoryManager.untrack(nextMaterial);
+          nextMaterial.dispose();
+          return;
+        }
+
+        const previousMaterial = materialRef.current;
+        materialRef.current = nextMaterial;
+        setMaterial(nextMaterial);
+
+        if (previousMaterial) {
+          memoryManager.untrack(previousMaterial);
+          previousMaterial.dispose();
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to create material:", error);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [createMaterial, color, isHole]);
 
   useEffect(() => {
     return () => {
+      if (materialRef.current) {
+        memoryManager.untrack(materialRef.current);
+        materialRef.current.dispose();
+        materialRef.current = null;
+      }
       if (geometryRef.current) {
         memoryManager.untrack(geometryRef.current);
         geometryRef.current.dispose();

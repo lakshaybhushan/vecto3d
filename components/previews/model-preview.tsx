@@ -4,15 +4,15 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { SimpleEnvironment } from "@/components/previews/environment-presets";
 import type { EnvironmentPresetName } from "@/lib/types";
-import {
-  EffectComposer,
-  Bloom,
-  BrightnessContrast,
-} from "@react-three/postprocessing";
-import { BlendFunction } from "postprocessing";
 import { SVGModel } from "./svg-model";
 import { useEditorStore } from "@/lib/store";
 import { memoryManager } from "@/lib/memory-manager";
+
+const PostProcessingEffects = React.lazy(() =>
+  import("./post-processing-effects").then((module) => ({
+    default: module.PostProcessingEffects,
+  })),
+);
 
 // Detect Safari mobile for performance optimizations
 const isSafariMobile = (): boolean => {
@@ -47,21 +47,16 @@ const colorPart = (color: string) => {
 };
 
 const CustomBackground = () => {
-  const { gl, scene, camera } = useThree();
+  const { gl, invalidate } = useThree();
 
   const backgroundColor = useEditorStore((state) => state.backgroundColor);
-  const useBloom = useEditorStore((state) => state.useBloom);
 
   useEffect(() => {
     const bg = backgroundColor || "#000000";
     const alpha = hexaToAlpha(bg);
-    if (!useBloom) {
-      gl.autoClear = true;
-    }
-
-    gl.setClearColor(colorPart(bg), alpha);
-    gl.render(scene, camera);
-  }, [gl, scene, camera, backgroundColor, useBloom]);
+    gl.setClearColor(colorPart(bg), alpha ?? 1);
+    invalidate();
+  }, [backgroundColor, gl, invalidate]);
 
   return null;
 };
@@ -116,14 +111,24 @@ function CanvasCapture({
   return null;
 }
 
+function GrainFrameInvalidator({ enabled }: { enabled: boolean }) {
+  const { invalidate } = useThree();
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    invalidate();
+    const interval = window.setInterval(invalidate, 1000 / 24);
+    return () => window.clearInterval(interval);
+  }, [enabled, invalidate]);
+
+  return null;
+}
+
 export const ModelPreview = React.memo<ModelPreviewProps>(
   ({ svgData, modelGroupRef, modelRef, isMobile, canvasRef }) => {
     // Detect Safari mobile once on mount for performance optimizations
-    const [isSafariMobileDevice, setIsSafariMobileDevice] = useState(false);
-
-    useEffect(() => {
-      setIsSafariMobileDevice(isSafariMobile());
-    }, []);
+    const [isSafariMobileDevice] = useState(isSafariMobile);
 
     // Use fine-grained selectors for all state
     const depth = useEditorStore((state) => state.depth);
@@ -135,6 +140,7 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
     const isHollowSvg = useEditorStore((state) => state.isHollowSvg);
     const useCustomColor = useEditorStore((state) => state.useCustomColor);
     const customColor = useEditorStore((state) => state.customColor);
+    const materialPreset = useEditorStore((state) => state.materialPreset);
     const roughness = useEditorStore((state) => state.roughness);
     const metalness = useEditorStore((state) => state.metalness);
     const clearcoat = useEditorStore((state) => state.clearcoat);
@@ -154,6 +160,18 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
     const useBloom = useEditorStore((state) => state.useBloom);
     const bloomIntensity = useEditorStore((state) => state.bloomIntensity);
     const bloomMipmapBlur = useEditorStore((state) => state.bloomMipmapBlur);
+    const useChromaticAberration = useEditorStore(
+      (state) => state.useChromaticAberration,
+    );
+    const chromaticAberrationIntensity = useEditorStore(
+      (state) => state.chromaticAberrationIntensity,
+    );
+    const useGrain = useEditorStore((state) => state.useGrain);
+    const grainIntensity = useEditorStore((state) => state.grainIntensity);
+    const useVignette = useEditorStore((state) => state.useVignette);
+    const vignetteIntensity = useEditorStore(
+      (state) => state.vignetteIntensity,
+    );
 
     const cameraRef = useRef(
       new THREE.PerspectiveCamera(
@@ -192,42 +210,8 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
       }
     }, []);
 
-    const effects = useMemo(() => {
-      // Disable EffectComposer entirely on Safari mobile to prevent freezing
-      // Safari mobile has known issues with WebGL multisampling and postprocessing
-      if (isSafariMobileDevice) {
-        return null;
-      }
-
-      const msaaSamples = isMobile ? 4 : 8; // 4 samples for mobile, 8 for desktop
-
-      if (useBloom) {
-        return (
-          <EffectComposer multisampling={msaaSamples}>
-            <Bloom
-              intensity={bloomIntensity * 0.8}
-              luminanceThreshold={0.9}
-              luminanceSmoothing={0.3}
-              mipmapBlur={bloomMipmapBlur}
-              radius={0.4}
-            />
-          </EffectComposer>
-        );
-      }
-
-      // Always enable MSAA even without bloom for smoother edges
-      return (
-        <EffectComposer multisampling={msaaSamples}>
-          <BrightnessContrast brightness={0} contrast={0} />
-        </EffectComposer>
-      );
-    }, [
-      useBloom,
-      bloomIntensity,
-      bloomMipmapBlur,
-      isMobile,
-      isSafariMobileDevice,
-    ]);
+    const hasPostProcessing =
+      useBloom || useChromaticAberration || useGrain || useVignette;
 
     const environment = useMemo(() => {
       if (!useEnvironment) return null;
@@ -240,13 +224,12 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
       );
     }, [useEnvironment, environmentPreset, customHdriUrl]);
 
-    // Safari mobile optimizations: lower DPR, demand frameloop
+    // Bound pixel density so high-DPI displays do not multiply GPU work.
     const dpr = useMemo(() => {
       if (typeof window === "undefined") return 1.5;
       const deviceDpr = window.devicePixelRatio || 1.5;
-      // Cap DPR at 2 for Safari mobile to prevent GPU overload
-      return isSafariMobileDevice ? Math.min(deviceDpr, 2) : deviceDpr;
-    }, [isSafariMobileDevice]);
+      return Math.min(deviceDpr, isMobile ? 1.5 : 2);
+    }, [isMobile]);
 
     if (!svgData) return null;
 
@@ -258,7 +241,7 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
           fov: isMobile ? 65 : 50,
         }}
         dpr={dpr}
-        frameloop={isSafariMobileDevice ? "demand" : "always"}
+        frameloop={autoRotate ? "always" : "demand"}
         performance={{ min: isSafariMobileDevice ? 0.3 : 0.5 }}
         gl={{
           antialias: !isSafariMobileDevice, // Disable antialias on Safari mobile
@@ -289,6 +272,7 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
           <WebGLContextEvents />
           {/* Capture canvas reference for video recording */}
           <CanvasCapture canvasRef={canvasRef} />
+          <GrainFrameInvalidator enabled={useGrain && !isSafariMobileDevice} />
 
           <ambientLight intensity={0.4} color="#ffffff" />
 
@@ -306,6 +290,23 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
             castShadow={false}
           />
 
+          {materialPreset === "glass_smoked" ? (
+            <>
+              <directionalLight
+                position={[-10, -6, -8]}
+                intensity={1.35}
+                color="#ff2438"
+              />
+              <pointLight
+                position={[0, -12, -28]}
+                intensity={55}
+                distance={150}
+                decay={2}
+                color="#ff1028"
+              />
+            </>
+          ) : null}
+
           {/* Disable environment on Safari mobile to prevent freezing */}
           {!isSafariMobileDevice && environment}
 
@@ -320,6 +321,7 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
                 isSafariMobileDevice ? 1 : isMobile ? 3 : bevelSegments
               }
               customColor={useCustomColor ? customColor : undefined}
+              materialPreset={materialPreset}
               roughness={roughness}
               metalness={metalness}
               clearcoat={isSafariMobileDevice ? 0 : clearcoat}
@@ -346,7 +348,22 @@ export const ModelPreview = React.memo<ModelPreviewProps>(
           </group>
         </Suspense>
 
-        {effects}
+        {hasPostProcessing && !isSafariMobileDevice ? (
+          <Suspense fallback={null}>
+            <PostProcessingEffects
+              isMobile={isMobile}
+              useBloom={useBloom}
+              bloomIntensity={bloomIntensity}
+              bloomMipmapBlur={bloomMipmapBlur}
+              useChromaticAberration={useChromaticAberration}
+              chromaticAberrationIntensity={chromaticAberrationIntensity}
+              useGrain={useGrain}
+              grainIntensity={grainIntensity}
+              useVignette={useVignette}
+              vignetteIntensity={vignetteIntensity}
+            />
+          </Suspense>
+        ) : null}
 
         <OrbitControls
           autoRotate={isSafariMobileDevice ? false : autoRotate}

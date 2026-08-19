@@ -19,7 +19,6 @@ import {
   useMobileDetection,
   useFullscreenSupport,
 } from "@/hooks/use-mobile-detection";
-import { useTexturePreloader } from "@/hooks/use-texture-preloader";
 import { memoryManager } from "@/lib/memory-manager";
 
 import { ModelPreview } from "@/components/previews/model-preview";
@@ -70,8 +69,6 @@ export default function EditPage() {
   const router = useRouter();
   const { isMobile, clearMobilePreference } = useMobileDetection();
   const isFullscreenSupported = useFullscreenSupport();
-
-  useTexturePreloader(true);
 
   useEffect(() => {
     const modelGroup = modelGroupRef.current;
