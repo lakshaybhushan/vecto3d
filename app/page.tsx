@@ -208,6 +208,28 @@ export default function Home() {
     <main
       ref={pageRef}
       className="min-h-screen bg-[#101010] text-[14px] leading-6 text-[#a8a8a8]">
+      <section className="min-h-[100dvh] px-5 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:hidden">
+        <div className="mx-auto flex min-h-[100dvh] w-full max-w-sm flex-col">
+          <header className="flex h-16 shrink-0 items-center">
+            <div className="flex items-center gap-2 font-medium text-white">
+              <Logo className="size-5" />
+              <span>Vecto3d</span>
+            </div>
+          </header>
+
+          <div className="flex flex-1 items-center justify-center pb-16 text-center">
+            <div className="max-w-[280px]">
+              <h1 className="font-medium text-white">
+                Vecto3d is made for desktop.
+              </h1>
+              <p className="mt-2 text-[#888]">
+                Open this page on a desktop browser to turn SVGs into 3D.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Input
         ref={fileInputRef}
         type="file"
@@ -221,7 +243,7 @@ export default function Home() {
         }}
       />
 
-      <div className="mx-auto w-full max-w-[760px] px-5 pt-10 sm:px-8 sm:pt-12">
+      <div className="mx-auto hidden w-full max-w-[760px] px-5 pt-10 sm:px-8 sm:pt-12 md:block">
         <header className="flex items-center justify-between gap-6">
           <Link
             href="/"

@@ -5,7 +5,7 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "@/components/layouts/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { InteractionSounds } from "@/components/ui/interaction-sounds";
 
@@ -46,6 +46,14 @@ export const metadata: Metadata = {
     description: "A super simple tool to convert SVG logos to 3D models",
     images: ["/twitter-image-v1.png"],
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#101010",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({

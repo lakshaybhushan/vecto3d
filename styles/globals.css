@@ -132,8 +132,17 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    min-height: 100%;
+    background-color: #101010;
+    color-scheme: dark;
+  }
+
   body {
-    @apply bg-black font-sans text-white antialiased;
+    min-height: 100dvh;
+    background-color: #101010;
+    @apply font-sans text-white antialiased;
     font-optical-sizing: auto;
   }
 
