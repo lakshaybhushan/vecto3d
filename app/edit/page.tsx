@@ -134,7 +134,28 @@ export default function EditPage() {
 
   if (!isClientMounted) return null;
 
-  // Safari mobile warning screen
+  if (isMobile) {
+    return (
+      <main className="flex h-[100dvh] w-full items-center justify-center bg-[#101010] px-5 text-[14px] leading-6 text-[#a8a8a8]">
+        <div className="w-full max-w-sm text-center">
+          <Logo className="mx-auto mb-5 size-5 text-white" />
+          <h1 className="font-medium text-white">Desktop only</h1>
+          <p className="mt-3">
+            The Vecto3d editor isn&apos;t available on mobile yet. Please open
+            it in a desktop browser.
+          </p>
+          <Button
+            variant="outline"
+            onClick={handleBack}
+            className="mt-6 h-8 rounded-md px-3 text-[14px]">
+            Back to home
+          </Button>
+        </div>
+      </main>
+    );
+  }
+
+  // Safari warning screen
   if (showSafariWarning && !safariDismissed) {
     return (
       <main className="flex h-[100dvh] w-full items-center justify-center bg-[#101010] px-5 text-[14px] leading-6 text-[#a8a8a8]">
