@@ -163,6 +163,43 @@
   background-color: #fff;
 }
 
+.mobile-logo-fade::before,
+.mobile-logo-fade::after {
+  position: absolute;
+  inset-inline: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.mobile-logo-fade::before {
+  z-index: 1;
+  top: 18%;
+  bottom: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgb(255 255 255 / 8%),
+    transparent 68%
+  );
+  filter: blur(24px);
+}
+
+.mobile-logo-fade::after {
+  z-index: 2;
+  top: 40%;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(16 16 16 / 20%) 34%,
+    rgb(16 16 16 / 82%) 78%,
+    #101010
+  );
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 78%);
+  mask-image: linear-gradient(to bottom, transparent, #000 78%);
+}
+
 /* Safari iOS fixes */
 @supports (-webkit-touch-callout: none) {
   .h-screen {
