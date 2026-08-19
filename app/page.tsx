@@ -1,577 +1,414 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useEditorStore } from "@/lib/store";
-import { toast } from "sonner";
-import { Star, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { toast } from "sonner";
+
 import {
-  GitHubIcon,
-  V0Icon,
-  VercelIcon,
-  XIcon,
-  ChatAppIcon,
-  Vecto3dIcon,
-  AsteriskIcon,
-} from "@/components/ui/icons";
-import {
+  CHAT_APP_SVG,
   GITHUB_SVG,
   V0_SVG,
+  VECTO3D_SVG,
   VERCEL_SVG,
   X_SVG,
-  CHAT_APP_SVG,
-  VECTO3D_SVG,
 } from "@/components/data/raw-svgs";
-import { sanitizeSvgForPreview, isValidSvg } from "@/lib/svg-sanitizer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/ui/logo";
-import AnimatedLogo from "@/components/ui/animated-logo";
+import { useEditorStore } from "@/lib/store";
+import { isValidSvg, sanitizeSvgForPreview } from "@/lib/svg-sanitizer";
 
-const exampleIcons = [
-  { name: "GitHub", component: GitHubIcon },
-  { name: "v0", component: V0Icon },
-  { name: "Vercel", component: VercelIcon },
-  { name: "X/Twitter", component: XIcon },
-  { name: "AI Chat", component: ChatAppIcon },
-  { name: "Vecto3d", component: Vecto3dIcon },
+const workflow = [
+  {
+    name: "Shape",
+    description: "Adjust depth, bevel, and rotation in real time.",
+  },
+  {
+    name: "Finish",
+    description: "Choose materials, textures, lighting, and a background.",
+  },
+  {
+    name: "Export",
+    description:
+      "Save an image, video, animation, or production-ready 3D file.",
+  },
 ];
 
-const iconSvgMap: Record<string, string> = {
-  GitHub: GITHUB_SVG,
-  v0: V0_SVG,
-  Vercel: VERCEL_SVG,
-  "X/Twitter": X_SVG,
-  "AI Chat": CHAT_APP_SVG,
-  Vecto3d: VECTO3D_SVG,
-};
+const formats = [
+  ["PNG", "Still image with transparency"],
+  ["MP4 / GIF", "Video and looping animation"],
+  ["GLB / GLTF", "Portable 3D model"],
+  ["STL", "File for 3D printing"],
+];
+
+const examples = [
+  { name: "GitHub", fileName: "github.svg", svg: GITHUB_SVG },
+  { name: "v0", fileName: "v0.svg", svg: V0_SVG },
+  { name: "Vercel", fileName: "vercel.svg", svg: VERCEL_SVG },
+  { name: "X", fileName: "x.svg", svg: X_SVG },
+  { name: "AI chat", fileName: "ai-chat.svg", svg: CHAT_APP_SVG },
+  { name: "Vecto3d", fileName: "vecto3d.svg", svg: VECTO3D_SVG },
+];
+
+function prepareIconSvg(svg: string) {
+  return svg
+    .replace(/width="[^"]*"/, 'width="100%"')
+    .replace(/height="[^"]*"/, 'height="100%"')
+    .replace(/fill="[^"]*"/g, 'fill="currentColor"')
+    .replace(/stroke="[^"]*"/g, 'stroke="currentColor"');
+}
 
 export default function Home() {
   const router = useRouter();
   const [svgData, setSvgData] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string>("");
-  const [selectedIcon, setSelectedIcon] = useState<string>("");
-  const [svgContent, setSvgContent] = useState<string | null>(null);
+  const [svgPreview, setSvgPreview] = useState<string | null>(null);
+  const [fileName, setFileName] = useState("");
+  const [stars, setStars] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const [stars, setStars] = useState<number>(0);
-
+  const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const dropZoneRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    setIsMounted(true);
-    fetch("https://api.github.com/repos/lakshaybhushan/vecto3d")
-      .then((response) => response.json())
-      .then((data) => setStars(data.stargazers_count || 0))
-      .catch(() => setStars(0));
-  }, []);
-
-  const processFile = useCallback((file: File) => {
-    if (file && file.type === "image/svg+xml") {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          const data = event.target.result as string;
-          if (!isValidSvg(data)) {
-            toast.error("INVALID SVG FILE");
-            return;
-          }
-          const sanitized = sanitizeSvgForPreview(data);
-          if (!sanitized) {
-            toast.error("SVG PROCESSING FAILED");
-            return;
-          }
-          setSvgData(data);
-          setFileName(file.name);
-          setSvgContent(sanitized);
-          setSelectedIcon("");
-        }
-      };
-      reader.readAsText(file);
-    } else if (file) {
-      toast.error("PLEASE UPLOAD AN SVG FILE");
-    }
-  }, []);
-
-  const processSvgContent = useCallback(
-    (data: string, name: string = "pasted.svg") => {
+  const selectSvg = useCallback(
+    (data: string, name: string, announce = false) => {
       if (!isValidSvg(data)) {
-        toast.error("INVALID SVG CONTENT");
+        toast.error("Choose a valid SVG file");
         return;
       }
+
       const sanitized = sanitizeSvgForPreview(data);
       if (!sanitized) {
-        toast.error("SVG PROCESSING FAILED");
+        toast.error("This SVG could not be processed");
         return;
       }
+
       setSvgData(data);
+      setSvgPreview(sanitized);
       setFileName(name);
-      setSvgContent(sanitized);
-      setSelectedIcon("");
-      toast.success("SVG PASTED");
+      if (announce) toast.success("SVG ready to edit");
     },
     [],
   );
 
-  useEffect(() => {
-    const handlePaste = (e: ClipboardEvent) => {
-      const target = e.target as Element;
-      const isWithinComponent =
-        dropZoneRef.current?.contains(target) ||
-        document.activeElement === document.body;
-      if (!isWithinComponent) return;
-
-      const clipboardData = e.clipboardData;
-      if (!clipboardData) return;
-
-      const textData = clipboardData.getData("text/plain");
-      const htmlData = clipboardData.getData("text/html");
-
-      if (
-        textData &&
-        textData.trim().startsWith("<svg") &&
-        textData.trim().endsWith("</svg>")
-      ) {
-        e.preventDefault();
-        processSvgContent(textData);
+  const processFile = useCallback(
+    (file: File) => {
+      if (file.type !== "image/svg+xml") {
+        toast.error("Choose an SVG file to continue");
         return;
       }
 
-      if (htmlData && htmlData.includes("<svg")) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (typeof event.target?.result === "string") {
+          selectSvg(event.target.result, file.name, true);
+        }
+      };
+      reader.readAsText(file);
+    },
+    [selectSvg],
+  );
+
+  useEffect(() => {
+    const handlePaste = (event: ClipboardEvent) => {
+      const target = event.target as Element;
+      const isWithinPage =
+        pageRef.current?.contains(target) ||
+        document.activeElement === document.body;
+      if (!isWithinPage || !event.clipboardData) return;
+
+      const textData = event.clipboardData.getData("text/plain");
+      const htmlData = event.clipboardData.getData("text/html");
+
+      if (
+        textData.trim().startsWith("<svg") &&
+        textData.trim().endsWith("</svg>")
+      ) {
+        event.preventDefault();
+        selectSvg(textData, "pasted.svg", true);
+        return;
+      }
+
+      if (htmlData.includes("<svg")) {
         const svgMatch = htmlData.match(/<svg[^>]*>[\s\S]*?<\/svg>/i);
         if (svgMatch) {
-          e.preventDefault();
-          processSvgContent(svgMatch[0]);
+          event.preventDefault();
+          selectSvg(svgMatch[0], "pasted.svg", true);
           return;
         }
       }
 
-      const files = Array.from(clipboardData.files);
-      const svgFile = files.find((file) => file.type === "image/svg+xml");
+      const svgFile = Array.from(event.clipboardData.files).find(
+        (file) => file.type === "image/svg+xml",
+      );
       if (svgFile) {
-        e.preventDefault();
+        event.preventDefault();
         processFile(svgFile);
-        return;
-      }
-
-      if (textData || htmlData || files.length > 0) {
-        e.preventDefault();
-        toast.error("PLEASE PASTE VALID SVG");
       }
     };
 
     document.addEventListener("paste", handlePaste);
     return () => document.removeEventListener("paste", handlePaste);
-  }, [processFile, processSvgContent]);
+  }, [processFile, selectSvg]);
 
-  const handleIconSelect = (iconName: string) => {
-    setSelectedIcon(iconName);
-    const content = iconSvgMap[iconName];
-    if (content) {
-      const sanitized = sanitizeSvgForPreview(content);
-      if (!sanitized) {
-        toast.error("ICON PROCESSING FAILED");
-        return;
-      }
-      const name = `${iconName.toLowerCase().replace(/\W+/g, "-")}.svg`;
-      setSvgData(content);
-      setFileName(name);
-      setSvgContent(sanitized);
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch("https://api.github.com/repos/lakshaybhushan/vecto3d", {
+      signal: controller.signal,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("GitHub request failed");
+        return response.json();
+      })
+      .then((repository: { stargazers_count?: number }) => {
+        if (typeof repository.stargazers_count === "number") {
+          setStars(repository.stargazers_count);
+        }
+      })
+      .catch((error: unknown) => {
+        if (error instanceof Error && error.name === "AbortError") return;
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  const openEditor = () => {
+    if (!svgData) {
+      openFilePicker();
+      return;
     }
+
+    const { setSvgData: setStoreSvg, setFileName: setStoreName } =
+      useEditorStore.getState();
+    sessionStorage.setItem("vecto3d_svgData", svgData);
+    sessionStorage.setItem("vecto3d_fileName", fileName);
+    setStoreSvg(svgData);
+    setStoreName(fileName);
+    startTransition(() => router.push("/edit"));
   };
 
-  const handleContinue = async () => {
-    if (svgData) {
-      setIsLoading(true);
-      try {
-        const audio = new Audio("/continue.mp3");
-        audio.play().catch(() => {});
-      } catch {}
-
-      try {
-        const { setSvgData: setStoreSvg, setFileName: setStoreName } =
-          useEditorStore.getState();
-        sessionStorage.removeItem("vecto3d_svgData");
-        sessionStorage.removeItem("vecto3d_fileName");
-        setStoreSvg(svgData);
-        setStoreName(fileName);
-
-        const animationSpeed = 2;
-        const baseDuration = 2.7;
-        const animationCycleDuration = baseDuration / animationSpeed;
-        const delayMs = Math.ceil(animationCycleDuration * 1000) + 300;
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-
-        router.push("/edit");
-      } catch {
-        setIsLoading(false);
-      }
-    }
+  const openFilePicker = () => {
+    if (!fileInputRef.current) return;
+    fileInputRef.current.value = "";
+    fileInputRef.current.click();
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
+  const handleDrop = (event: React.DragEvent<HTMLElement>) => {
+    event.preventDefault();
     setIsDragging(false);
-    const files = e.dataTransfer.files;
-    if (files.length > 0) processFile(files[0]);
+    const file = event.dataTransfer.files[0];
+    if (file) processFile(file);
   };
 
-  if (!isMounted) return null;
+  const textAction =
+    "h-auto rounded-none p-0 text-[14px] font-normal text-[#bcbcbc] underline decoration-[#666] underline-offset-4 hover:text-white hover:underline hover:decoration-[#999]";
 
   return (
-    <main className="min-h-screen bg-black font-mono text-[14px] tracking-wide text-white uppercase">
-      {/* Loading Overlay */}
-      <AnimatePresence>
-        {isLoading && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}>
-            <AnimatedLogo size={128} isLoading={true} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <main
+      ref={pageRef}
+      className="min-h-screen bg-[#101010] text-[14px] leading-6 text-[#a8a8a8]">
+      <Input
+        ref={fileInputRef}
+        type="file"
+        accept=".svg,image/svg+xml"
+        className="hidden"
+        aria-hidden="true"
+        tabIndex={-1}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) processFile(file);
+        }}
+      />
 
-      {/* Main Container with vertical lines */}
-      <div className="mx-auto max-w-[920px] border-x border-neutral-800">
-        {/* Nav */}
-        <header className="flex h-12 items-center justify-between border-b border-neutral-800 px-6">
-          <div className="flex items-center gap-2">
-            <Logo className="h-5 w-5" />
-            <span className="text-[12px] text-neutral-500">VECTO3D</span>
-          </div>
+      <div className="mx-auto w-full max-w-[760px] px-5 pt-10 sm:px-8 sm:pt-12">
+        <header className="flex items-center justify-between gap-6">
           <Link
-            href="https://github.com/lakshaybhushan/vecto3d"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-[12px] text-neutral-500 transition-colors hover:text-white">
-            <Star className="h-3 w-3" />
-            <span>{stars.toLocaleString()}</span>
-            <GitHubIcon size={14} />
+            href="/"
+            data-cuelume-press="press"
+            data-cuelume-release="release"
+            className="flex items-center gap-2 rounded-sm font-medium text-white outline-none focus-visible:ring-2 focus-visible:ring-white/50">
+            <Logo className="size-5" />
+            Vecto3d
           </Link>
-        </header>
-
-        {/* Hero */}
-        <section className="border-b border-neutral-800 px-6 py-16">
-          <motion.h1
-            className="mb-3 text-[24px] text-white sm:text-[32px]"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}>
-            TRANSFORM SVG TO 3D
-          </motion.h1>
-          <motion.p
-            className="max-w-xl text-[14px] leading-relaxed text-neutral-500"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}>
-            UPLOAD ANY SVG AND TURN IT INTO A CUSTOMIZABLE 3D MODEL. ADJUST
-            DEPTH, MATERIALS, LIGHTING, AND EXPORT AS PNG, VIDEO, OR 3D FILES.
-          </motion.p>
-        </section>
-
-        {/* Upload */}
-        <section className="border-b border-neutral-800 px-6 py-12">
-          <motion.div
-            ref={dropZoneRef}
-            onClick={() => fileInputRef.current?.click()}
-            onDragEnter={(e) => {
-              e.preventDefault();
-              setIsDragging(true);
-            }}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDragging(true);
-            }}
-            onDragLeave={(e) => {
-              e.preventDefault();
-              const rect = e.currentTarget.getBoundingClientRect();
-              if (
-                e.clientX <= rect.left ||
-                e.clientX >= rect.right ||
-                e.clientY <= rect.top ||
-                e.clientY >= rect.bottom
-              ) {
-                setIsDragging(false);
-              }
-            }}
-            onDrop={handleDrop}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className={`cursor-pointer border border-dashed p-12 text-center transition-colors ${
-              isDragging
-                ? "border-neutral-600 bg-neutral-950"
-                : "border-neutral-800 hover:border-neutral-700"
-            }`}>
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept=".svg"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) processFile(file);
-              }}
-            />
-
-            <div className="flex flex-col items-center">
-              {svgContent ? (
-                <motion.div
-                  className="mb-6 flex h-20 w-20 items-center justify-center border border-neutral-800 p-4"
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  dangerouslySetInnerHTML={{
-                    __html: svgContent
-                      .replace(/width="[^"]*"/, 'width="100%"')
-                      .replace(/height="[^"]*"/, 'height="100%"')
-                      .replace(/fill="[^"]*"/g, 'fill="currentColor"')
-                      .replace(/stroke="[^"]*"/g, 'stroke="currentColor"'),
-                  }}
-                />
-              ) : (
-                <div className="mb-6 flex h-20 w-20 items-center justify-center border border-neutral-800 text-neutral-700">
-                  <AsteriskIcon size={32} />
-                </div>
-              )}
-
-              <p className="mb-1 text-neutral-400">
-                {fileName || "DROP SVG OR CLICK TO UPLOAD"}
-              </p>
-              <p className="text-[12px] text-neutral-700">
-                {svgContent ? "READY TO TRANSFORM" : "YOU CAN ALSO PASTE"}
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Examples */}
-          <motion.div
-            className="mt-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}>
-            <p className="mb-4 text-[12px] text-neutral-700">
-              OR TRY AN EXAMPLE
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {exampleIcons.map((icon, index) => (
-                <motion.button
-                  key={icon.name}
-                  onClick={() => handleIconSelect(icon.name)}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.4 + index * 0.05 }}
-                  className={`flex items-center gap-2 border px-3 py-2 text-[12px] transition-colors ${
-                    selectedIcon === icon.name
-                      ? "border-white bg-white text-black"
-                      : "border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:text-white"
-                  }`}>
-                  <icon.component size={14} />
-                  {icon.name.toUpperCase()}
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Continue */}
-          <AnimatePresence>
-            {svgData && (
-              <motion.button
-                onClick={handleContinue}
-                disabled={isLoading}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="mt-8 flex w-full items-center justify-center gap-2 border border-white bg-white py-3 text-black transition-colors hover:bg-neutral-200 disabled:opacity-50">
-                {isLoading ? "PROCESSING..." : "OPEN EDITOR"}
-                <ArrowRight className="h-4 w-4" />
-              </motion.button>
-            )}
-          </AnimatePresence>
-        </section>
-
-        {/* How It Works */}
-        <section className="border-b border-neutral-800 px-6 py-16">
-          <motion.p
-            className="mb-8 text-[12px] text-neutral-600"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}>
-            HOW IT WORKS
-          </motion.p>
-
-          <div className="grid gap-8 sm:grid-cols-3">
-            {[
-              {
-                step: "01",
-                title: "UPLOAD",
-                desc: "DROP YOUR SVG FILE OR PASTE FROM CLIPBOARD. WORKS BEST WITH SIMPLE SHAPES.",
-              },
-              {
-                step: "02",
-                title: "CUSTOMIZE",
-                desc: "ADJUST DEPTH, BEVEL, MATERIALS, AND LIGHTING IN THE REAL-TIME 3D EDITOR.",
-              },
-              {
-                step: "03",
-                title: "EXPORT",
-                desc: "DOWNLOAD AS PNG, MP4, GIF FOR SHARING OR STL, GLB, GLTF FOR 3D PRINTING.",
-              },
-            ].map((item, index) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}>
-                <p className="mb-2 text-[12px] text-neutral-600">{item.step}</p>
-                <p className="mb-2 text-white">{item.title}</p>
-                <p className="text-[12px] leading-relaxed text-neutral-600">
-                  {item.desc}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* Features */}
-        <section className="border-b border-neutral-800 px-6 py-16">
-          <motion.p
-            className="mb-8 text-[12px] text-neutral-600"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}>
-            FEATURES
-          </motion.p>
-
-          <div className="grid gap-6 sm:grid-cols-2">
-            {[
-              {
-                title: "DEPTH CONTROL",
-                desc: "EXTRUDE SVG WITH PRECISE DEPTH VALUES",
-              },
-              {
-                title: "BEVEL EDGES",
-                desc: "SMOOTH BEVELED EDGES WITH ADJUSTABLE SIZE",
-              },
-              {
-                title: "MATERIAL PRESETS",
-                desc: "MATTE, GLOSSY, METALLIC, GLASS AND MORE",
-              },
-              {
-                title: "HDR ENVIRONMENTS",
-                desc: "STUDIO, SUNSET, DAWN LIGHTING SETUPS",
-              },
-              {
-                title: "AUTO ROTATION",
-                desc: "360° ROTATION FOR VIDEO RECORDING",
-              },
-              {
-                title: "BLOOM EFFECTS",
-                desc: "GLOW POST-PROCESSING FOR DRAMATIC VISUALS",
-              },
-            ].map((item, index) => (
-              <motion.div
-                key={item.title}
-                className="border-l border-neutral-800 pl-4"
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}>
-                <p className="mb-1 text-neutral-400">{item.title}</p>
-                <p className="text-[12px] text-neutral-600">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* Export Formats */}
-        <section className="border-b border-neutral-800 px-6 py-16">
-          <motion.p
-            className="mb-8 text-[12px] text-neutral-600"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}>
-            EXPORT FORMATS
-          </motion.p>
-
-          <div className="grid gap-8 sm:grid-cols-3">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}>
-              <p className="mb-3 text-neutral-400">IMAGES</p>
-              <p className="text-[12px] text-neutral-600">
-                PNG WITH TRANSPARENCY
-              </p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}>
-              <p className="mb-3 text-neutral-400">VIDEO</p>
-              <p className="text-[12px] text-neutral-600">
-                MP4 AND GIF ANIMATIONS
-              </p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}>
-              <p className="mb-3 text-neutral-400">3D FILES</p>
-              <p className="text-[12px] text-neutral-600">
-                STL, GLB, GLTF FOR PRINTING
-              </p>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Open Source */}
-        <section className="border-b border-neutral-800 px-6 py-16">
-          <motion.p
-            className="mb-8 text-[12px] text-neutral-600"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}>
-            OPEN SOURCE
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}>
-            <p className="mb-4 text-neutral-400">
-              VECTO3D IS FREE AND OPEN SOURCE UNDER THE MIT LICENSE.
-            </p>
+          <nav className="flex items-center gap-4" aria-label="Primary">
             <Link
               href="https://github.com/lakshaybhushan/vecto3d"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-[12px] text-neutral-500 transition-colors hover:text-white">
-              <GitHubIcon size={14} />
-              VIEW ON GITHUB
+              data-cuelume-press="press"
+              data-cuelume-release="release"
+              aria-label={
+                stars === null
+                  ? "View Vecto3d on GitHub"
+                  : `View Vecto3d on GitHub, ${stars.toLocaleString()} ${stars === 1 ? "star" : "stars"}`
+              }
+              className="flex items-center gap-2 rounded-sm text-[#bcbcbc] underline decoration-[#666] underline-offset-4 transition-[color,text-decoration-color] duration-150 outline-none hover:text-white hover:decoration-[#999] focus-visible:ring-2 focus-visible:ring-white/50">
+              <span
+                aria-hidden="true"
+                className="size-4 shrink-0 text-current"
+                dangerouslySetInnerHTML={{
+                  __html: prepareIconSvg(GITHUB_SVG),
+                }}
+              />
+              <span>
+                {stars === null
+                  ? "…"
+                  : `${stars.toLocaleString()} ${stars === 1 ? "star" : "stars"}`}
+              </span>
             </Link>
-          </motion.div>
+          </nav>
+        </header>
+
+        <section className="mt-16 max-w-[620px]">
+          <h1 className="font-medium text-white">Turn SVGs into 3D objects.</h1>
+          <p className="mt-3">
+            Vecto3d is a small browser-based tool for giving flat artwork depth,
+            material, lighting, and motion. Nothing to install and no account
+            required.
+          </p>
         </section>
 
-        {/* Footer */}
-        <footer className="flex items-center justify-between px-6 py-4 text-[12px]">
-          <div className="flex items-center gap-2">
-            <Logo className="h-4 w-4" />
-            <span className="text-neutral-500">VECTO3D</span>
+        <section className="mt-8 pb-10">
+          <div
+            onDragEnter={(event) => {
+              event.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragOver={(event) => event.preventDefault()}
+            onDragLeave={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+                setIsDragging(false);
+              }
+            }}
+            onDrop={handleDrop}
+            className={`group flex h-[400px] w-full items-center justify-center rounded-lg border border-dashed text-center transition-[background-color,border-color] duration-150 ${
+              isDragging
+                ? "border-white/30 bg-white/[0.06]"
+                : "border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.03]"
+            }`}>
+            {svgPreview ? (
+              <div className="flex flex-col items-center px-6">
+                <span
+                  aria-hidden="true"
+                  className="size-10 text-[#ededed] [&>svg]:h-full [&>svg]:w-full"
+                  dangerouslySetInnerHTML={{ __html: svgPreview }}
+                />
+                <span className="mt-2 max-w-[260px] truncate text-[#777]">
+                  {fileName}
+                </span>
+                <div className="mt-5 flex items-center gap-2">
+                  <Button
+                    type="button"
+                    onClick={openEditor}
+                    disabled={isPending}
+                    className="h-7 rounded-md bg-white px-2.5 text-[14px] font-medium text-[#101010] hover:bg-[#e8e8e8]">
+                    {isPending ? "Opening…" : "Open editor"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={openFilePicker}
+                    className="h-7 rounded-md border border-white/10 bg-white/[0.03] px-2.5 text-[14px] font-normal text-[#999] hover:border-white/20 hover:bg-white/[0.06] hover:text-white">
+                    Replace
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={openFilePicker}
+                className="flex h-full w-full flex-col rounded-lg text-[14px] font-normal whitespace-normal hover:bg-transparent active:scale-[0.995]">
+                <span className="font-medium text-white">
+                  Drop an SVG here or click to upload
+                </span>
+                <span className="mt-1 text-[#777]">You can also paste</span>
+              </Button>
+            )}
           </div>
-          <Link
-            href="https://laks.sh"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-neutral-600 transition-colors hover:text-white">
-            MADE WITH VIBES BY LAKS.SH
-          </Link>
+
+          <p className="mt-4 text-[#777]">Or choose an example</p>
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {examples.map((example) => {
+              const selected = fileName === example.fileName;
+              return (
+                <Button
+                  key={example.name}
+                  type="button"
+                  variant="ghost"
+                  aria-pressed={selected}
+                  onClick={() => selectSvg(example.svg, example.fileName)}
+                  className={`h-10 justify-start rounded-md border px-3 text-[14px] font-normal ${
+                    selected
+                      ? "border-white/25 bg-white/[0.08] text-white"
+                      : "border-white/10 bg-white/[0.03] text-[#bcbcbc] hover:border-white/20"
+                  }`}>
+                  <span
+                    aria-hidden="true"
+                    className="size-4 shrink-0 text-current"
+                    dangerouslySetInnerHTML={{
+                      __html: prepareIconSvg(example.svg),
+                    }}
+                  />
+                  {example.name}
+                </Button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="border-t border-white/[0.04] py-10">
+          <h2 className="font-medium text-white">Workflow</h2>
+          <div className="mt-6 space-y-5">
+            {workflow.map((item) => (
+              <div
+                key={item.name}
+                className="grid gap-1 sm:grid-cols-[96px_minmax(0,1fr)] sm:gap-5">
+                <h3 className="font-medium text-white">{item.name}</h3>
+                <p>{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="border-t border-white/[0.04] py-10">
+          <h2 className="font-medium text-white">Formats</h2>
+          <div className="mt-6 space-y-5">
+            {formats.map(([name, description]) => (
+              <div
+                key={name}
+                className="grid gap-1 sm:grid-cols-[96px_minmax(0,1fr)] sm:gap-5">
+                <h3 className="font-medium text-white">{name}</h3>
+                <p>{description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <footer className="flex flex-col gap-5 border-t border-white/[0.04] py-10 text-[#858585] sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="font-medium text-white">Vecto3d</p>
+            <p className="mt-1">Free and open source. Files stay local.</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button asChild variant="link" className={textAction}>
+              <Link
+                href="https://github.com/lakshaybhushan/vecto3d"
+                target="_blank"
+                rel="noopener noreferrer">
+                Source
+              </Link>
+            </Button>
+            <Button asChild variant="link" className={textAction}>
+              <Link
+                href="https://x.com/blakssh"
+                target="_blank"
+                rel="noopener noreferrer">
+                Made by @blakssh
+              </Link>
+            </Button>
+          </div>
         </footer>
       </div>
     </main>

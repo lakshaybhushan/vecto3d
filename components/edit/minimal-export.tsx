@@ -8,8 +8,18 @@ import { handleExport, handleExportWithTextures } from "@/lib/exporters";
 import { recordWithStoreProgress } from "@/lib/video-recorder";
 import { toast } from "sonner";
 import { VideoResultModal } from "@/components/modals/video-result-modal";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
+
+const sliderClass =
+  "mt-2 w-full [&_[data-slot=slider-track]]:h-1 [&_[data-slot=slider-track]]:bg-white/[0.08] [&_[data-slot=slider-range]]:bg-white [&_[data-slot=slider-thumb]]:size-3.5 [&_[data-slot=slider-thumb]]:border-white/70 [&_[data-slot=slider-thumb]]:bg-[#121212] [&_[data-slot=slider-thumb]]:hover:ring-2";
 
 interface MinimalExportProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
   fileName: string;
   modelGroupRef: React.RefObject<THREE.Group | null>;
   canvasRef?: React.RefObject<HTMLCanvasElement | null>;
@@ -23,38 +33,96 @@ function AnimatedSection({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={`grid transition-all duration-200 ease-out ${
-        isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-      }`}>
-      <div className="overflow-hidden">{children}</div>
+    <Collapsible open={isOpen}>
+      <CollapsibleContent className="overflow-hidden">
+        {children}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function ExportGroup({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border-b border-white/[0.05] py-3 last:border-b-0">
+      <span className="mb-2.5 block font-medium text-[#888]">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+function SliderRow({
+  label,
+  value,
+  suffix,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  suffix?: string;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number) => void;
+}) {
+  const precision = step < 1 ? 1 : 0;
+
+  return (
+    <div className="py-2.5">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[#888]">{label}</span>
+        <span className="text-[#c8c8c8] tabular-nums">
+          {value.toFixed(precision)}
+          {suffix}
+        </span>
+      </div>
+      <Slider
+        min={min}
+        max={max}
+        step={step}
+        value={[value]}
+        onValueChange={([nextValue]) => onChange(nextValue)}
+        aria-label={label}
+        className={sliderClass}
+      />
     </div>
   );
 }
 
 export function MinimalExport({
+  isOpen,
+  onOpenChange,
   fileName,
   modelGroupRef,
   canvasRef,
 }: MinimalExportProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const [videoDuration, setVideoDuration] = useState(10);
 
-  const {
-    textureEnabled,
-    texturePreset,
-    textureScale,
-    autoRotate,
-    setAutoRotate,
-    autoRotateSpeed,
-    setAutoRotateSpeed,
-    setCompletedVideo,
-    setVideoModalOpen,
-    isRecording,
-    recordingProgress,
-    recordingElapsedTime,
-    recordingStatus,
-  } = useEditorStore();
+  const textureEnabled = useEditorStore((state) => state.textureEnabled);
+  const texturePreset = useEditorStore((state) => state.texturePreset);
+  const textureScale = useEditorStore((state) => state.textureScale);
+  const autoRotate = useEditorStore((state) => state.autoRotate);
+  const setAutoRotate = useEditorStore((state) => state.setAutoRotate);
+  const autoRotateSpeed = useEditorStore((state) => state.autoRotateSpeed);
+  const setAutoRotateSpeed = useEditorStore(
+    (state) => state.setAutoRotateSpeed,
+  );
+  const setCompletedVideo = useEditorStore((state) => state.setCompletedVideo);
+  const setVideoModalOpen = useEditorStore((state) => state.setVideoModalOpen);
+  const isRecording = useEditorStore((state) => state.isRecording);
+  const recordingProgress = useEditorStore((state) => state.recordingProgress);
+  const recordingElapsedTime = useEditorStore(
+    (state) => state.recordingElapsedTime,
+  );
+  const recordingStatus = useEditorStore((state) => state.recordingStatus);
 
   const handlePngExport = () => {
     handleExport("png", modelGroupRef, fileName, 3);
@@ -64,7 +132,7 @@ export function MinimalExport({
     if (!canvasRef?.current) return;
 
     if (!autoRotate) {
-      toast.error("ENABLE AUTO-ROTATE FIRST");
+      toast.error("Enable auto-rotate first");
       return;
     }
 
@@ -79,7 +147,7 @@ export function MinimalExport({
       },
       onError: (error) => {
         console.error("Recording failed:", error);
-        toast.error("RECORDING FAILED");
+        toast.error("Recording failed");
       },
     });
   };
@@ -98,147 +166,147 @@ export function MinimalExport({
 
   return (
     <>
-      {/* Auto-Rotate Controls - Always Visible */}
-      <div className="border-b border-neutral-800 px-4 py-3 font-mono text-[14px] tracking-wide uppercase">
-        <div className="flex items-center justify-between">
-          <span className="text-neutral-500">AUTO ROTATE</span>
-          <button
-            onClick={() => setAutoRotate(!autoRotate)}
-            className={`relative h-5 w-10 border transition-colors ${autoRotate ? "border-white bg-white" : "border-neutral-700 bg-neutral-900"}`}>
-            <div
-              className={`absolute top-0 h-full w-1/2 transition-all ${autoRotate ? "left-1/2 bg-black" : "left-0 bg-neutral-600"}`}
-            />
-          </button>
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => onOpenChange(!isOpen)}
+        aria-expanded={isOpen}
+        className={cn(
+          "h-10 w-full justify-between rounded-none px-3.5 py-0 text-[14px] font-medium text-[#aaa] hover:bg-white/[0.03] hover:text-white active:scale-100",
+          isOpen && "bg-white/[0.025] text-white",
+        )}>
+        <div className="flex items-center gap-2">
+          <Download className="size-3.5" />
+          <span>Export</span>
         </div>
-        <AnimatedSection isOpen={autoRotate}>
-          <div className="mt-3 flex items-center justify-between">
-            <span className="text-neutral-500">SPEED</span>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
+        <ChevronDown
+          className={cn(
+            "size-3.5 text-[#666] transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]",
+            isOpen && "rotate-180 text-[#999]",
+          )}
+        />
+      </Button>
+
+      <AnimatedSection isOpen={isOpen}>
+        <div className="max-h-[62dvh] scrollbar-thin overflow-y-auto border-t border-white/[0.05] px-3.5 text-[14px]">
+          <ExportGroup label="Image">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handlePngExport}
+              className="w-full rounded-md text-[14px]">
+              PNG
+            </Button>
+          </ExportGroup>
+
+          <ExportGroup label="3D">
+            <div className="grid grid-cols-3 gap-1.5">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handle3DExport("stl")}
+                className="w-full rounded-md text-[14px]">
+                STL
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handle3DExport("glb")}
+                className="w-full rounded-md text-[14px]">
+                GLB
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handle3DExport("gltf")}
+                className="w-full rounded-md text-[14px]">
+                GLTF
+              </Button>
+            </div>
+          </ExportGroup>
+
+          <ExportGroup label="Video">
+            <div className="flex items-center justify-between py-2.5">
+              <span className="text-[#888]">Auto rotate</span>
+              <Switch
+                checked={autoRotate}
+                onCheckedChange={setAutoRotate}
+                aria-label="Auto rotate"
+                className="border-white/10 data-[state=checked]:bg-white data-[state=unchecked]:bg-white/10"
+              />
+            </div>
+            <AnimatedSection isOpen={autoRotate}>
+              <SliderRow
+                label="Speed"
+                value={autoRotateSpeed}
                 min={0.5}
                 max={10}
                 step={0.5}
-                value={autoRotateSpeed}
-                onChange={(e) => setAutoRotateSpeed(parseFloat(e.target.value))}
-                className="h-1 w-24 cursor-pointer appearance-none bg-neutral-800 accent-white [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:bg-white"
+                onChange={setAutoRotateSpeed}
               />
-              <span className="w-12 text-right text-neutral-400">
-                {autoRotateSpeed.toFixed(1)}
-              </span>
-            </div>
-          </div>
-        </AnimatedSection>
-      </div>
+            </AnimatedSection>
+            <SliderRow
+              label="Duration"
+              value={videoDuration}
+              suffix="s"
+              min={3}
+              max={30}
+              step={1}
+              onChange={setVideoDuration}
+            />
 
-      {/* Export Section */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between px-4 py-3 font-mono text-[14px] tracking-wide text-neutral-400 uppercase transition-colors hover:text-white">
-        <div className="flex items-center gap-2">
-          <Download className="h-4 w-4" />
-          <span>EXPORT</span>
-        </div>
-        <ChevronDown
-          className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-        />
-      </button>
-
-      <AnimatedSection isOpen={isOpen}>
-        <div className="border-t border-neutral-800 px-4 py-3 font-mono text-[14px] tracking-wide uppercase">
-          {/* IMAGE Section */}
-          <div className="mb-4">
-            <span className="mb-2 block text-[12px] text-neutral-500">
-              IMAGE
-            </span>
-            <button
-              onClick={handlePngExport}
-              className="w-full border border-neutral-700 py-2 text-neutral-400 transition-colors hover:border-white hover:text-white">
-              PNG
-            </button>
-          </div>
-
-          {/* 3D Section */}
-          <div className="mb-4">
-            <span className="mb-2 block text-[12px] text-neutral-500">3D</span>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => handle3DExport("stl")}
-                className="border border-neutral-700 py-2 text-neutral-400 transition-colors hover:border-white hover:text-white">
-                STL
-              </button>
-              <button
-                onClick={() => handle3DExport("glb")}
-                className="border border-neutral-700 py-2 text-neutral-400 transition-colors hover:border-white hover:text-white">
-                GLB
-              </button>
-              <button
-                onClick={() => handle3DExport("gltf")}
-                className="border border-neutral-700 py-2 text-neutral-400 transition-colors hover:border-white hover:text-white">
-                GLTF
-              </button>
-            </div>
-          </div>
-
-          {/* VIDEO Section */}
-          <div>
-            <div className="mb-2 flex items-center gap-2">
-              <span className="text-[12px] text-neutral-500">VIDEO</span>
-              {isRecording && (
-                <>
-                  <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
-                  <span className="text-[10px] text-red-400">
+            {isRecording ? (
+              <div className="mb-3 rounded-md border border-white/[0.06] bg-white/[0.025] p-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="flex items-center gap-2 text-[#c8c8c8]">
+                    <span className="size-1.5 animate-pulse rounded-full bg-red-400" />
                     {recordingStatus === "processing"
-                      ? "PROCESSING..."
-                      : `${recordingElapsedTime.toFixed(1)}S`}
+                      ? "Processing…"
+                      : "Recording"}
                   </span>
-                  <div className="h-1 w-12 overflow-hidden bg-neutral-800">
-                    <div
-                      className="h-full bg-red-500 transition-all duration-100"
-                      style={{ width: `${recordingProgress}%` }}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Duration - Only in VIDEO section */}
-            <div className="mb-3">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-neutral-500">DURATION</span>
-                <span className="text-neutral-400">{videoDuration}S</span>
+                  <span className="text-[#777] tabular-nums">
+                    {recordingElapsedTime.toFixed(1)}s
+                  </span>
+                </div>
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.08]">
+                  <div
+                    className="h-full bg-white transition-[width] duration-100"
+                    style={{ width: `${recordingProgress}%` }}
+                  />
+                </div>
               </div>
-              <input
-                type="range"
-                min={3}
-                max={30}
-                step={1}
-                value={videoDuration}
-                onChange={(e) => setVideoDuration(parseInt(e.target.value))}
-                className="h-1 w-full cursor-pointer appearance-none bg-neutral-800 accent-white [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:bg-white"
-              />
-            </div>
+            ) : null}
 
-            <div className="grid grid-cols-2 gap-2">
-              <button
+            <div className="grid grid-cols-2 gap-1.5">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => handleVideoExport("mp4")}
                 disabled={!autoRotate || isRecording}
-                className="border border-neutral-700 py-2 text-neutral-400 transition-colors hover:border-white hover:text-white disabled:cursor-not-allowed disabled:opacity-30">
+                className="w-full rounded-md text-[14px]">
                 MP4
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => handleVideoExport("gif")}
                 disabled={!autoRotate || isRecording}
-                className="border border-neutral-700 py-2 text-neutral-400 transition-colors hover:border-white hover:text-white disabled:cursor-not-allowed disabled:opacity-30">
+                className="w-full rounded-md text-[14px]">
                 GIF
-              </button>
+              </Button>
             </div>
-            {!autoRotate && (
-              <p className="mt-2 text-[10px] text-neutral-600">
-                ENABLE AUTO-ROTATE TO RECORD
+            {!autoRotate ? (
+              <p className="mt-2.5 text-[#666]">
+                Turn on auto rotate to record.
               </p>
-            )}
-          </div>
+            ) : null}
+          </ExportGroup>
         </div>
       </AnimatedSection>
 

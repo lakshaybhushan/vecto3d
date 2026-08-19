@@ -11,6 +11,7 @@ function Slider({
   value,
   min = 0,
   max = 100,
+  "aria-label": ariaLabel,
   ...props
 }: React.ComponentProps<typeof SliderPrimitive.Root>) {
   const _values = React.useMemo(
@@ -30,6 +31,7 @@ function Slider({
       value={value}
       min={min}
       max={max}
+      aria-label={ariaLabel}
       className={cn(
         "relative flex w-full touch-none items-center select-none data-[disabled]:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col",
         className,
@@ -38,7 +40,7 @@ function Slider({
       <SliderPrimitive.Track
         data-slot="slider-track"
         className={cn(
-          "bg-primary/25 relative grow overflow-hidden rounded-full data-[orientation=horizontal]:h-2.5 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5",
+          "bg-muted relative grow overflow-hidden rounded-full data-[orientation=horizontal]:h-1.5 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5",
         )}>
         <SliderPrimitive.Range
           data-slot="slider-range"
@@ -51,7 +53,12 @@ function Slider({
         <SliderPrimitive.Thumb
           data-slot="slider-thumb"
           key={index}
-          className="border-card bg-primary relative block size-4 h-9 w-[12px] shrink-0 rounded-full border-4 transition-all duration-50 ease-in-out focus-visible:outline-hidden active:w-[10px] active:transition-all active:duration-50 active:ease-in-out disabled:pointer-events-none disabled:opacity-50"
+          aria-label={
+            _values.length > 1 && ariaLabel
+              ? `${ariaLabel} ${index + 1}`
+              : ariaLabel
+          }
+          className="border-primary bg-background ring-ring/50 block size-4 shrink-0 rounded-full border shadow-sm transition-[box-shadow,transform] duration-150 hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden active:scale-95 disabled:pointer-events-none disabled:opacity-50"
         />
       ))}
     </SliderPrimitive.Root>

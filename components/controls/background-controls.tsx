@@ -57,12 +57,10 @@ export function BackgroundControls() {
     setSolidColorPreset("custom");
 
     if (checked) {
-      if (
-        !(
-          (backgroundColor.length === 9 && backgroundColor.endsWith("00")) ||
-          backgroundColor === "transparent"
-        )
-      ) {
+      if (!(
+        (backgroundColor.length === 9 && backgroundColor.endsWith("00")) ||
+        backgroundColor === "transparent"
+      )) {
         setLastOpaqueColor(backgroundColor);
       }
       setBackgroundColor("#00000000");
@@ -107,7 +105,8 @@ export function BackgroundControls() {
 
           <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-5">
             {SOLID_COLOR_PRESETS.map((preset) => (
-              <button
+              <Button
+                variant="ghost"
                 key={preset.name}
                 className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                   solidColorPreset === preset.name
@@ -141,7 +140,7 @@ export function BackgroundControls() {
                     </p>
                   </div>
                 </div>
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -158,7 +157,7 @@ export function BackgroundControls() {
                 onChange={(e) =>
                   handleBackgroundChange(e.target.value, "custom")
                 }
-                className="w-22 font-mono uppercase"
+                className="w-22"
               />
             </div>
           </div>

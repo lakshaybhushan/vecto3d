@@ -123,7 +123,7 @@ export function ExportButtons({
     setIsDropdownOpen(false);
   };
 
-  const monoStyle = "font-mono text-[14px] uppercase tracking-wide";
+  const monoStyle = "text-[14px] tracking-wide";
 
   return (
     <div className="flex items-center gap-2">

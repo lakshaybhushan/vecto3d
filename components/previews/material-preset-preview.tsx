@@ -1,5 +1,6 @@
 import { memo } from "react";
 import type { MaterialPreset } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 
 interface MaterialPresetPreviewProps {
   preset: MaterialPreset;
@@ -27,8 +28,9 @@ export const MaterialPresetPreview = memo(function MaterialPresetPreview({
       : `hsl(220, 20%, ${70 - preset.roughness * 40}%)`;
 
   return (
-    <button
-      className={`flex cursor-pointer flex-col items-center rounded-lg pt-3 pb-2 ${
+    <Button
+      variant="ghost"
+      className={`h-auto flex-col rounded-lg pt-3 pb-2 ${
         isSelected ? "bg-primary/10 ring-input ring-1" : "hover:bg-muted"
       }`}
       onClick={onClick}
@@ -77,6 +79,6 @@ export const MaterialPresetPreview = memo(function MaterialPresetPreview({
         )}
       </div>
       <span className="pt-1 text-xs font-medium">{preset.label}</span>
-    </button>
+    </Button>
   );
 });

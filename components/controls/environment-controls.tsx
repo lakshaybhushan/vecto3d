@@ -145,7 +145,8 @@ export function EnvironmentControls() {
             <Label className="text-sm font-medium">Presets</Label>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               {ENVIRONMENT_PRESETS.map((preset) => (
-                <button
+                <Button
+                  variant="ghost"
                   key={preset.name}
                   className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                     environmentPreset === preset.name
@@ -178,10 +179,11 @@ export function EnvironmentControls() {
                       </p>
                     </div>
                   </div>
-                </button>
+                </Button>
               ))}
 
-              <button
+              <Button
+                variant="ghost"
                 key="custom-preset"
                 className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                   environmentPreset === "custom"
@@ -244,7 +246,7 @@ export function EnvironmentControls() {
                     </div>
                   </div>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -310,7 +312,7 @@ export function EnvironmentControls() {
                     htmlFor="bloomIntensity"
                     className="flex items-center justify-between">
                     <span>Bloom Intensity</span>
-                    <span className="text-primary font-mono">
+                    <span className="text-primary">
                       {bloomIntensity.toFixed(2)}
                     </span>
                   </Label>
@@ -341,7 +343,7 @@ export function EnvironmentControls() {
                     htmlFor="modelRotation"
                     className="flex justify-between">
                     <span>Rotate Model</span>
-                    <span className="text-primary font-mono">
+                    <span className="text-primary">
                       {(modelRotationY * (180 / Math.PI)).toFixed(0)}°
                     </span>
                   </Label>

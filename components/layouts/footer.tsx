@@ -32,7 +32,9 @@ export default function Footer() {
             href="https://vercel.com"
             className="text-primary flex items-center gap-0.5 font-medium transition-colors duration-200 hover:underline"
             target="_blank"
-            rel="noopener noreferrer">
+            rel="noopener noreferrer"
+            data-cuelume-press="press"
+            data-cuelume-release="release">
             <span className="-mt-0.5">
               <VercelIcon size={12} />
             </span>
@@ -49,7 +51,9 @@ export default function Footer() {
             href="https://lakshb.dev"
             className="text-primary font-medium transition-colors duration-200 hover:underline"
             target="_blank"
-            rel="noopener noreferrer">
+            rel="noopener noreferrer"
+            data-cuelume-press="press"
+            data-cuelume-release="release">
             lakshaybhushan
           </Link>
         </motion.div>

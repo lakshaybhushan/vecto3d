@@ -6,6 +6,7 @@ import { useEditorStore } from "@/lib/store";
 import { Input } from "@/components/ui/input";
 import { PopoverPicker } from "@/components/ui/color-picker";
 import type { MaterialPreset } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 
 export function MaterialControls() {
   const materialPreset = useEditorStore((state) => state.materialPreset);
@@ -94,7 +95,8 @@ export function MaterialControls() {
           const materialStyle = getMaterialStyle(preset);
 
           return (
-            <button
+            <Button
+              variant="ghost"
               key={preset.name}
               className={`group relative h-[120px] w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                 materialPreset === preset.name
@@ -162,7 +164,7 @@ export function MaterialControls() {
                   </p>
                 </div>
               </div>
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -174,9 +176,7 @@ export function MaterialControls() {
               htmlFor="roughness"
               className="flex items-center justify-between">
               <span>Roughness</span>
-              <span className="text-primary font-mono">
-                {roughness.toFixed(2)}
-              </span>
+              <span className="text-primary">{roughness.toFixed(2)}</span>
             </Label>
             <Slider
               id="roughness"
@@ -193,9 +193,7 @@ export function MaterialControls() {
               htmlFor="metalness"
               className="flex items-center justify-between">
               <span>Metalness</span>
-              <span className="text-primary font-mono">
-                {metalness.toFixed(2)}
-              </span>
+              <span className="text-primary">{metalness.toFixed(2)}</span>
             </Label>
             <Slider
               id="metalness"
@@ -212,9 +210,7 @@ export function MaterialControls() {
               htmlFor="clearcoat"
               className="flex items-center justify-between">
               <span>Clearcoat</span>
-              <span className="text-primary font-mono">
-                {clearcoat.toFixed(2)}
-              </span>
+              <span className="text-primary">{clearcoat.toFixed(2)}</span>
             </Label>
             <Slider
               id="clearcoat"
@@ -231,9 +227,7 @@ export function MaterialControls() {
               htmlFor="transmission"
               className="flex items-center justify-between">
               <span>Transmission</span>
-              <span className="text-primary font-mono">
-                {transmission.toFixed(2)}
-              </span>
+              <span className="text-primary">{transmission.toFixed(2)}</span>
             </Label>
             <Slider
               id="transmission"
@@ -250,9 +244,7 @@ export function MaterialControls() {
               htmlFor="envMapIntensity"
               className="flex items-center justify-between">
               <span>Environment Reflection</span>
-              <span className="text-primary font-mono">
-                {envMapIntensity.toFixed(2)}
-              </span>
+              <span className="text-primary">{envMapIntensity.toFixed(2)}</span>
             </Label>
             <Slider
               id="envMapIntensity"
@@ -284,7 +276,7 @@ export function MaterialControls() {
               type="text"
               value={customColor}
               onChange={(e) => setCustomColor(e.target.value)}
-              className="w-22 font-mono uppercase"
+              className="w-22"
             />
           </div>
         </div>

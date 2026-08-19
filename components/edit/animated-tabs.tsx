@@ -3,6 +3,7 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Box, Palette, Image, Mountain, Monitor } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type AnimatedTabsProps = {
   activeTab: string;
@@ -66,20 +67,22 @@ export const AnimatedTabs = memo(
             const isActive = activeTab === tab.id;
 
             return (
-              <button
+              <Button
+                type="button"
+                variant="ghost"
                 key={tab.id}
                 ref={(el) => {
                   tabRefs.current[tab.id] = el;
                 }}
                 onClick={() => onTabChange(tab.id)}
-                className={`flex min-w-[120px] flex-1 cursor-pointer items-center justify-center px-3 py-3 text-sm whitespace-nowrap transition-colors ${
+                className={`h-auto min-w-[120px] flex-1 rounded-none px-3 py-3 text-sm whitespace-nowrap ${
                   isActive
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}>
                 <Icon className="mr-1.5 h-4 w-4 shrink-0" />
                 <span className="truncate">{tab.name}</span>
-              </button>
+              </Button>
             );
           })}
 
